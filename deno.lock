@@ -1,9 +1,12 @@
 {
   "version": "5",
   "specifiers": {
+    "npm:@mdi/font@^7.4.47": "7.4.47",
     "npm:nuxt@4": "4.0.0_vue@3.5.17_oxc-parser@0.77.2_vue-router@4.5.1__vue@3.5.17_jiti@2.4.2",
+    "npm:vite-plugin-vuetify@^2.1.1": "2.1.1_vite@7.0.5__jiti@2.4.2__picomatch@4.0.3_vue@3.5.17_vuetify@3.9.2__vue@3.5.17__vite-plugin-vuetify@2.1.1",
     "npm:vue-router@^4.5.1": "4.5.1_vue@3.5.17",
-    "npm:vue@^3.5.17": "3.5.17"
+    "npm:vue@^3.5.17": "3.5.17",
+    "npm:vuetify@^3.9.2": "3.9.2_vue@3.5.17_vite-plugin-vuetify@2.1.1__vite@7.0.5___jiti@2.4.2___picomatch@4.0.3__vue@3.5.17__vuetify@3.9.2"
   },
   "npm": {
     "@ampproject/remapping@2.3.0": {
@@ -585,6 +588,9 @@
         "tar"
       ],
       "bin": true
+    },
+    "@mdi/font@7.4.47": {
+      "integrity": "sha512-43MtGpd585SNzHZPcYowu/84Vz2a2g31TvPMTm9uTiCSWzaheQySUcSyUH/46fPnuPQWof2yd0pGBtzee/IQWw=="
     },
     "@napi-rs/wasm-runtime@1.0.0": {
       "integrity": "sha512-OInwPIZhcQ+aWOBFMUXzv95RLDTBRPaNPm5kSFJaL3gVAMVxrzc0YXNsVeLPHf+4sTviOy2e5wZdvKILb7dC/w==",
@@ -1782,6 +1788,14 @@
     },
     "@vue/shared@3.5.17": {
       "integrity": "sha512-CabR+UN630VnsJO/jHWYBC1YVXyMq94KKp6iF5MQgZJs5I8cmjw6oVMO1oDbtBkENSHSSn/UadWlW/OAgdmKrg=="
+    },
+    "@vuetify/loader-shared@2.1.0_vue@3.5.17_vuetify@3.9.2__vue@3.5.17__vite-plugin-vuetify@2.1.1___vite@7.0.5____jiti@2.4.2____picomatch@4.0.3___vue@3.5.17___vuetify@3.9.2_vite-plugin-vuetify@2.1.1__vite@7.0.5___jiti@2.4.2___picomatch@4.0.3__vue@3.5.17__vuetify@3.9.2___vue@3.5.17___vite-plugin-vuetify@2.1.1": {
+      "integrity": "sha512-dNE6Ceym9ijFsmJKB7YGW0cxs7xbYV8+1LjU6jd4P14xOt/ji4Igtgzt0rJFbxu+ZhAzqz853lhB0z8V9Dy9cQ==",
+      "dependencies": [
+        "upath",
+        "vue",
+        "vuetify@3.9.2_vue@3.5.17_vite-plugin-vuetify@2.1.1__vite@7.0.5___jiti@2.4.2___picomatch@4.0.3__vue@3.5.17__vuetify@3.9.2"
+      ]
     },
     "@whatwg-node/disposablestack@0.0.6": {
       "integrity": "sha512-LOtTn+JgJvX8WfBVJtF08TGrdjuFzGJc4mkP8EdDI8ADbvO7kiexYep1o8dwnt0okb0jYclCDXF13xU7Ge4zSw==",
@@ -5008,6 +5022,9 @@
         "unplugin@1.16.1"
       ]
     },
+    "upath@2.0.1": {
+      "integrity": "sha512-1uEe95xksV1O0CYKXo8vQvN1JEbtJp7lb7C5U9HMsIp6IVwntkH/oNUzyVNQSd4S1sYk2FpSSW44FqMc8qee5w=="
+    },
     "update-browserslist-db@1.1.3_browserslist@4.25.1": {
       "integrity": "sha512-UxhIZQ+QInVdunkDAaiazvvT/+fXL5Osr0JZlJulepYu6Jd7qJtDZjlur0emRlT71EN3ScPoE7gvsuIKKNavKw==",
       "dependencies": [
@@ -5107,6 +5124,17 @@
         "vue"
       ]
     },
+    "vite-plugin-vuetify@2.1.1_vite@7.0.5__jiti@2.4.2__picomatch@4.0.3_vue@3.5.17_vuetify@3.9.2__vue@3.5.17__vite-plugin-vuetify@2.1.1": {
+      "integrity": "sha512-Pb7bKhQH8qPMzURmEGq2aIqCJkruFNsyf1NcrrtnjsOIkqJPMcBbiP0oJoO8/uAmyB5W/1JTbbUEsyXdMM0QHQ==",
+      "dependencies": [
+        "@vuetify/loader-shared",
+        "debug",
+        "upath",
+        "vite",
+        "vue",
+        "vuetify@3.9.2_vue@3.5.17_vite-plugin-vuetify@2.1.1__vite@7.0.5___jiti@2.4.2___picomatch@4.0.3__vue@3.5.17__vuetify@3.9.2"
+      ]
+    },
     "vite@7.0.5_jiti@2.4.2_picomatch@4.0.3": {
       "integrity": "sha512-1mncVwJxy2C9ThLwz0+2GKZyEXuC3MyWtAAlNftlZZXZDP3AJt5FmwcMit/IGGaNZ8ZOB2BNO/HFUB+CpN0NQw==",
       "dependencies": [
@@ -5153,6 +5181,22 @@
         "@vue/runtime-dom",
         "@vue/server-renderer",
         "@vue/shared"
+      ]
+    },
+    "vuetify@3.9.2_vue@3.5.17": {
+      "integrity": "sha512-Pax7YCgbE5SArY8CDM0A9dTVHnG1oU79eIBA+FEEg3dDFV7bc+0AppJJLfG2+aoaBlJf2UH7tOCflJ/U23YU1Q==",
+      "dependencies": [
+        "vue"
+      ]
+    },
+    "vuetify@3.9.2_vue@3.5.17_vite-plugin-vuetify@2.1.1__vite@7.0.5___jiti@2.4.2___picomatch@4.0.3__vue@3.5.17__vuetify@3.9.2": {
+      "integrity": "sha512-Pax7YCgbE5SArY8CDM0A9dTVHnG1oU79eIBA+FEEg3dDFV7bc+0AppJJLfG2+aoaBlJf2UH7tOCflJ/U23YU1Q==",
+      "dependencies": [
+        "vite-plugin-vuetify",
+        "vue"
+      ],
+      "optionalPeers": [
+        "vite-plugin-vuetify"
       ]
     },
     "web-streams-polyfill@3.3.3": {
@@ -5324,9 +5368,12 @@
   "workspace": {
     "packageJson": {
       "dependencies": [
+        "npm:@mdi/font@^7.4.47",
         "npm:nuxt@4",
+        "npm:vite-plugin-vuetify@^2.1.1",
         "npm:vue-router@^4.5.1",
-        "npm:vue@^3.5.17"
+        "npm:vue@^3.5.17",
+        "npm:vuetify@^3.9.2"
       ]
     }
   }

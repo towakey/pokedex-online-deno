@@ -1,0 +1,9 @@
+<template>
+  <v-layout>
+    <v-app-bar></v-app-bar>
+    <v-main>
+      <slot></slot>
+    </v-main>
+    <v-footer></v-footer>
+  </v-layout>
+</template>
