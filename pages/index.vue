@@ -1,45 +1,93 @@
 <template>
-  <div>
-    <h1>ポケデックス</h1>
-    <p>Nuxt.js アプリケーションが正常に動作しています！</p>
-    <div class="test-content">
-      <h2>テストページ</h2>
-      <p>この pages/index.vue ページが表示されています。</p>
+  <v-container>
+    <AppBreadcrumbs :items="breadcrumbs" />
+    <div v-for="(items, category) in groupedMenu" :key="category">
+      <h2 class="text-h5 mb-4">{{ categoryTitles[category] || category }}</h2>
+      <v-row>
+        <v-col v-for="item in items" :key="item.title" cols="12" md="4">
+          <v-card
+          elevation-0
+          variant="outlined"
+          style="background-color: white;"
+          :to="item.path"
+          nuxt
+          >
+            <v-card-title>{{ item.title }}</v-card-title>
+            <v-card-text>{{ item.description }}</v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
     </div>
-  </div>
+    <div class="api-test">
+      <v-btn color="primary" @click="callApi">APIテスト</v-btn>
+      <p v-if="apiMessage">{{ apiMessage }}</p>
+    </div>
+  </v-container>
 </template>
-
-<script setup>
+<script setup lang="ts">
 // ページのメタデータを設定
+definePageMeta({
+  pageTitle: 'Pokédex-Online'
+})
+
 useHead({
-  title: 'ポケデックス - Nuxt.js',
+  title: 'Pokédex-Online',
   meta: [
     { name: 'description', content: 'Nuxt.js で作成されたポケデックスアプリケーション' }
   ]
 })
+
+import { ref } from 'vue'
+
+const breadcrumbs = ref([
+  { title: 'Home', disabled: true, href: '/' },
+])
+
+const apiMessage = ref('')
+
+async function callApi() {
+  try {
+    // const res = await $fetch('/api/sample.php?name=pikachu')
+    const res = await $fetch('/api/pokedex/pokedex.php')
+    apiMessage.value = JSON.stringify(res)
+  } catch (e) {
+    apiMessage.value = 'API Error: ' + (e instanceof Error ? e.message : String(e))
+  }
+}
+
+const mainMenu = ref([
+  { title: 'ポケモン図鑑', path: '/pokedex', img: '/icon.png', category: 'pokemon_data' },
+  { title: 'わざ', path: '/waza', img: '/icon.png', category: 'pokemon_data' },
+  { title: 'わざマシン', path: '/waza_machine', img: '/icon.png', category: 'pokemon_data' },
+  { title: 'とくせい', path: '/ability', img: '/icon.png', category: 'pokemon_data' },
+  { title: '図鑑カメラ', path: '/camera', img: '/camera.png', category: 'tools_gallery' },
+  { title: '検索', path: '/search', img: '/icon.png', category: 'tools_gallery' },
+  { title: 'pokedex.jsonについて', path: '/pokedexjson', img: '/icon.png', category: 'useful_information' },
+  { title: '年表', path: '/pokemon_history', img: '/icon.png', category: 'useful_information' },
+  { title: 'WebApp', path: '/webapp', img: '/icon.png', category: 'tools_gallery' },
+  { title: 'チートシート', path: '/cheatsheet', img: '/blog.png', category: 'useful_information' },
+  { title: 'リンク', path: '/link', img: '/icon.png', category: 'useful_information' },
+  { title: 'リーフ', path: '/leaf', img: '/icon.png', category: 'tools_gallery' },
+  { title: 'ギャラリー', path: '/gallery', img: '/icon.png', category: 'tools_gallery' },
+])
+
+const groupedMenu = computed(() => {
+  const groups: { [key: string]: any[] } = {}
+  mainMenu.value.forEach(item => {
+    if (!groups[item.category]) {
+      groups[item.category] = []
+    }
+    groups[item.category]!.push(item)
+  })
+  return groups
+})
+// カテゴリ情報を追加
+const categoryTitles: Record<string, string> = {
+  pokemon_data: 'ポケモン関連データ',
+  tools_gallery: 'ツールとギャラリー',
+  useful_information: 'Information'
+}
+
 </script>
-
 <style scoped>
-h1 {
-  color: #2c3e50;
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-.test-content {
-  background-color: #f8f9fa;
-  padding: 2rem;
-  border-radius: 8px;
-  margin-top: 2rem;
-}
-
-h2 {
-  color: #34495e;
-  margin-bottom: 1rem;
-}
-
-p {
-  color: #666;
-  line-height: 1.6;
-}
 </style>
