@@ -143,7 +143,6 @@
     </v-row>
   </v-container>
 </template>
-
 <script setup lang="ts">
 import PokemonCard from '~/components/PokemonCard.vue'
 
@@ -192,7 +191,7 @@ const { data: pokedex, pending, error } = await useAsyncData(
       
       // APIからデータを取得
       res = await $fetch<RawPokedexResponse>(
-        `http://localhost/pokedex/pokedex.php`,
+        `/api/pokedex/pokedex.php`,
         { query: { region: area } }
       );
       
@@ -301,7 +300,7 @@ function getHashForPokemon(pokemon: Pokemon): string {
 // NuxtLink の生成
 function generateLink(pokemon: Pokemon): string {
   const hash = getHashForPokemon(pokemon);
-  return `/pokedex/${area}/${pokemon.globalNo}${hash}`;
+  return `/pokedex/${area}/${pokemon.no}${hash}`;
 }
 
 // タイプ選択の切り替え
@@ -391,7 +390,7 @@ definePageMeta({
 const breadcrumbs = computed(() => [
   { title: 'Home', disabled: false, href: '/' },
   { title: 'ポケモン図鑑', disabled: false, href: '/pokedex' },
-  { title: pageTitle.value, disabled: true, href: '/pokedex/' + area },
+  { title: pageTitle.value, disabled: true, href: `/pokedex/${area}` },
 ]);
 
 </script>
