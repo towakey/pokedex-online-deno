@@ -4,6 +4,15 @@ import vuetify from 'vite-plugin-vuetify'
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
+  
+  // デバッグとエラー詳細表示設定
+  ssr: true,
+  debug: true,
+  
+  // エラー詳細表示
+  experimental: {
+    renderJsonPayloads: false
+  },
 
   devServer: {
     port: 3001
@@ -20,6 +29,8 @@ export default defineNuxtConfig({
       }
     }
   },
+
+  css: ['@/assets/styles/common.scss'],
 
   nitro: {
     devProxy: {

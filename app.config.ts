@@ -9,6 +9,11 @@ export default defineAppConfig({
     description: 'Nuxt.js で作成されたポケモン図鑑アプリケーション',
   },
 
+  personal: {
+    // 共通設定
+    language: 'jpn',    
+  },
+
   // リージョン図鑑データ
   regionPokedex: {
     kanto: {
@@ -177,6 +182,65 @@ export default defineAppConfig({
     steel: { jpn: 'はがね', eng: 'steel' },
     fairy: { jpn: 'フェアリー', eng: 'fairy' }
   } satisfies Record<string, { readonly jpn: string; readonly eng: string }>,
+
+  type_list: {
+    '1': [
+      "ノーマル",
+      "ほのお",
+      "みず",
+      "でんき",
+      "くさ",
+      "こおり",
+      "かくとう",
+      "どく",
+      "じめん",
+      "ひこう",
+      "エスパー",
+      "むし",
+      "いわ",
+      "ゴースト",
+      "ドラゴン",  
+    ],
+    '2': [
+      "ノーマル",
+      "ほのお",
+      "みず",
+      "でんき",
+      "くさ",
+      "こおり",
+      "かくとう",
+      "どく",
+      "じめん",
+      "ひこう",
+      "エスパー",
+      "むし",
+      "いわ",
+      "ゴースト",
+      "ドラゴン",
+      "あく",
+      "はがね",
+    ],
+    '3': [
+      "ノーマル",
+      "ほのお",
+      "みず",
+      "でんき",
+      "くさ",
+      "こおり",
+      "かくとう",
+      "どく",
+      "じめん",
+      "ひこう",
+      "エスパー",
+      "むし",
+      "いわ",
+      "ゴースト",
+      "ドラゴン",
+      "あく",
+      "はがね",
+      "フェアリー",
+    ]
+  },
   
   // ゲームバージョン情報
   games: {
@@ -243,5 +307,92 @@ export default defineAppConfig({
       { title: '年表', path: '/pokemon_history', category: 'useful_information' },
       { title: 'チートシート', path: '/cheatsheet', category: 'useful_information' }
     ]
+  },
+
+  // Vueファイルとの互換性のための旧形式設定
+  pokedex_eng2jpn: {
+    global: '全国図鑑',
+    kanto: 'カントー図鑑',
+    johto: 'ジョウト図鑑',
+    hoenn: 'ホウエン図鑑',
+    kanto_frlg: 'カントー図鑑(FRLG)',
+    sinnoh: 'シンオウ図鑑',
+    johto_hgss: 'ジョウト図鑑(HGSS)',
+    unova_bw: 'イッシュ図鑑(BW)',
+    unova_b2w2: 'イッシュ図鑑(B2W2)',
+    central_kalos: 'セントラルカロス図鑑',
+    coast_kalos: 'コーストカロス図鑑',
+    mountain_kalos: 'マウンテンカロス図鑑',
+    alola_sm: 'アローラ図鑑(SM)',
+    alola_usum: 'アローラ図鑑(USUM)',
+    galar: 'ガラル図鑑',
+    isle_of_armor: 'ヨロイ島図鑑',
+    crown_tundra: 'カンムリ雪原図鑑',
+    hisui: 'ヒスイ図鑑',
+    paldea: 'パルデア図鑑',
+    kitakami: 'キタカミ図鑑',
+    blueberry: 'ブルーベリー図鑑'
+  },
+
+  // ポケモン図鑑リスト
+  pokedex_list: [
+    { area: 'global', title: '全国図鑑', path: '/global' },
+    { area: 'kanto', title: 'カントー図鑑', path: '/kanto' },
+    { area: 'johto', title: 'ジョウト図鑑', path: '/johto' },
+    { area: 'hoenn', title: 'ホウエン図鑑', path: '/hoenn' },
+    { area: 'sinnoh', title: 'シンオウ図鑑', path: '/sinnoh' },
+    { area: 'unova', title: 'イッシュ図鑑', path: '/unova' },
+    { area: 'central_kalos', title: 'セントラルカロス図鑑', path: '/central_kalos' },
+    { area: 'coast_kalos', title: 'コーストカロス図鑑', path: '/coast_kalos' },
+    { area: 'mountain_kalos', title: 'マウンテンカロス図鑑', path: '/mountain_kalos' },
+    { area: 'alola', title: 'アローラ図鑑', path: '/alola' },
+    { area: 'galar', title: 'ガラル図鑑', path: '/galar' },
+    { area: 'hisui', title: 'ヒスイ図鑑', path: '/hisui' },
+    { area: 'paldea', title: 'パルデア図鑑', path: '/paldea' }
+  ],
+
+  // 言語名変換
+  lang_eng2jpn: {
+    jpn: '日本語',
+    eng: '英語',
+    ger: 'ドイツ語',
+    spa: 'スペイン語',
+    fre: 'フランス語',
+    ita: 'イタリア語',
+    kor: '韓国語',
+    chs: '中国語(簡体)',
+    cht: '中国語(繁体)'
+  },
+
+  // バージョン説明（ダミーデータ）
+  verDescription: {
+    green: {
+      title: 'ポケットモンスター 緑',
+      description: '初代ポケットモンスターの緑バージョン',
+      image: 'green'
+    }
+  },
+
+  typeList: {
+    'kanto': 1,
+    'johto': 2,
+    'hoenn': 2,
+    'kanto_frlg': 2,
+    'sinnoh': 2,
+    'unova': 2,
+    'unova_b2w2': 2,
+    'johto_hgss': 2,
+    'central_kalos': 3,
+    'coast_kalos': 3,
+    'mountain_kalos': 3,
+    'alola_sm': 3,
+    'alola_usum': 3,
+    'galar': 3,
+    'isle_of_armor': 3,
+    'crown_tundra': 3,
+    'hisui': 3,
+    'paldea': 3,
+    'kitakami': 3,
+    'blueberry': 3
   }
 })

@@ -1,0 +1,670 @@
+<template>
+  <v-dialog
+    v-model="isVersionDialogVisible"
+    width="auto"
+  >
+    <v-card>
+      <v-card-title></v-card-title>
+      <v-card-text>
+        <!-- ここに情報を表示 -->
+        <!-- greenバージョンの場合は画像を表示 -->
+        <div v-if="selectedVersionInfo?.ver === 'green'" class="text-center mb-4">
+          <!-- <v-img
+            :src="`/img/pokedexPic/green/${appConfig.verDescription[selectedVersionInfo?.ver]?.image}_${String(globalNo).padStart(4, '0')}_00000000_0_000_0.png`"
+            :alt="`ポケモン図鑑 ${selectedVersionInfo?.ver} 画像`"
+            max-width="300"
+            class="mx-auto"
+            @error="(e) => { e.target.style.display = 'none' }"
+          /> -->
+        </div>
+        <!-- <p>{{ appConfig.verDescription[selectedVersionInfo?.ver]?.title }}</p>
+        <p>{{ appConfig.verDescription[selectedVersionInfo?.ver]?.description }}</p> -->
+      </v-card-text>
+      <v-card-actions>
+        <v-btn color="primary" block @click="isVersionDialogVisible = false">閉じる</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+  <div
+  v-if="route.params.area == 'global'">
+    <ClientOnly>
+      <v-dialog
+      v-model="nameDialog"
+      >
+        <v-container>
+          <v-card>
+            <v-card-title v-if="pokedex.result.length > 0">
+              {{ pokedex.result[model].name[personal.language] }}
+            </v-card-title>
+            <v-card-text v-if="pokedex.result.length > 0">
+              <v-row
+              v-for='(name, key) in pokedex.result[model].name'
+              :key='name'
+              >
+                <v-col>
+                  <!-- {{ appConfig.lang_eng2jpn[key] }} -->
+                </v-col>
+                <v-col>
+                  {{ name }}
+                </v-col>
+              </v-row>
+            </v-card-text>
+          </v-card>
+        </v-container>
+      </v-dialog>
+    </ClientOnly>
+    <v-container>
+      <AppBreadcrumbs :items="breadcrumbs" />
+      <div style="display: flex; justify-content: space-between;padding: 0px;">
+        <div style="flex: 1; display: flex; justify-content: flex-start;">
+          <v-btn
+            v-if="prev.result.length > 0 && prev.result[0].name.jpn !== '不明'"
+            :to='{path: `/pokedex/${route.params.area}/${prev.result[0].no}`}'
+            style="background-color: white; width: 120px;"
+            variant="outlined"
+            >{{ prev.result[0].name[personal.language] }}</v-btn>
+        </div>
+        <div style="flex: 1; display: flex; justify-content: center;">
+          <v-btn
+            :to='{path: `/pokedex/${route.params.area}`}'
+            style="background-color: white; width: 70px;"
+            variant="outlined"
+            >TOP</v-btn>
+        </div>
+        <div style="flex: 1; display: flex; justify-content: flex-end;">
+          <v-btn
+            v-if="next.result.length > 0 && next.result[0].name.jpn !== '不明'"
+            :to='{path: `/pokedex/${route.params.area}/${next.result[0].no}`}'
+            style="background-color: white; width: 120px;"
+            variant="outlined"
+            >{{ next.result[0].name[personal.language] }}</v-btn>
+        </div>
+      </div>
+      <v-carousel
+      :show-arrows="false"
+      hide-delimiters
+      v-model="model" 
+      height="auto"
+      style="margin-top: 20px;"
+      >
+        <v-carousel-item
+          v-for="(item, index) in pokedex.result" :key="index"
+        >
+          <v-row>
+            <v-col :cols="7">
+              <v-card elevation="0" width="100%" variant="outlined" style="background-color: white;margin-top: 5px;">
+                <v-card-title @click="nameDialog = true" width="auto">
+                  <h2 class="responsive-text-name">{{ item.name[personal.language] }}</h2>
+                </v-card-title>
+                <v-card-text width="auto">
+                  <div class="responsive-text">分類　　　　　{{ item.classification[personal.language] }}</div>
+                  <div class="responsive-text">図鑑番号　　　No.{{ ('0000' + item.no).slice(-4) }}</div>
+                  <div class="responsive-text">全国図鑑番号　No.{{ ('0000' + item.globalNo).slice(-4) }}</div>
+                  <div class="responsive-text">たかさ　　　　　{{ item.height }} m</div>
+                  <div class="responsive-text">おもさ　　　　　{{ item.weight }} kg</div>
+                </v-card-text>
+              </v-card>
+            </v-col>
+            <v-col :cols="5">
+              <v-card elevation="0" variant="outlined" style="background-color: white;">
+                <v-img width="100%" height="100%" :aspect-ratio="1/1" :src="`${item.src}`" ></v-img>
+              </v-card>
+            </v-col>
+          </v-row>
+        </v-carousel-item>
+      </v-carousel>
+    </v-container>
+  </div>
+
+  <!-- global以外 -->
+  <div
+  style="background-color: #f2f2f2;"
+  v-else>
+  <ClientOnly>
+    <v-dialog
+    v-model="nameDialog"
+    >
+      <v-container>
+        <v-card>
+          <v-card-title v-if="pokedex.result.length > 0">
+            {{ pokedex.result[model].name[personal.language] }}
+          </v-card-title>
+          <v-card-text v-if="pokedex.result.length > 0">
+            <v-row
+            v-for='(name, key) in pokedex.result[model].name'
+            :key='name'
+            >
+              <v-col>
+                <!-- {{ appConfig.lang_eng2jpn[key] }} -->
+              </v-col>
+              <v-col>
+                {{ name }}
+              </v-col>
+            </v-row>
+          </v-card-text>
+        </v-card>
+      </v-container>
+    </v-dialog>
+  </ClientOnly>
+  <v-container>
+  <v-row>
+    <v-col
+    cols="12"
+    md="12"
+    >
+    <v-container>
+      <AppBreadcrumbs :items="breadcrumbs" />
+      <div style="display: flex; justify-content: space-between;padding: 0px;">
+        <div style="flex: 1; display: flex; justify-content: flex-start;">
+          <v-btn
+            v-if="prev.result.length > 0 && prev.result[0].name.jpn !== '不明'"
+            :to='{path: `/pokedex/${route.params.area}/${prev.result[0].no}`}'
+            style="background-color: white; width: 120px;"
+            variant="outlined"
+            >{{ prev.result[0].name[personal.language] }}</v-btn>
+        </div>
+        <div style="flex: 1; display: flex; justify-content: center;">
+          <v-btn
+            :to='{path: `/pokedex/${route.params.area}`}'
+            style="background-color: white; width: 70px;"
+            variant="outlined"
+            >TOP</v-btn>
+        </div>
+        <div style="flex: 1; display: flex; justify-content: flex-end;">
+          <v-btn
+            v-if="next.result.length > 0 && next.result[0].name.jpn !== '不明'"
+            :to='{path: `/pokedex/${route.params.area}/${next.result[0].no}`}'
+            style="background-color: white; width: 120px;"
+            variant="outlined"
+            >{{ next.result[0].name[personal.language] }}</v-btn>
+        </div>
+      </div>
+      <v-carousel
+      :show-arrows="false"
+      hide-delimiters
+      v-model="model"
+      height="auto"
+      style="margin-top: 20px;"
+      >
+        <v-carousel-item
+          v-if="pokedex.result.length > 0"
+          v-for="(item, index) in pokedex.result" :key="index"
+        >
+          <v-row>
+            <v-col
+            :cols="7"
+            >
+              <v-card
+              elevation="0"
+              width="100%"
+              variant="outlined"
+              style="background-color: white;margin-top: 5px;"
+              >
+                <v-card-title
+                width="auto"
+                class=""
+                >
+                  <h2 class="responsive-text-name" @click="nameDialog = true"
+                  >{{ item.name[personal.language] }}</h2>
+                  <div class="responsive-text">分類　　　　　{{ item.classification[personal.language] }}</div>
+                  <div class="responsive-text">図鑑番号　　　No.{{ ('0000' + item.no).slice(-4) }}</div>
+                  <NuxtLink class="nuxtlink" :to="{path: `/pokedex/global/${item.globalNo}`}">
+                    <div class="responsive-text">全国図鑑番号　No.{{ ('0000' + item.globalNo).slice(-4) }}</div>
+                  </NuxtLink>
+                  <div class="responsive-text">たかさ　　　{{ item.height }} m</div>
+                  <div class="responsive-text">おもさ　　　{{ item.weight }} kg</div>
+                </v-card-title>
+              </v-card>
+            </v-col>
+            <v-col
+            :cols="5"
+            >
+              <v-card
+              elevation="0"
+              style="background-color: white;"
+              variant="outlined"
+              >
+              <v-img
+              width="100%"
+              height="100%"
+              :aspect-ratio="1/1"
+              :src="pokedex.result.length > 0 ? `${pokedex.result[model].src}` : ''"
+              ></v-img>
+              </v-card>
+            </v-col>
+          </v-row>
+        </v-carousel-item>
+      </v-carousel>
+      <v-card
+      v-if="pokedex.result.length > 1"
+      elevation="0"
+      style="margin-top: 20px;background-color: white;"
+      variant="outlined"
+      >
+        <v-card-actions>
+          <v-btn
+          @click="prevModel()"
+          >＜</v-btn>
+          <v-spacer />
+          <h2>{{ 
+            pokedex.result[model].gigantamax && pokedex.result[model].form ? `${pokedex.result[model].gigantamax} ${pokedex.result[model].form}` : 
+            pokedex.result[model].region && pokedex.result[model].form ? `${pokedex.result[model].region} ${pokedex.result[model].form}` : 
+            pokedex.result[model].mega_evolution ? pokedex.result[model].mega_evolution : 
+            pokedex.result[model].gigantamax ? pokedex.result[model].gigantamax : 
+            pokedex.result[model].region ? pokedex.result[model].region : 
+            pokedex.result[model].form ? pokedex.result[model].form : 
+            pokedex.result[model].name?.jpn || ''
+          }}</h2>
+          <v-spacer />
+          <v-btn
+          @click="nextModel()"
+          >＞</v-btn>
+        </v-card-actions>
+      </v-card>
+      <v-carousel
+      :show-arrows="false" 
+      hide-delimiters 
+      v-model="model" 
+      height="auto"
+      >
+        <v-carousel-item
+          v-if="pokedex.result.length > 0"
+          v-for="(item, index) in pokedex.result" :key="index"
+        >
+          <TypeView :pokedex="pokedex.result[index]" :area="route.params.area" />
+                    <StatusChart v-if="pokedex.result[index]" :statusData="{
+            hp: Number(pokedex.result[index].hp),
+            attack: Number(pokedex.result[index].attack),
+            defense: Number(pokedex.result[index].defense),
+            special_attack: Number(pokedex.result[index].special_attack),
+            special_defense: Number(pokedex.result[index].special_defense),
+            speed: Number(pokedex.result[index].speed)
+          }" />
+          <AbilityView :pokedex="pokedex.result[index]" :area="route.params.area" />
+          <DescriptionView :description="pokedex.result[index].description" :title="metaTitle" />
+          <wazaView :wazaData="pokedex.result[index]" :area="route.params.area" />
+          <evolveView :evolveData="pokedex.result[index]" :area="route.params.area" />
+        </v-carousel-item>
+      </v-carousel>
+    </v-container>
+    </v-col>
+  </v-row>
+</v-container>
+</div>
+</template>
+<script setup lang="ts">
+import { ref, reactive } from 'vue'
+
+const isVersionDialogVisible = ref(false)
+const selectedVersionInfo = ref<any>(null)
+
+const openVersionDialog = (line: any) => {
+  selectedVersionInfo.value = line
+  isVersionDialogVisible.value = true
+}
+
+// ポケモン詳細データの型定義
+interface PokemonStatus {
+  id?: string | number;
+  no: number;
+  globalNo: number;
+  classification: string;
+  height: string;
+  weight: string;
+  form: string;
+  region: string;
+  mega_evolution: string;
+  gigantamax: string;
+  name: {
+    jpn: string;
+    eng: string;
+    [key: string]: string;
+  };
+  type1: string;
+  type2: string;
+  type_compatibility: { [key: string]: string };
+  hp: string;
+  attack: string;
+  defense: string;
+  special_attack: string;
+  special_defense: string;
+  speed: string;
+  ability1: string;
+  ability1_description: string;
+  ability2: string;
+  ability2_description: string;
+  dream_ability: string;
+  dream_ability_description: string;
+  description: string;
+  waza: {
+    lvup?: { [key: string]: string };
+    "わざマシン"?: { [key: string]: string };
+    [key: string]: any;
+  };
+  evolve: any;
+  src?: string;
+}
+
+interface PokedexResponse {
+  query: {
+    id: string;
+    area: string;
+    mode: string;
+  };
+  result: PokemonStatus[];
+}
+
+interface ExistsResponse {
+  query: {
+    no: string;
+    region: string;
+    mode: string;
+  };
+  result: number;
+}
+
+const config = useRuntimeConfig()
+const appConfig = useAppConfig()
+const route = useRoute()
+const router = useRouter()
+route.meta.title = route.params.area
+
+const personal = appConfig.personal
+
+interface RawPokedexResponse {
+  success: boolean;
+  data: Record<string, PokemonStatus[]>;
+  region: string | null;
+}
+
+// API取得機能
+const fetchPokedex = async (area: string, id: number | string) => {
+  const noParam = String(id).padStart(4, '0')
+  try {
+    let data: RawPokedexResponse
+    
+    const res = await $fetch<PokedexResponse>(
+      `/api/pokedex/pokedex.php?region=${area}&no=${noParam}`
+    )
+    
+    if (!res || !res.success) {
+      const placeholder: PokemonStatus = {
+        no: Number(id),
+        globalNo: Number(id),
+        classification: '',
+        height: '',
+        weight: '',
+        form: '',
+        region: '',
+        mega_evolution: '',
+        gigantamax: '',
+        name: { jpn: '不明', eng: 'Unknown' },
+        type1: '',
+        type2: '',
+        type_compatibility: {},
+        hp: '',
+        attack: '',
+        defense: '',
+        special_attack: '',
+        special_defense: '',
+        speed: '',
+        ability1: '',
+        ability1_description: '',
+        ability2: '',
+        ability2_description: '',
+        dream_ability: '',
+        dream_ability_description: '',
+        description: '',
+        waza: {},
+        evolve: {},
+        src: '/img/pokedex/0000.png'
+      }
+      return { query: { id: String(id), area: String(area), mode: 'details' }, result: [placeholder] } as PokedexResponse
+    }
+    let resultArray = Object.values(res.data).flat() as PokemonStatus[]
+    if (resultArray.length === 0) {
+      resultArray = [{
+        no: Number(id),
+        globalNo: Number(id),
+        classification: '',
+        height: '',
+        weight: '',
+        form: '',
+        region: '',
+        mega_evolution: '',
+        gigantamax: '',
+        name: { jpn: '不明', eng: 'Unknown' },
+        type1: '',
+        type2: '',
+        type_compatibility: {},
+        hp: '',
+        attack: '',
+        defense: '',
+        special_attack: '',
+        special_defense: '',
+        speed: '',
+        ability1: '',
+        ability1_description: '',
+        ability2: '',
+        ability2_description: '',
+        dream_ability: '',
+        dream_ability_description: '',
+        description: '',
+        waza: {},
+        evolve: {},
+        src: '/img/pokedex/0000.png'
+      }]
+    }
+    return { query: { id: String(id), area: String(area), mode: 'details' }, result: resultArray } as PokedexResponse
+  } catch (error) {
+    console.error('ポケモンデータの取得に失敗しました:', error)
+    const placeholder: PokemonStatus = {
+      no: Number(id),
+      globalNo: Number(id),
+      classification: '',
+      height: '',
+      weight: '',
+      form: '',
+      region: '',
+      mega_evolution: '',
+      gigantamax: '',
+      name: { jpn: '不明', eng: 'Unknown' },
+      type1: '',
+      type2: '',
+      type_compatibility: {},
+      hp: '',
+      attack: '',
+      defense: '',
+      special_attack: '',
+      special_defense: '',
+      speed: '',
+      ability1: '',
+      ability1_description: '',
+      ability2: '',
+      ability2_description: '',
+      dream_ability: '',
+      dream_ability_description: '',
+      description: '',
+      waza: {},
+      evolve: {},
+      src: '/img/pokedex/0000.png'
+    }
+    return { query: { id: String(id), area: String(area), mode: 'details' }, result: [placeholder] } as PokedexResponse
+  }
+}
+
+const fetchTypeCompatibility = async (type1: string, type2: string, region: string) => {
+  if (process.server) {
+    return {}
+  }
+  
+  try {
+    const params = new URLSearchParams({ type1: type1, region: region })
+    if (type2 && type2 !== '') {
+      params.append('type2', type2)
+    }
+    const data = await $fetch<{ data: { rates: { [key: string]: string } } }>(
+      `/api/pokedex/type.php?${params.toString()}`
+    )
+    const rawRates = data?.data?.rates ?? {}
+    const rates: { [key: string]: string } = {}
+    for (const [k, v] of Object.entries(rawRates)) {
+      rates[k] = String(v)
+    }
+    return rates
+  } catch (error) {
+    console.error('タイプ相性の取得に失敗しました', error)
+    return {}
+  }
+}
+
+definePageMeta({
+  title: "Pokedex-Online"
+})
+let nameDialog = ref(false)
+let model = ref(0)
+
+watch(() => [route.params.area, route.params.id], () => {
+  model.value = 0
+})
+
+function createEmptyPokedexResponse(): PokedexResponse {
+  return {
+    query: {},
+    result: [],
+  };
+}
+
+const { data: pokedexData, pending, error, refresh } = await useAsyncData<PokedexResponse>(
+  `pokedex-${route.params.area}-${route.params.id}`,
+  () => fetchPokedex(route.params.area as string, route.params.id as string)
+);
+
+const { data: prevData } = await useAsyncData<PokedexResponse>(
+  `pokedex-${route.params.area}-${route.params.id}-prev`,
+  () => fetchPokedex(route.params.area as string, (Number(route.params.id) - 1).toString())
+);
+
+const { data: nextData } = await useAsyncData<PokedexResponse>(
+  `pokedex-${route.params.area}-${route.params.id}-next`,
+  () => fetchPokedex(route.params.area as string, (Number(route.params.id) + 1).toString())
+);
+
+const pokedex = reactive(pokedexData.value ?? createEmptyPokedexResponse());
+const prev = reactive(prevData.value ?? createEmptyPokedexResponse());
+const next = reactive(nextData.value ?? createEmptyPokedexResponse());
+
+if (pokedexData.value) {
+  for (const status of pokedex.result) {
+    status.type_compatibility = await fetchTypeCompatibility(status.type1, status.type2, route.params.area as string)
+  }
+}
+
+const hasPokedexData = computed(() => pokedex.result && pokedex.result.length > 0 && pokedex.result[0].name.jpn !== '不明');
+let src = '';
+if (pokedex.result.length > 0) {
+  src = "/img/pokedex/" + pokedex.result[0].id + ".png";
+}
+
+const globalNo = computed(() => route.params.area === 'global'
+  ? Number(route.params.id)
+  : (pokedex.result[0]?.globalNo ?? Number(route.params.id)))
+
+const existsPokedex = reactive<{ [key: string]: ExistsResponse }>({
+  global: {
+    query: { id: String(globalNo), region: 'global', mode: 'exists' },
+    result: Number(globalNo)
+  }
+})
+
+// const regionList = appConfig.pokedex_list.filter(item => item.area !== 'global')
+// const existsRegionList = appConfig.pokedex_list
+
+const id = computed(() => pokedex.result[0]?.id ?? Number(route.params.id))
+// const paddedId = String(id).padStart(4, '0')
+
+const breadcrumbs = computed(() => {
+  const area = route.params.area as string;
+  const areaJpn = appConfig.regionPokedex[area]?.name.jpn ?? '';
+  // const areaJpn = area ?? '';
+  const pokemonName = pokedex.result[0]?.name[personal.language] ?? String(route.params.id);
+
+  return [
+    { title: 'TOP', disabled: false, href: '/' },
+    { title: 'ポケモン図鑑', disabled: false, href: '/pokedex' },
+    { title: areaJpn, disabled: false, href: `/pokedex/${area}` },
+    { title: pokemonName, disabled: true, href: '' }
+  ]
+});
+
+for(let pokedex_status in pokedex.result){
+  pokedex.result[pokedex_status].src = '/img/pokedex/' + pokedex.result[pokedex_status].id + '.png'
+}
+
+const metaImage = ref('');
+if (pokedex.result.length) {
+  metaImage.value = "https://pokedex-online.jp/img/pokedex/" + pokedex.result[0].id + ".png";
+}
+
+const metaTitle = computed(() => 
+  hasPokedexData.value
+    ? `${pokedex.result[0].name[personal.language]} - ポケモンずかん`
+    : `ポケモンずかん`
+);
+
+// const updateMetadata = inject('updateMetadata') as (title: string) => void
+// updateMetadata(metaTitle.value)
+
+useHead({
+  title: metaTitle,
+  meta: [
+    {
+      property: 'og:title',
+      content: metaTitle
+    },
+    {
+      name: 'twitter:card',
+      content: 'summary'
+    },
+    {
+      name: 'twitter:title',
+      content: metaTitle
+    },
+    {
+      name: 'twitter:image',
+      content: metaImage
+    }
+  ]
+})
+
+const nextModel = () => {
+  if((pokedex.result.length - 1) <= model.value)
+  {
+    model.value = 0
+  }
+  else
+  {
+    model.value++
+  }
+}
+
+const prevModel = () => {
+  if(model.value == 0)
+  {
+    model.value = pokedex.result.length - 1
+  }
+  else
+  {
+    model.value--
+  }
+}
+
+</script>
+<style scoped>
+.responsive-text-name {
+  font-size: clamp(0.75rem, 2vw, 1.5rem);
+}
+.responsive-text {
+  font-size: clamp(0.75rem, 2vw, 1.3rem);
+}
+</style>
