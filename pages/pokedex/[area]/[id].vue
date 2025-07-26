@@ -380,12 +380,55 @@ interface RawPokedexResponse {
 // API取得機能
 const fetchPokedex = async (area: string, id: number | string) => {
   const noParam = String(id).padStart(4, '0')
+  
+  // SSR時はプレースホルダーを返して、クライアント側で再取得
+  if (process.server) {
+    console.log(`[fetchPokedex] SSR mode - returning placeholder for ${area}/${id}`)
+    const placeholder: PokemonStatus = {
+      no: Number(id),
+      globalNo: Number(id),
+      classification: '',
+      height: '',
+      weight: '',
+      form: '',
+      region: '',
+      mega_evolution: '',
+      gigantamax: '',
+      name: { jpn: '不明', eng: 'Unknown' },
+      type1: '',
+      type2: '',
+      type_compatibility: {},
+      hp: '',
+      attack: '',
+      defense: '',
+      special_attack: '',
+      special_defense: '',
+      speed: '',
+      ability1: '',
+      ability1_description: '',
+      ability2: '',
+      ability2_description: '',
+      dream_ability: '',
+      dream_ability_description: '',
+      description: '',
+      waza: {},
+      evolve: {},
+      src: '/img/pokedex/0000.png'
+    }
+    return { query: { id: String(id), area: String(area), mode: 'details' }, result: [placeholder] } as PokedexResponse
+  }
+  
   try {
-    let data: RawPokedexResponse
+    const apiUrl = `/api/pokedex/pokedex.php?region=${area}&no=${noParam}`
     
-    const res = await $fetch<PokedexResponse>(
-      `/api/pokedex/pokedex.php?region=${area}&no=${noParam}`
-    )
+    console.log(`[fetchPokedex] Client mode - Fetching from: ${apiUrl}`)
+    
+    const res = await $fetch<RawPokedexResponse>(apiUrl)
+    
+    console.log(`[fetchPokedex] API Response:`, JSON.stringify(res, null, 2))
+    console.log(`[fetchPokedex] Response type:`, typeof res)
+    console.log(`[fetchPokedex] Response success:`, res?.success)
+    console.log(`[fetchPokedex] Response data:`, res?.data)
     
     if (!res || !res.success) {
       const placeholder: PokemonStatus = {
@@ -421,7 +464,12 @@ const fetchPokedex = async (area: string, id: number | string) => {
       }
       return { query: { id: String(id), area: String(area), mode: 'details' }, result: [placeholder] } as PokedexResponse
     }
+    
+    console.log(`[fetchPokedex] Processing data:`, res.data)
     let resultArray = Object.values(res.data).flat() as PokemonStatus[]
+    console.log(`[fetchPokedex] ResultArray:`, resultArray)
+    console.log(`[fetchPokedex] ResultArray length:`, resultArray.length)
+    
     if (resultArray.length === 0) {
       resultArray = [{
         no: Number(id),
@@ -494,17 +542,20 @@ const fetchPokedex = async (area: string, id: number | string) => {
 }
 
 const fetchTypeCompatibility = async (type1: string, type2: string, region: string) => {
-  if (process.server) {
-    return {}
-  }
-  
   try {
     const params = new URLSearchParams({ type1: type1, region: region })
     if (type2 && type2 !== '') {
       params.append('type2', type2)
     }
+    
+    // SSR時は絶対URLを使用
+    const baseUrl = process.server ? config.public.baseUrl || 'http://localhost:3000' : ''
+    const apiUrl = `${baseUrl}/api/pokedex/type.php?${params.toString()}`
+    
+    console.log(`[fetchTypeCompatibility] Fetching from: ${apiUrl} (server: ${process.server})`)
+    
     const data = await $fetch<{ data: { rates: { [key: string]: string } } }>(
-      `/api/pokedex/type.php?${params.toString()}`
+      apiUrl
     )
     const rawRates = data?.data?.rates ?? {}
     const rates: { [key: string]: string } = {}
@@ -537,24 +588,57 @@ function createEmptyPokedexResponse(): PokedexResponse {
 
 const { data: pokedexData, pending, error, refresh } = await useAsyncData<PokedexResponse>(
   `pokedex-${route.params.area}-${route.params.id}`,
-  () => fetchPokedex(route.params.area as string, route.params.id as string)
+  () => fetchPokedex(route.params.area as string, route.params.id as string),
+  {
+    default: () => createEmptyPokedexResponse(),
+    server: false  // サーバー側実行を無効化
+  }
 );
 
-const { data: prevData } = await useAsyncData<PokedexResponse>(
+const { data: prevData, refresh: refreshPrev } = await useAsyncData<PokedexResponse>(
   `pokedex-${route.params.area}-${route.params.id}-prev`,
-  () => fetchPokedex(route.params.area as string, (Number(route.params.id) - 1).toString())
+  () => fetchPokedex(route.params.area as string, (Number(route.params.id) - 1).toString()),
+  {
+    default: () => createEmptyPokedexResponse(),
+    server: false  // サーバー側実行を無効化
+  }
 );
 
-const { data: nextData } = await useAsyncData<PokedexResponse>(
+const { data: nextData, refresh: refreshNext } = await useAsyncData<PokedexResponse>(
   `pokedex-${route.params.area}-${route.params.id}-next`,
-  () => fetchPokedex(route.params.area as string, (Number(route.params.id) + 1).toString())
+  () => fetchPokedex(route.params.area as string, (Number(route.params.id) + 1).toString()),
+  {
+    default: () => createEmptyPokedexResponse(),
+    server: false  // サーバー側実行を無効化
+  }
 );
+
+console.log(`[Main] pokedexData.value:`, pokedexData.value)
+console.log(`[Main] Creating reactive states...`)
 
 const pokedex = reactive(pokedexData.value ?? createEmptyPokedexResponse());
 const prev = reactive(prevData.value ?? createEmptyPokedexResponse());
 const next = reactive(nextData.value ?? createEmptyPokedexResponse());
 
+console.log(`[Main] Reactive pokedex:`, pokedex)
+console.log(`[Main] Reactive pokedex.result:`, pokedex.result)
+console.log(`[Main] Reactive pokedex.result.length:`, pokedex.result.length)
+
+// ポケモンデータが取得されたらリアクティブ状態を更新
+watch(pokedexData, (newData) => {
+  console.log(`[Watch] pokedexData changed:`, newData)
+  if (newData && newData.result && newData.result.length > 0) {
+    console.log(`[Watch] Updating reactive state with new data:`, newData.result)
+    Object.assign(pokedex, newData)
+    // 画像パス(src)を最新データに合わせて再設定する
+    for (const status of pokedex.result) {
+      status.src = `/img/pokedex/${status.id}.png`
+    }
+  }
+}, { immediate: true })
+
 if (pokedexData.value) {
+  console.log(`[Main] Processing type compatibility for ${pokedex.result.length} items`)
   for (const status of pokedex.result) {
     status.type_compatibility = await fetchTypeCompatibility(status.type1, status.type2, route.params.area as string)
   }
