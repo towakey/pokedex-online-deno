@@ -97,11 +97,11 @@
                   <h2 class="responsive-text-name">{{ item.name[personal.language] }}</h2>
                 </v-card-title>
                 <v-card-text width="auto">
-                  <div class="responsive-text">分類　　　　　{{ item.classification[personal.language] }}</div>
-                  <div class="responsive-text">図鑑番号　　　No.{{ ('0000' + item.no).slice(-4) }}</div>
-                  <div class="responsive-text">全国図鑑番号　No.{{ ('0000' + item.globalNo).slice(-4) }}</div>
-                  <div class="responsive-text">たかさ　　　　　{{ item.height }} m</div>
-                  <div class="responsive-text">おもさ　　　　　{{ item.weight }} kg</div>
+                  <div class="responsive-text">分類　　　　{{ item.classification[personal.language] }}</div>
+                  <!-- <div class="responsive-text">図鑑番号　　　No.{{ ('0000' + item.no).slice(-4) }}</div> -->
+                  <div class="responsive-text">図鑑番号　　No.{{ ('0000' + item.globalNo).slice(-4) }}</div>
+                  <div class="responsive-text">たかさ　　　{{ item.height }} m</div>
+                  <div class="responsive-text">おもさ　　　{{ item.weight }} kg</div>
                 </v-card-text>
               </v-card>
             </v-col>

@@ -16,6 +16,12 @@ export default defineAppConfig({
 
   // リージョン図鑑データ
   regionPokedex: {
+    global: {
+      name: {
+        jpn: '全国図鑑',
+        eng: 'global'
+      }
+    },
     kanto: {
       name: {
         jpn: 'カントー図鑑',
