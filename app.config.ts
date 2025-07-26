@@ -365,13 +365,13 @@ export default defineAppConfig({
   },
 
   // バージョン説明（ダミーデータ）
-  verDescription: {
-    green: {
-      title: 'ポケットモンスター 緑',
-      description: '初代ポケットモンスターの緑バージョン',
-      image: 'green'
-    }
-  },
+  // verDescription: {
+  //   green: {
+  //     title: 'ポケットモンスター 緑',
+  //     description: '初代ポケットモンスターの緑バージョン',
+  //     image: 'green'
+  //   }
+  // },
 
   typeList: {
     'kanto': 1,
@@ -394,5 +394,73 @@ export default defineAppConfig({
     'paldea': 3,
     'kitakami': 3,
     'blueberry': 3
-  }
+  },
+  verIcon: {
+    "red": "ver01_00_Red_JP.png",
+    "green": "ver01_01_Green_JP.png",
+    "blue": "ver01_10_Blue_JP.png",
+    "pikachu": "ver01_20_Pikachu_JP.png",
+    "gold": "ver02_00_Gold.png",
+    "silver": "ver02_01_Silver.png",
+    "crystal": "ver02_10_Crystal.png",
+    "ruby": "ver03_00_Ruby.png",
+    "sapphire": "ver03_00_Sapphire.png",
+    "emerald": "ver03_20_Emerald.png",
+    "firered": "ver03_10_FireRed.png",
+    "leafgreen": "ver03_11_LeafGreen.png",
+    "diamond": "ver04_00_Diamond.png",
+    "pearl": "ver04_01_Pearl.png",
+    "platinum": "ver04_10_Platinum.png",
+    "heartgold": "ver04_20_HeartGold.png",
+    "soulsilver": "ver04_21_SoulSilver.png",
+    "black": "ver05_00_Black.png",
+    "white": "ver05_01_White.png",
+    "black2": "ver05_10_Black2.png",
+    "white2": "ver05_11_White2.png",
+    "x": "ver06_00_X.png",
+    "y": "ver06_01_Y.png",
+    "sun": "ver07_00_Sun.png",
+    "moon": "ver07_01_Moon.png",
+    "ultrasun": "ver07_10_UltraSun.png",
+    "ultramoon": "ver07_11_UltraMoon.png",
+    "sword": "ver08_00_Sword.png",
+    "shield": "ver08_01_Shield.png",
+    "legendsarceus": "ver08_20_LegendsArceus.png",
+    "scarlet": "ver09_00_Scarlet.png",
+    "violet": "ver09_01_Violet.png",
+  },
+  verDescription: {
+    "red": {title: "ポケットモンスター 赤", shortTitle: "赤", description: "発売日：1996年02月27日"},
+    "green": {title: "ポケットモンスター 緑", shortTitle: "緑", description: "発売日：1996年02月27日", image: "01_01"},
+    "blue": {title: "ポケットモンスター 青", shortTitle: "青", description: "発売日：1996年10月15日"},
+    "pikachu": {title: "ポケットモンスター ピカチュウ", shortTitle: "ピカチュウ", description: "発売日：1998年09月12日"},
+    "gold": {title: "ポケットモンスター 金", shortTitle: "金", description: "発売日：1999年11月21日"},
+    "silver": {title: "ポケットモンスター 銀", shortTitle: "銀", description: "発売日：1999年11月21日"},
+    "crystal": {title: "ポケットモンスター クリスタル", shortTitle: "クリスタル", description: "発売日：2000年12月14日"},
+    "ruby": {title: "ポケットモンスター ルビー", shortTitle: "ルビー", description: "発売日：2002年11月21日"},
+    "sapphire": {title: "ポケットモンスター サファイア", shortTitle: "サファイア", description: "発売日：2002年11月21日"},
+    "emerald": {title: "ポケットモンスター エメラルド", shortTitle: "エメラルド", description: "発売日：2004年09月16日"},
+    "firered": {title: "ポケットモンスター ファイアレッド", shortTitle: "ファイアレッド", description: "発売日：2004年1月29日"},
+    "leafgreen": {title: "ポケットモンスター リーフグリーン", shortTitle: "リーフグリーン", description: "発売日：2004年1月29日"},
+    "diamond": {title: "ポケットモンスター ダイアモンド", shortTitle: "ダイアモンド", description: "発売日：2006年09月28日"},
+    "pearl": {title: "ポケットモンスター パール", shortTitle: "パール", description: "発売日：2006年09月28日"},
+    "platinum": {title: "ポケットモンスター プラチナ", shortTitle: "プラチナ", description: "発売日：2008年09月13日"},
+    "heartgold": {title: "ポケットモンスター ハートゴールド", shortTitle: "ハートゴールド", description: "発売日：2009年09月12日"},
+    "soulsilver": {title: "ポケットモンスター ソウルシルバー", shortTitle: "ソウルシルバー", description: "発売日：2009年09月12日"},
+    "black": {title: "ポケットモンスター ブラック", shortTitle: "ブラック", description: "発売日：2010年09月18日"},
+    "white": {title: "ポケットモンスター ホワイト", shortTitle: "ホワイト", description: "発売日：2010年09月18日"},
+    "black2": {title: "ポケットモンスター ブラック2", shortTitle: "ブラック2", description: "発売日：2012年06月23日"},
+    "white2": {title: "ポケットモンスター ホワイト2", shortTitle: "ホワイト2", description: "発売日：2012年06月23日"},
+    "x": {title: "ポケットモンスター X", shortTitle: "X", description: "発売日：2013年10月12日"},
+    "y": {title: "ポケットモンスター Y", shortTitle: "Y", description: "発売日：2013年10月12日"},
+    "sun": {title: "ポケットモンスター サン", shortTitle: "サン", description: "発売日：2014年11月21日"},
+    "moon": {title: "ポケットモンスター ムーン", shortTitle: "ムーン", description: "発売日：2014年11月21日"},
+    "ultrasun": {title: "ポケットモンスター ウルトラサン", shortTitle: "ウルトラサン", description: "発売日：2016年11月18日"},
+    "ultramoon": {title: "ポケットモンスター ウルトラムーン", shortTitle: "ウルトラムーン", description: "発売日：2016年11月18日"},
+    "sword": {title: "ポケットモンスター ソード", shortTitle: "ソード", description: "発売日：2019年11月15日"},
+    "shield": {title: "ポケットモンスター シールド", shortTitle: "シールド", description: "発売日：2019年11月15日"},
+    "legendsarceus": {title: "ポケモン Legends アルセウス", shortTitle: "アルセウス", description: "発売日：2022年01月28日"},
+    "scarlet": {title: "ポケットモンスター スカーレット", shortTitle: "スカーレット", description: "発売日：2022年11月18日"},
+    "violet": {title: "ポケットモンスター バイオレット", shortTitle: "バイオレット", description: "発売日：2022年11月18日"},
+  },
 })
