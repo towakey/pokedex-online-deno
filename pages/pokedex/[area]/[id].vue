@@ -637,6 +637,26 @@ watch(pokedexData, (newData) => {
   }
 }, { immediate: true })
 
+// prevData が更新されたら prev のリアクティブ状態を更新
+watch(prevData, (newData) => {
+  if (newData && newData.result && newData.result.length > 0) {
+    Object.assign(prev, newData)
+    for (const status of prev.result) {
+      status.src = `/img/pokedex/${status.id}.png`
+    }
+  }
+}, { immediate: true })
+
+// nextData が更新されたら next のリアクティブ状態を更新
+watch(nextData, (newData) => {
+  if (newData && newData.result && newData.result.length > 0) {
+    Object.assign(next, newData)
+    for (const status of next.result) {
+      status.src = `/img/pokedex/${status.id}.png`
+    }
+  }
+}, { immediate: true })
+
 if (pokedexData.value) {
   console.log(`[Main] Processing type compatibility for ${pokedex.result.length} items`)
   for (const status of pokedex.result) {
