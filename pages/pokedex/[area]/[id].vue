@@ -113,6 +113,48 @@
           </v-row>
         </v-carousel-item>
       </v-carousel>
+      <v-card
+      v-if="pokedex.result.length > 1"
+      elevation="0"
+      style="margin-top: 20px;background-color: white;"
+      variant="outlined"
+      >
+        <v-card-actions>
+          <v-btn @click="prevModel()">＜</v-btn>
+          <v-spacer />
+          <h2>{{ 
+            pokedex.result[model].gigantamax && pokedex.result[model].form ? `${pokedex.result[model].gigantamax} ${pokedex.result[model].form}` : 
+            pokedex.result[model].region && pokedex.result[model].form ? `${pokedex.result[model].region} ${pokedex.result[model].form}` : 
+            pokedex.result[model].mega_evolution ? pokedex.result[model].mega_evolution : 
+            pokedex.result[model].gigantamax ? pokedex.result[model].gigantamax : 
+            pokedex.result[model].region ? pokedex.result[model].region : 
+            pokedex.result[model].form ? pokedex.result[model].form : 
+            pokedex.result[model].name?.jpn || ''
+          }}</h2>
+          <v-spacer />
+          <v-btn @click="nextModel()">＞</v-btn>
+        </v-card-actions>
+      </v-card>
+      <v-carousel
+      :show-arrows="false"
+      hide-delimiters
+      v-model="model" 
+      height="auto"
+      style="margin-top: 20px;"
+      >
+        <v-carousel-item
+          v-for="(item, index) in pokedex.result" :key="index"
+        >
+          {{ item }}
+          <!-- 各バージョンの図鑑説明とリンクを表示 -->
+          <PokedexVersionDescription 
+            v-if="route.params.area == 'global' && pokedex.result.length > 0"
+            :existsPokedex="existsPokedex"
+            :getDescriptionLines="getDescriptionLines"
+            :openVersionDialog="openVersionDialog"
+          />
+        </v-carousel-item>
+      </v-carousel>
     </v-container>
   </div>
 
@@ -282,8 +324,8 @@
           }" />
           <AbilityView :pokedex="pokedex.result[index]" :area="route.params.area" />
           <DescriptionView :description="pokedex.result[index].description" :title="metaTitle" />
-          <wazaView :wazaData="pokedex.result[index]" :area="route.params.area" />
-          <evolveView :evolveData="pokedex.result[index]" :area="route.params.area" />
+          <!-- <wazaView :wazaData="pokedex.result[index]" :area="route.params.area" /> -->
+          <!-- <evolveView :evolveData="pokedex.result[index]" :area="route.params.area" /> -->
         </v-carousel-item>
       </v-carousel>
     </v-container>
@@ -291,6 +333,20 @@
   </v-row>
 </v-container>
 </div>
+<v-dialog v-model="isVersionDialogVisible" max-width="500">
+  <v-card v-if="selectedVersionInfo">
+    <v-card-title class="text-h5">
+      {{ selectedVersionInfo.ver }}
+    </v-card-title>
+    <v-card-text>
+      <p>{{ selectedVersionInfo.description }}</p>
+    </v-card-text>
+    <v-card-actions>
+      <v-spacer></v-spacer>
+      <v-btn color="primary" @click="isVersionDialogVisible = false">閉じる</v-btn>
+    </v-card-actions>
+  </v-card>
+</v-dialog>
 </template>
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
@@ -569,6 +625,64 @@ const fetchTypeCompatibility = async (type1: string, type2: string, region: stri
   }
 }
 
+const fetchType = async (type1: string, type2: string) => {
+  try {
+    const data = await $fetch(
+      `http://localhost/pokedex/pokedex.php?mode=type&type1=${type1}&type2=${type2}`
+    )
+    return data
+  } catch (error) {
+    console.error('[Main] fetchType error:', error)
+    return null
+  }
+}
+
+const fetchExists = async (pokeId: number | string) => {
+  for (const item of appConfig.pokedex_list) {
+    if (item.area === 'global') continue
+    try {
+      const data = await $fetch(
+        `http://localhost/pokedex/pokedex.php?mode=exists&region=${item.area}&id=${pokeId}`
+      )
+      existsPokedex[item.area] = {
+        query: { id: String(pokeId), region: item.area, mode: 'exists' },
+        result: data?.result ?? -1
+      }
+    } catch (error) {
+      existsPokedex[item.area] = {
+        query: { id: String(pokeId), region: item.area, mode: 'exists' },
+        result: -1
+      }
+    }
+  }
+}
+
+const fetchDescription = async (pokeId: number | string) => {
+  try {
+    const data = await $fetch(
+      `http://localhost/pokedex/pokedex.php?mode=description&id=${pokeId}`
+    )
+    
+    // descriptionRows にデータを設定
+    descriptionRows.splice(0, descriptionRows.length, ...data.result)
+    
+    // descriptions にデータを設定（グループごと）
+    const groups: { [key: string]: string } = {}
+    for (const row of data.result) {
+      const group = getGameGroup(row.ver)
+      if (group && !groups[group]) {
+        groups[group] = row.description
+      }
+    }
+    Object.assign(descriptions, groups)
+    
+    return data
+  } catch (error) {
+    console.error('[Main] fetchDescription error:', error)
+    return null
+  }
+}
+
 definePageMeta({
   title: "Pokedex-Online"
 })
@@ -612,6 +726,57 @@ const { data: nextData, refresh: refreshNext } = await useAsyncData<PokedexRespo
     server: false  // サーバー側実行を無効化
   }
 );
+
+// バージョンキーからゲームグループ名を取得
+const getGameGroup = (verKey: string): string => {
+  const entry = Object.entries(appConfig.Region2Game).find(([_, versions]) => 
+    versions.some((v: string) => v.toLowerCase() === verKey.toLowerCase())
+  );
+  return entry ? entry[0] : '';
+};
+
+// area からゲームグループ名を取得
+const getGroupByArea = (area: string): string => {
+  // appConfig.pokedex2gameVersion から area に対応するゲームバージョンキーを取得
+  const versions = appConfig.pokedex2gameVersion[area];
+  if (!versions || versions.length === 0) return '';
+  
+  // 最初のバージョンキーからゲームグループを取得
+  return getGameGroup(versions[0]);
+};
+
+// 指定リージョン(area) から図鑑説明を取得するヘルパー（最初の1行）
+const getDescriptionLines = (area: string) => {
+  // appConfig.pokedex_list から area に対応するタイトルを取得
+  const pokedexTitle = (appConfig.pokedex_list.find((p: any) => p.area === area)?.title) ?? ''
+  if (!pokedexTitle) return []
+  
+  // タイトルから基本部分を抽出（括弧があればその前まで）
+  const baseTitle = pokedexTitle.split('(')[0].trim()
+  
+  // area に対応するゲームグループを取得
+  const allowedGroup = getGroupByArea(area)
+  
+  // descriptionRows から該当する行をフィルタリング
+  return descriptionRows
+    .filter(r => {
+      // pokedex が完全一致するか、または基本タイトルで始まるか
+      if (!(r.pokedex === pokedexTitle || r.pokedex.startsWith(baseTitle))) return false
+      
+      // グループ制限がない場合はすべて許可
+      if (!allowedGroup) return true
+      
+      // バージョンキーからゲームグループを取得して比較
+      const group1 = getGameGroup(r.version)
+      const group2 = getGameGroup(r.ver)
+      return group1 === allowedGroup || group2 === allowedGroup
+    })
+    .map(r => ({
+      ver: r.ver,
+      verJpn: appConfig.verJpnMap[r.ver] ?? r.ver,
+      description: r.description
+    }))
+}
 
 console.log(`[Main] pokedexData.value:`, pokedexData.value)
 console.log(`[Main] Creating reactive states...`)
@@ -674,16 +839,6 @@ const globalNo = computed(() => route.params.area === 'global'
   ? Number(route.params.id)
   : (pokedex.result[0]?.globalNo ?? Number(route.params.id)))
 
-const existsPokedex = reactive<{ [key: string]: ExistsResponse }>({
-  global: {
-    query: { id: String(globalNo), region: 'global', mode: 'exists' },
-    result: Number(globalNo)
-  }
-})
-
-// const regionList = appConfig.pokedex_list.filter(item => item.area !== 'global')
-// const existsRegionList = appConfig.pokedex_list
-
 const id = computed(() => pokedex.result[0]?.id ?? Number(route.params.id))
 // const paddedId = String(id).padStart(4, '0')
 
@@ -704,6 +859,11 @@ const breadcrumbs = computed(() => {
 for(let pokedex_status in pokedex.result){
   pokedex.result[pokedex_status].src = '/img/pokedex/' + pokedex.result[pokedex_status].id + '.png'
 }
+
+// バージョンごとの図鑑説明を保持（グループ版）
+const descriptions = reactive<{ [key: string]: string }>({})
+// API で取得した行データを保持（ver 単位）
+const descriptionRows = reactive<Array<{ ver: string; version: string; pokedex: string; description: string }>>([])
 
 const metaImage = ref('');
 if (pokedex.result.length) {

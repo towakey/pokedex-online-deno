@@ -31,7 +31,7 @@
 <script setup lang="ts">
 import type { RegionPokedexKey } from '~~/types/region'
 import { computed } from 'vue'
-import { useAppConfig } from '#app'
+// import { useAppConfig } from '#app'
 
 definePageMeta({
   pageTitle: 'ポケモン図鑑'
