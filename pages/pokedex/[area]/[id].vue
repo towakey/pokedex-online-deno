@@ -145,13 +145,13 @@
         <v-carousel-item
           v-for="(item, index) in pokedex.result" :key="index"
         >
-          {{ item }}
           <!-- 各バージョンの図鑑説明とリンクを表示 -->
           <PokedexVersionDescription 
             v-if="route.params.area == 'global' && pokedex.result.length > 0"
-            :existsPokedex="existsPokedex"
-            :getDescriptionLines="getDescriptionLines"
-            :openVersionDialog="openVersionDialog"
+            :area="route.params.area"
+            :exists-pokedex="existsPokedex[item.id] || {}"
+            :get-description-lines="getDescriptionLines"
+            :open-version-dialog="openVersionDialog"
           />
         </v-carousel-item>
       </v-carousel>
@@ -349,10 +349,13 @@
 </v-dialog>
 </template>
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 
 const isVersionDialogVisible = ref(false)
 const selectedVersionInfo = ref<any>(null)
+
+// ポケモン図鑑存在情報保持用（ポケモンID・リージョン別）
+const existsPokedex = reactive<{ [pokemonId: string]: { [area: string]: any } }>({})
 
 const openVersionDialog = (line: any) => {
   selectedVersionInfo.value = line
@@ -475,7 +478,8 @@ const fetchPokedex = async (area: string, id: number | string) => {
   }
   
   try {
-    const apiUrl = `/api/pokedex/pokedex.php?region=${area}&no=${noParam}`
+    const baseUrl = process.server ? config.public.baseUrl || 'http://localhost:3001' : ''
+    const apiUrl = `${baseUrl}/api/pokedex/pokedex.php?region=${area}&no=${noParam}`
     
     console.log(`[fetchPokedex] Client mode - Fetching from: ${apiUrl}`)
     
@@ -605,7 +609,7 @@ const fetchTypeCompatibility = async (type1: string, type2: string, region: stri
     }
     
     // SSR時は絶対URLを使用
-    const baseUrl = process.server ? config.public.baseUrl || 'http://localhost:3000' : ''
+    const baseUrl = process.server ? config.public.baseUrl || 'http://localhost:3001' : ''
     const apiUrl = `${baseUrl}/api/pokedex/type.php?${params.toString()}`
     
     console.log(`[fetchTypeCompatibility] Fetching from: ${apiUrl} (server: ${process.server})`)
@@ -626,9 +630,10 @@ const fetchTypeCompatibility = async (type1: string, type2: string, region: stri
 }
 
 const fetchType = async (type1: string, type2: string) => {
+  const baseUrl = process.server ? config.public.baseUrl || 'http://localhost:3001' : ''
   try {
     const data = await $fetch(
-      `http://localhost/pokedex/pokedex.php?mode=type&type1=${type1}&type2=${type2}`
+      `${baseUrl}/api/pokedex/type.php?mode=type&type1=${type1}&type2=${type2}`
     )
     return data
   } catch (error) {
@@ -638,19 +643,27 @@ const fetchType = async (type1: string, type2: string) => {
 }
 
 const fetchExists = async (pokeId: number | string) => {
-  for (const item of appConfig.pokedex_list) {
-    if (item.area === 'global') continue
+  for (const item of appConfig.regionPokedexOrder) {
+    if (item === 'global') continue
     try {
+      const baseUrl = process.server ? config.public.baseUrl || 'http://localhost:3001' : ''
       const data = await $fetch(
-        `http://localhost/pokedex/pokedex.php?mode=exists&region=${item.area}&id=${pokeId}`
+        `${baseUrl}/api/pokedex/pokedex.php?mode=exists&region=${item}&id=${pokeId}`
       )
-      existsPokedex[item.area] = {
-        query: { id: String(pokeId), region: item.area, mode: 'exists' },
+      // pokeId ごとに area データを格納
+      if (!existsPokedex[pokeId]) {
+        existsPokedex[pokeId] = {}
+      }
+      existsPokedex[pokeId][item] = {
+        query: { id: String(pokeId), region: item, mode: 'exists' },
         result: data?.result ?? -1
       }
     } catch (error) {
-      existsPokedex[item.area] = {
-        query: { id: String(pokeId), region: item.area, mode: 'exists' },
+      if (!existsPokedex[pokeId]) {
+        existsPokedex[pokeId] = {}
+      }
+      existsPokedex[pokeId][item] = {
+        query: { id: String(pokeId), region: item, mode: 'exists' },
         result: -1
       }
     }
@@ -659,8 +672,9 @@ const fetchExists = async (pokeId: number | string) => {
 
 const fetchDescription = async (pokeId: number | string) => {
   try {
+    const baseUrl = process.server ? config.public.baseUrl || 'http://localhost:3001' : ''
     const data = await $fetch(
-      `http://localhost/pokedex/pokedex.php?mode=description&id=${pokeId}`
+      `${baseUrl}/api/pokedex/pokedex.php?mode=description&id=${pokeId}`
     )
     
     // descriptionRows にデータを設定
@@ -689,7 +703,19 @@ definePageMeta({
 let nameDialog = ref(false)
 let model = ref(0)
 
+// 初回マウント時に存在情報を取得
+onMounted(() => {
+  // fetchExists は pokedex データ取得後に実行する必要がある
+  // ここではまだ pokedex.result[0]?.id が未定なので、watch に任せる
+})
+
 watch(() => [route.params.area, route.params.id], () => {
+  // ページ遷移時は図鑑存在情報を再取得
+  // route.params.id はURLのIDで、pokedex.result[0]?.id は実際のポケモンID
+  // ここではURLのIDを使っておくが、pokedexデータ取得後に再度呼び出す方が正確
+  if (route.params.id) {
+    fetchExists(route.params.id as string)
+  }
   model.value = 0
 })
 
@@ -728,12 +754,14 @@ const { data: nextData, refresh: refreshNext } = await useAsyncData<PokedexRespo
 );
 
 // バージョンキーからゲームグループ名を取得
+// バージョンキーからゲームグループ名を取得
 const getGameGroup = (verKey: string): string => {
-  const entry = Object.entries(appConfig.Region2Game).find(([_, versions]) => 
-    versions.some((v: string) => v.toLowerCase() === verKey.toLowerCase())
-  );
-  return entry ? entry[0] : '';
-};
+  const entry = Object.entries(appConfig.games.region2game).find(([_, gameKey]) => {
+    // region2game は string なので単純比較で OK
+    return gameKey.toLowerCase() === verKey.toLowerCase()
+  })
+  return entry ? entry[0] : ''
+}
 
 // area からゲームグループ名を取得
 const getGroupByArea = (area: string): string => {
@@ -798,6 +826,14 @@ watch(pokedexData, (newData) => {
     // 画像パス(src)を最新データに合わせて再設定する
     for (const status of pokedex.result) {
       status.src = `/img/pokedex/${status.id}.png`
+    }
+    
+    // pokedex データ取得後に、すべてのポケモンに対して存在情報を再取得
+    for (const pokemon of pokedex.result) {
+      if (pokemon?.id) {
+        console.log(`[Watch] Fetching exists for ${pokemon.id}`)
+        fetchExists(pokemon.id)
+      }
     }
   }
 }, { immediate: true })
