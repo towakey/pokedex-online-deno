@@ -150,7 +150,7 @@
             v-if="route.params.area == 'global' && pokedex.result.length > 0"
             :area="route.params.area"
             :exists-pokedex="existsPokedex[item.id] || {}"
-            :get-description-lines="getDescriptionLines"
+            :get-description-lines="(area) => getDescriptionLines(area, item.id)"
             :open-version-dialog="openVersionDialog"
           />
         </v-carousel-item>
@@ -674,15 +674,23 @@ const fetchDescription = async (pokeId: number | string) => {
   try {
     const baseUrl = process.server ? config.public.baseUrl || 'http://localhost:3001' : ''
     const data = await $fetch(
-      `${baseUrl}/api/pokedex/pokedex.php?mode=description&id=${pokeId}`
+      `${baseUrl}/api/pokedex/pokedex.php?mode=description&id=${pokeId}&language=jpn`
     )
     
-    // descriptionRows にデータを設定
-    descriptionRows.splice(0, descriptionRows.length, ...data.result)
+    // data と data.data のバリデーション（description モードのレスポンス構造）
+    if (!data || !data.success || !Array.isArray(data.data)) {
+      console.warn(`[Main] fetchDescription: Invalid data format for pokeId ${pokeId}`, data)
+      // 無効なデータの場合、空の配列で descriptionRows をクリア
+      descriptionRows[String(pokeId)] = []
+      return { result: [] }
+    }
+    console.log(`[Main] fetchDescription: Data for pokeId ${pokeId}`, data)
+    // descriptionRows にポケモンIDごとにデータを設定
+    descriptionRows[String(pokeId)] = [...data.data]
     
     // descriptions にデータを設定（グループごと）
     const groups: { [key: string]: string } = {}
-    for (const row of data.result) {
+    for (const row of data.data) {
       const group = getGameGroup(row.ver)
       if (group && !groups[group]) {
         groups[group] = row.description
@@ -693,7 +701,9 @@ const fetchDescription = async (pokeId: number | string) => {
     return data
   } catch (error) {
     console.error('[Main] fetchDescription error:', error)
-    return null
+    // エラー時も空の配列で descriptionRows をクリア
+    descriptionRows[String(pokeId)] = []
+    return { result: [] }
   }
 }
 
@@ -773,11 +783,17 @@ const getGroupByArea = (area: string): string => {
   return getGameGroup(versions[0]);
 };
 
-// 指定リージョン(area) から図鑑説明を取得するヘルパー（最初の1行）
-const getDescriptionLines = (area: string) => {
+// 指定リージョン(area) とポケモンIDから図鑑説明を取得するヘルパー（最初の1行）
+const getDescriptionLines = (area: string, pokemonId?: string) => {
   // appConfig.pokedex_list から area に対応するタイトルを取得
   const pokedexTitle = (appConfig.pokedex_list.find((p: any) => p.area === area)?.title) ?? ''
   if (!pokedexTitle) return []
+  
+  // ポケモンIDが指定されていない場合は空配列を返す
+  if (!pokemonId || !descriptionRows[pokemonId]) {
+    console.warn(`[getDescriptionLines] No description data for pokemonId: ${pokemonId}`)
+    return []
+  }
   
   // タイトルから基本部分を抽出（括弧があればその前まで）
   const baseTitle = pokedexTitle.split('(')[0].trim()
@@ -785,8 +801,9 @@ const getDescriptionLines = (area: string) => {
   // area に対応するゲームグループを取得
   const allowedGroup = getGroupByArea(area)
   
-  // descriptionRows から該当する行をフィルタリング
-  return descriptionRows
+  // 指定されたポケモンIDの descriptionRows から該当する行をフィルタリング
+  console.log(`[getDescriptionLines] Description data for ${pokemonId}:`, descriptionRows[pokemonId])
+  return descriptionRows[pokemonId]
     .filter(r => {
       // pokedex が完全一致するか、または基本タイトルで始まるか
       if (!(r.pokedex === pokedexTitle || r.pokedex.startsWith(baseTitle))) return false
@@ -801,7 +818,8 @@ const getDescriptionLines = (area: string) => {
     })
     .map(r => ({
       ver: r.ver,
-      verJpn: appConfig.verJpnMap[r.ver] ?? r.ver,
+      // verJpn: appConfig.verJpnMap[r.ver] ?? r.ver,
+      verJpn: r.ver,
       description: r.description
     }))
 }
@@ -828,11 +846,13 @@ watch(pokedexData, (newData) => {
       status.src = `/img/pokedex/${status.id}.png`
     }
     
-    // pokedex データ取得後に、すべてのポケモンに対して存在情報を再取得
+    // pokedex データ取得後に、すべてのポケモンに対して存在情報と図鑑説明を再取得
     for (const pokemon of pokedex.result) {
       if (pokemon?.id) {
         console.log(`[Watch] Fetching exists for ${pokemon.id}`)
         fetchExists(pokemon.id)
+        console.log(`[Watch] Fetching description for ${pokemon.id}`)
+        fetchDescription(pokemon.id)
       }
     }
   }
@@ -898,8 +918,8 @@ for(let pokedex_status in pokedex.result){
 
 // バージョンごとの図鑑説明を保持（グループ版）
 const descriptions = reactive<{ [key: string]: string }>({})
-// API で取得した行データを保持（ver 単位）
-const descriptionRows = reactive<Array<{ ver: string; version: string; pokedex: string; description: string }>>([])
+// API で取得した行データを保持（ポケモンIDごと、ver 単位）
+const descriptionRows = reactive<{ [pokemonId: string]: Array<{ ver: string; version: string; pokedex: string; description: string }> }>({})
 
 const metaImage = ref('');
 if (pokedex.result.length) {
