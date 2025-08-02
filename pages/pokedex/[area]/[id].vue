@@ -785,41 +785,52 @@ const getGroupByArea = (area: string): string => {
 
 // 指定リージョン(area) とポケモンIDから図鑑説明を取得するヘルパー（最初の1行）
 const getDescriptionLines = (area: string, pokemonId?: string) => {
-  // appConfig.pokedex_list から area に対応するタイトルを取得
-  const pokedexTitle = (appConfig.pokedex_list.find((p: any) => p.area === area)?.title) ?? ''
-  if (!pokedexTitle) return []
-  
   // ポケモンIDが指定されていない場合は空配列を返す
   if (!pokemonId || !descriptionRows[pokemonId]) {
     console.warn(`[getDescriptionLines] No description data for pokemonId: ${pokemonId}`)
     return []
   }
   
-  // タイトルから基本部分を抽出（括弧があればその前まで）
-  const baseTitle = pokedexTitle.split('(')[0].trim()
+  // area に対応するregionPokedexのgameVersion配列と日本語名を取得
+  const areaGameVersions = appConfig.regionPokedex[area]?.gameVersion
+  const areaJpnName = appConfig.regionPokedex[area]?.name?.jpn
   
-  // area に対応するゲームグループを取得
-  const allowedGroup = getGroupByArea(area)
+  if (!areaGameVersions || !Array.isArray(areaGameVersions)) {
+    console.warn(`[getDescriptionLines] No gameVersion array found for area: ${area}`)
+    return []
+  }
+  
+  if (!areaJpnName) {
+    console.warn(`[getDescriptionLines] No regionPokedex entry found for area: ${area}`)
+    return []
+  }
   
   // 指定されたポケモンIDの descriptionRows から該当する行をフィルタリング
   console.log(`[getDescriptionLines] Description data for ${pokemonId}:`, descriptionRows[pokemonId])
+  console.log(`[getDescriptionLines] Filtering for area: ${area}, gameVersions:`, areaGameVersions, 'areaJpnName:', areaJpnName)
+  
   return descriptionRows[pokemonId]
     .filter(r => {
-      // pokedex が完全一致するか、または基本タイトルで始まるか
-      if (!(r.pokedex === pokedexTitle || r.pokedex.startsWith(baseTitle))) return false
+      // 1. line.verがappConfig.regionPokedex[area].gameVersion配列に含まれるかチェック
+      const isVersionMatched = areaGameVersions.includes(r.ver)
+      if (!isVersionMatched) {
+        console.log(`[getDescriptionLines] Version not in gameVersions: ${r.ver} not in`, areaGameVersions)
+        return false
+      }
       
-      // グループ制限がない場合はすべて許可
-      if (!allowedGroup) return true
+      // 2. pokedex値とappConfig.regionPokedex[area]?.name?.jpnが一致するかチェック
+      if (r.pokedex !== areaJpnName) {
+        console.log(`[getDescriptionLines] Pokedex mismatch: ${r.pokedex} !== ${areaJpnName}`)
+        return false
+      }
       
-      // バージョンキーからゲームグループを取得して比較
-      const group1 = getGameGroup(r.version)
-      const group2 = getGameGroup(r.ver)
-      return group1 === allowedGroup || group2 === allowedGroup
+      return true
     })
     .map(r => ({
       ver: r.ver,
       // verJpn: appConfig.verJpnMap[r.ver] ?? r.ver,
       verJpn: r.ver,
+      pokedex: r.pokedex,
       description: r.description
     }))
 }

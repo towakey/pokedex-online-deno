@@ -6,10 +6,12 @@ export type RegionPokedexKey = 'global' | 'kanto' | 'johto' | 'hoenn' | 'kanto_f
 
 // リージョン図鑑の値の型
 export interface RegionPokedexItem {
+  disp: string
   name: {
     jpn: string
     eng: string
   }
+  gameVersion: string[]
 }
 
 export type RegionPokedex = Record<RegionPokedexKey, RegionPokedexItem>

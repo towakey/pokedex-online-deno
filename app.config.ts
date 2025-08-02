@@ -20,127 +20,168 @@ export default defineAppConfig({
       name: {
         jpn: '全国図鑑',
         eng: 'global'
-      }
+      },
+      gameVersion: [],
     },
     kanto: {
+      disp: "カントー図鑑",
       name: {
         jpn: 'カントー図鑑',
         eng: 'kanto'
-      }
+      },
+      gameVersion: ["red", "green", "blue", "pikachu"],
     },
     johto: {
+      disp: "ジョウト図鑑",
       name: {
         jpn: 'ジョウト図鑑',
         eng: 'johto'
-      }
+      },
+      gameVersion: ["gold", "silver", "crystal"],
     },
     hoenn: {
+      disp: "ホウエン図鑑",
       name: {
         jpn: 'ホウエン図鑑',
         eng: 'hoenn'
-      }
+      },
+      gameVersion: ["ruby", "sapphire", "emerald"],
     },
     kanto_frlg: {
+      disp: "カントー図鑑(ファイアレッド・リーフグリーン)",
       name: {
-        jpn: 'カントー図鑑(ファイアレッド・リーフグリーン)',
+        jpn: 'カントー図鑑',
         eng: 'kanto(firered / leafgreen)'
-      }
+      },
+      gameVersion: ["firered", "leafgreen"],
     },
     sinnoh: {
+      disp: "シンオウ図鑑",
       name: {
         jpn: 'シンオウ図鑑',
         eng: 'sinnoh'
-      }
+      },
+      gameVersion: ["diamond", "pearl", "platinum"],
     },
     johto_hgss: {
+      disp: "ジョウト図鑑(ハートゴールド・ソウルシルバー)",
       name: {
-        jpn: 'ジョウト図鑑(ハートゴールド・ソウルシルバー)',
+        jpn: 'ジョウト図鑑',
         eng: 'johto(heartgold / soulsilver)'
-      }
+      },
+      gameVersion: ["heartgold", "soulsilver"],
     },
     unova_bw: {
+      disp: "イッシュ図鑑",
       name: {
-        jpn: 'イッシュ図鑑(ブラック・ホワイト)',
+        jpn: 'イッシュ図鑑',
         eng: 'unova(black / white)'
-      }
+      },
+      gameVersion: ["black", "white"],
     },
     unova_b2w2: {
+      disp: "イッシュ図鑑(ブラック2・ホワイト2)",
       name: {
-        jpn: 'イッシュ図鑑(ブラック2・ホワイト2)',
+        jpn: 'イッシュ図鑑',
         eng: 'unova(black2 / white2)'
-      }
+      },
+      gameVersion: ["black2", "white2"],
     },
     central_kalos: {
+      disp: "セントラルカロス図鑑",
       name: {
         jpn: 'セントラルカロス図鑑',
         eng: 'central_kalos'
-      }
+      },
+      gameVersion: ["x", "y"],
     },
     coast_kalos: {
+      disp: "コーストカロス図鑑",
       name: {
         jpn: 'コーストカロス図鑑',
         eng: 'coast_kalos'
-      }
+      },
+      gameVersion: ["x", "y"],
     },
     mountain_kalos: {
+      disp: "マウンテンカロス図鑑",
       name: {
         jpn: 'マウンテンカロス図鑑',
         eng: 'mountain_kalos'
-      }
+      },
+      gameVersion: ["x", "y"],
     },
     alola_sm: {
+      disp: "アローラ図鑑",
       name: {
-        jpn: 'アローラ図鑑(サン・ムーン)',
+        jpn: 'アローラ図鑑',
         eng: 'alola(sun / moon)'
-      }
+      },
+      gameVersion: ["sun", "moon"],
     },
     alola_usum: {
+      disp: "アローラ図鑑(ウルトラサン・ウルトラムーン)",
       name: {
-        jpn: 'アローラ図鑑(ウルトラサン・ウルトラムーン)',
+        jpn: 'アローラ図鑑',
         eng: 'alola(ultra_sun / ultra_moon)'
-      }
+      },
+      gameVersion: ["ultrasun", "ultramoon"],
     },
     galar: {
+      disp: "ガラル図鑑",
       name: {
         jpn: 'ガラル図鑑',
         eng: 'galar'
-      }
+      },
+      gameVersion: ["sword", "shield"],
     },
     isle_of_armor: {
+      disp: "ヨロイ島図鑑",
       name: {
         jpn: 'ヨロイ島図鑑',
         eng: 'isle_of_armor'
-      }
+      },
+      gameVersion: ["sword", "shield"],
     },
     crown_tundra: {
+      disp: "カンムリ雪原図鑑",
       name: {
         jpn: 'カンムリ雪原図鑑',
         eng: 'crown_tundra'
-      }
+      },
+      gameVersion: ["sword", "shield"],
     },
     hisui: {
+      disp: "ヒスイ図鑑",
       name: {
         jpn: 'ヒスイ図鑑',
         eng: 'hisui'
-      }
+      },
+      gameVersion: ["legendsarceus"],
     },
     paldea: {
+      disp: "パルデア図鑑",
       name: {
         jpn: 'パルデア図鑑',
         eng: 'paldea'
-      }
+      },
+      gameVersion: ["scarlet", "violet"],
     },
     kitakami: {
+      disp: "キタカミ図鑑",
       name: {
         jpn: 'キタカミ図鑑',
         eng: 'kitakami'
-      }
+      },
+      gameVersion: ["scarlet", "violet"],
     },
     blueberry: {
+      disp: "ブルーベリー図鑑",
       name: {
         jpn: 'ブルーベリー図鑑',
         eng: 'blueberry'
-      }
+      },
+      gameVersion: ["scarlet", "violet"],
     }
   } satisfies RegionPokedex,
 
@@ -277,20 +318,6 @@ export default defineAppConfig({
       'legends-arceus': 'Legends アルセウス',
       'scarlet-violet': 'スカーレット・バイオレット'
     },
-    
-    // リージョン → 日本語名
-    region2jpn: {
-      kanto: 'カントー',
-      johto: 'ジョウト',
-      hoenn: 'ホウエン',
-      sinnoh: 'シンオウ',
-      unova: 'イッシュ',
-      kalos: 'カロス',
-      alola: 'アローラ',
-      galar: 'ガラル',
-      hisui: 'ヒスイ',
-      paldea: 'パルデア'
-    }
   },
   
   // メニュー設定

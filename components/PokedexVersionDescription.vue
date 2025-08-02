@@ -1,7 +1,7 @@
 <template>
   <v-row style="margin-top: 20px;">
     <v-col
-      v-for="(versions, area) in appConfig.pokedex2gameVersion"
+      v-for="(versions, area) in appConfig.regionPokedex"
       :key="area"
       cols="12"
       sm="12"
@@ -17,15 +17,16 @@
             :to="{ path: `/pokedex/${area}/${('0000' + existsPokedex[area]?.result).slice(-4)}` }"
             class="nuxtlink"
           >
-            {{ appConfig.games.region2jpn[area] ?? appConfig.regionPokedex[area]?.name?.jpn ?? area }}
+            {{ appConfig.regionPokedex[area]?.disp }}
           </NuxtLink>
           <span v-else>
-            {{ appConfig.regionPokedex[area]?.name?.jpn ?? area }}
+            {{ appConfig.regionPokedex[area]?.disp }}
           </span>
         </v-card-title>
         <v-card-text>
           <div v-if="getDescriptionLines(area).length">
             <div v-for="line in getDescriptionLines(area)" :key="line.ver">
+              {{ line }}
               <img
                 v-if="appConfig.verIcon[line.ver]"
                 :src="`/img/version/${appConfig.verIcon[line.ver]}`"

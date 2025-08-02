@@ -21,12 +21,25 @@ export default defineNuxtConfig({
   vite: {
     plugins: [vuetify()],
     server: {
+      // PCスリープ後のタイムアウトエラーを防ぐ設定
+      hmr: {
+        timeout: 30000 // 30秒に延長
+      },
+      // WebSocketの再接続設定を無効化（問題がある場合）
+      ws: false,
       proxy: {
         '/api': {
           target: 'http://localhost/pokedex-online-deno',
           changeOrigin: true
         }
       }
+    },
+    // モジュール解決のタイムアウトを延長
+    optimizeDeps: {
+      // 依存関係の事前バンドル設定
+      include: [],
+      // 強制的な依存関係の再バンドル
+      force: true
     }
   },
 
