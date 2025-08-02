@@ -253,8 +253,8 @@
                   <NuxtLink class="nuxtlink" :to="{path: `/pokedex/global/${item.globalNo}`}">
                     <div class="responsive-text">全国図鑑番号　No.{{ ('0000' + item.globalNo).slice(-4) }}</div>
                   </NuxtLink>
-                  <div class="responsive-text">たかさ　　　{{ item.height }} m</div>
-                  <div class="responsive-text">おもさ　　　{{ item.weight }} kg</div>
+                  <div class="responsive-text">たかさ　　　　{{ item.height }} m</div>
+                  <div class="responsive-text">おもさ　　　　{{ item.weight }} kg</div>
                 </v-card-title>
               </v-card>
             </v-col>

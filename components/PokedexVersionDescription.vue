@@ -3,10 +3,12 @@
     <v-col
       v-for="(versions, area) in appConfig.regionPokedex"
       :key="area"
+      v-if="area !== 'global'"
       cols="12"
       sm="12"
     >
       <v-card
+        v-if="area !== 'global'"
         elevation="0"
         :variant="existsPokedex[area]?.result > -1 ? 'outlined' : 'outlined'"
         :style="existsPokedex[area]?.result > -1 ? 'background-color: white;' : 'background-color: #f2f2f2;'"
