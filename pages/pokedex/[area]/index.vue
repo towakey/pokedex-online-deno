@@ -189,9 +189,16 @@ const { data: pokedex, pending, error } = await useAsyncData(
     try {
       let res: RawPokedexResponse;
       
+      // SSR時は絶対URLを使用、クライアント時は相対パスを使用
+      const config = useRuntimeConfig()
+      const baseUrl = process.server ? config.public.baseUrl || 'http://localhost:3001' : ''
+      const apiUrl = `${baseUrl}/api/pokedex/pokedex.php`
+      
+      console.log(`[API Call] Fetching from: ${apiUrl} (server: ${process.server})`)
+      
       // APIからデータを取得
       res = await $fetch<RawPokedexResponse>(
-        `/api/pokedex/pokedex.php`,
+        apiUrl,
         { query: { region: area } }
       );
       

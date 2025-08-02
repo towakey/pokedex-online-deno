@@ -37,14 +37,13 @@ const onImgError = (e: Event) => {
       @error="onImgError"
     >
     <div v-else>
-      {{ typeConfig.jpn }}
+      <{{ typeConfig.jpn }}>
     </div>
   </div>
   <div v-else class="type_icon" style="background-color: white; color: black;">
-    <div>{{ props.type }}</div>
+    <div>[{{ props.type }}]</div>
   </div>
 </template>
-
 <style scoped>
 .type_icon {
   position: relative;

@@ -187,6 +187,7 @@ export default defineAppConfig({
 
   // リージョン図鑑の順序
   regionPokedexOrder: [
+    'global',
     'kanto',
     'johto',
     'hoenn',
@@ -210,24 +211,24 @@ export default defineAppConfig({
   ] as const satisfies RegionPokedexKey[],
 
   type: {
-    normal: { jpn: 'ノーマル', eng: 'normal' },
-    fire: { jpn: 'ほのお', eng: 'fire' },
-    water: { jpn: 'みず', eng: 'water' },
-    electric: { jpn: 'でんき', eng: 'electric' },
-    grass: { jpn: 'くさ', eng: 'grass' },
-    ice: { jpn: 'こおり', eng: 'ice' },
-    fighting: { jpn: 'かくとう', eng: 'fighting' },
-    poison: { jpn: 'どく', eng: 'poison' },
-    ground: { jpn: 'じめん', eng: 'ground' },
-    flying: { jpn: 'ひこう', eng: 'flying' },
-    psychic: { jpn: 'エスパー', eng: 'psychic' },
-    bug: { jpn: 'むし', eng: 'bug' },
-    rock: { jpn: 'いわ', eng: 'rock' },
-    ghost: { jpn: 'ゴースト', eng: 'ghost' },
-    dragon: { jpn: 'ドラゴン', eng: 'dragon' },
-    dark: { jpn: 'あく', eng: 'dark' },
-    steel: { jpn: 'はがね', eng: 'steel' },
-    fairy: { jpn: 'フェアリー', eng: 'fairy' }
+    ノーマル: { jpn: 'ノーマル', eng: 'normal' },
+    ほのお: { jpn: 'ほのお', eng: 'fire' },
+    みず: { jpn: 'みず', eng: 'water' },
+    でんき: { jpn: 'でんき', eng: 'electric' },
+    くさ: { jpn: 'くさ', eng: 'grass' },
+    こおり: { jpn: 'こおり', eng: 'ice' },
+    かくとう: { jpn: 'かくとう', eng: 'fighting' },
+    どく: { jpn: 'どく', eng: 'poison' },
+    じめん: { jpn: 'じめん', eng: 'ground' },
+    ひこう: { jpn: 'ひこう', eng: 'flying' },
+    エスパー: { jpn: 'エスパー', eng: 'psychic' },
+    むし: { jpn: 'むし', eng: 'bug' },
+    いわ: { jpn: 'いわ', eng: 'rock' },
+    ゴースト: { jpn: 'ゴースト', eng: 'ghost' },
+    ドラゴン: { jpn: 'ドラゴン', eng: 'dragon' },
+    あく: { jpn: 'あく', eng: 'dark' },
+    はがね: { jpn: 'はがね', eng: 'steel' },
+    フェアリー: { jpn: 'フェアリー', eng: 'fairy' }
   } satisfies Record<string, { readonly jpn: string; readonly eng: string }>,
 
   type_list: {
