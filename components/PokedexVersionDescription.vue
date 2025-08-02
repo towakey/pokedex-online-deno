@@ -26,7 +26,6 @@
         <v-card-text>
           <div v-if="getDescriptionLines(area).length">
             <div v-for="line in getDescriptionLines(area)" :key="line.ver">
-              {{ line }}
               <img
                 v-if="appConfig.verIcon[line.ver]"
                 :src="`/img/version/${appConfig.verIcon[line.ver]}`"

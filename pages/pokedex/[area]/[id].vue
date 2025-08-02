@@ -719,14 +719,35 @@ onMounted(() => {
   // ここではまだ pokedex.result[0]?.id が未定なので、watch に任せる
 })
 
-watch(() => [route.params.area, route.params.id], () => {
-  // ページ遷移時は図鑑存在情報を再取得
-  // route.params.id はURLのIDで、pokedex.result[0]?.id は実際のポケモンID
-  // ここではURLのIDを使っておくが、pokedexデータ取得後に再度呼び出す方が正確
-  if (route.params.id) {
-    fetchExists(route.params.id as string)
-  }
+watch(() => [route.params.area, route.params.id], async () => {
+  // ページ遷移時は図鑑存在情報と図鑑説明を再取得
+  console.log(`[Watch] Route changed to area: ${route.params.area}, id: ${route.params.id}`)
+  
+  // モデルをリセット
   model.value = 0
+  
+  // ポケモンデータを再取得
+  if (route.params.id) {
+    console.log(`[Watch] Refreshing pokedex data for ${route.params.id}`)
+    await refresh()
+    
+    // ポケモンデータ取得後に存在情報と図鑑説明を再取得
+    if (pokedex.result.length > 0) {
+      for (const pokemon of pokedex.result) {
+        if (pokemon?.id) {
+          console.log(`[Watch] Fetching exists for ${pokemon.id}`)
+          fetchExists(pokemon.id)
+          console.log(`[Watch] Fetching description for ${pokemon.id}`)
+          fetchDescription(pokemon.id)
+        }
+      }
+    }
+  }
+  
+  // 前後のポケモンデータも再取得
+  console.log(`[Watch] Refreshing prev/next data`)
+  await refreshPrev()
+  await refreshNext()
 })
 
 function createEmptyPokedexResponse(): PokedexResponse {
