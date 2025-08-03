@@ -65,7 +65,7 @@ const openVersionDialog = (line) => {
           <h3>
             <img
               v-if="appConfig.verIcon[index]"
-              :src="`/img/version/${appConfig.verIcon[index]}`"
+              :src="`${config.app.baseURL || '/'}img/version/${appConfig.verIcon[index]}`"
               :alt="appConfig.verDescription[index].shortTitle"
               style="height: 20px; width: 20px; vertical-align: middle; margin-right: 4px; cursor: pointer;"
               @click="openVersionDialog({ver: index, verJpn: appConfig.verDescription[index].shortTitle, description: ver.jpn})"

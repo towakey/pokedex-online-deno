@@ -30,7 +30,7 @@
             <div v-for="line in getDescriptionLines(area)" :key="line.ver">
               <img
                 v-if="appConfig.verIcon[line.ver]"
-                :src="`/img/version/${appConfig.verIcon[line.ver]}`"
+                :src="`${config.app.baseURL || '/'}img/version/${appConfig.verIcon[line.ver]}`"
                 :alt="line.verJpn"
                 style="height: 20px; width: 20px; vertical-align: middle; margin-right: 4px; cursor: pointer;"
                 @click="openVersionDialog(line)"
@@ -41,7 +41,7 @@
           <div v-else>
             <img
               v-if="appConfig.games.region2game[area] && appConfig.verIcon[appConfig.games.region2game[area]]"
-              :src="`/img/version/${appConfig.verIcon[appConfig.games.region2game[area]]}`"
+              :src="`${config.app.baseURL || '/'}img/version/${appConfig.verIcon[appConfig.games.region2game[area]]}`"
               :alt="appConfig.games.region2game[area]"
               style="height: 20px; width: 20px; vertical-align: middle; margin-right: 4px;"
             />
@@ -54,6 +54,7 @@
 </template>
 <script setup lang="ts">
 const appConfig = useAppConfig()
+const config = useRuntimeConfig()
 
 // propsの定義
 const props = defineProps({

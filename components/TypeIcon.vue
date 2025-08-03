@@ -7,12 +7,14 @@ const props = withDefaults(defineProps<{
 })
 
 const appConfig = useAppConfig()
+const config = useRuntimeConfig()
 const typeConfig = appConfig.type[props.type as keyof typeof appConfig.type] ?? null
 
 // アイコンファイルのパスを取得
 const iconPath = computed(() => {
   if (!typeConfig) return ''
-  return `/img/type/typeicon_${typeConfig.eng.toLowerCase()}.png`
+  const baseURL = config.app.baseURL || '/'
+  return `${baseURL}img/type/typeicon_${typeConfig.eng.toLowerCase()}.png`
 })
 const typeClass = computed(() => {
   if (typeConfig) {
