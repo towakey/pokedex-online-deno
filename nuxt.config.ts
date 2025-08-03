@@ -1,5 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
-
+import { copyFileSync, mkdirSync, readdirSync, statSync, existsSync } from 'fs'
+import { join } from 'path'
 
 export default defineNuxtConfig({
   app: {
@@ -71,6 +72,21 @@ export default defineNuxtConfig({
 
   modules: ['@nuxt/image'],
 
+  // 静的生成時にAPIディレクトリをコピーするためのフック
+  hooks: {
+    'nitro:build:public-assets': async (nitro) => {
+      // APIディレクトリを.output/publicにコピー
+      const sourceApiDir = join(process.cwd(), 'api')
+      const targetApiDir = join(nitro.options.output.publicDir, 'api')
+      
+      if (existsSync(sourceApiDir)) {
+        console.log('APIディレクトリを静的生成出力にコピー中...')
+        copyDirectoryRecursive(sourceApiDir, targetApiDir)
+        console.log('APIディレクトリのコピーが完了しました')
+      }
+    }
+  },
+
   image: {
     // IPXのサイズ制限やフォーマット制限を緩和して500エラーを回避
     domains: [],
@@ -88,3 +104,25 @@ export default defineNuxtConfig({
     }
   }
 })
+
+// ディレクトリを再帰的にコピーするヘルパー関数
+function copyDirectoryRecursive(source: string, target: string) {
+  if (!existsSync(target)) {
+    mkdirSync(target, { recursive: true })
+  }
+
+  const files = readdirSync(source)
+  
+  for (const file of files) {
+    const sourcePath = join(source, file)
+    const targetPath = join(target, file)
+    
+    const stat = statSync(sourcePath)
+    
+    if (stat.isDirectory()) {
+      copyDirectoryRecursive(sourcePath, targetPath)
+    } else {
+      copyFileSync(sourcePath, targetPath)
+    }
+  }
+}
