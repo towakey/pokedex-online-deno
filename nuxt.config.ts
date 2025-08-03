@@ -69,10 +69,66 @@ export default defineNuxtConfig({
         prependPath: true,
         changeOrigin: true
       }
+    },
+    // 動的ルートの事前生成設定
+    prerender: {
+      routes: [
+        '/pokedex/central_kalos',
+        '/pokedex/coastal_kalos',
+        '/pokedex/mountain_kalos',
+        '/pokedex/alola',
+        '/pokedex/melemele',
+        '/pokedex/akala',
+        '/pokedex/ulaula',
+        '/pokedex/poni',
+        '/pokedex/galar',
+        '/pokedex/isle_of_armor',
+        '/pokedex/crown_tundra',
+        '/pokedex/paldea',
+        '/pokedex/kitakami',
+        '/pokedex/blueberry',
+        '/pokedex/national',
+        '/pokedex/kanto',
+        '/pokedex/johto',
+        '/pokedex/hoenn',
+        '/pokedex/sinnoh',
+        '/pokedex/unova'
+      ]
     }
   },
 
   modules: ['@nuxt/image'],
+
+  // 動的ルートのハイブリッド設定 - リロード時の正しいルート表示を確保
+  routeRules: {
+    // ルートレベルは事前レンダリング
+    '/': { prerender: true },
+    '/pokedex': { prerender: true },
+    // 動的エリアページは事前レンダリング + CSR
+    '/pokedex/global': { prerender: true, ssr: false },
+    '/pokedex/central_kalos': { prerender: true, ssr: false },
+    '/pokedex/coastal_kalos': { prerender: true, ssr: false },
+    '/pokedex/mountain_kalos': { prerender: true, ssr: false },
+    '/pokedex/alola': { prerender: true, ssr: false },
+    '/pokedex/melemele': { prerender: true, ssr: false },
+    '/pokedex/akala': { prerender: true, ssr: false },
+    '/pokedex/ulaula': { prerender: true, ssr: false },
+    '/pokedex/poni': { prerender: true, ssr: false },
+    '/pokedex/galar': { prerender: true, ssr: false },
+    '/pokedex/isle_of_armor': { prerender: true, ssr: false },
+    '/pokedex/crown_tundra': { prerender: true, ssr: false },
+    '/pokedex/paldea': { prerender: true, ssr: false },
+    '/pokedex/kitakami': { prerender: true, ssr: false },
+    '/pokedex/blueberry': { prerender: true, ssr: false },
+    '/pokedex/national': { prerender: true, ssr: false },
+    '/pokedex/kanto': { prerender: true, ssr: false },
+    '/pokedex/johto': { prerender: true, ssr: false },
+    '/pokedex/hoenn': { prerender: true, ssr: false },
+    '/pokedex/sinnoh': { prerender: true, ssr: false },
+    '/pokedex/unova': { prerender: true, ssr: false },
+    // 個別ポケモンページはSPA化（数が多すぎるため）
+    '/pokedex/**': { prerender: false, ssr: false }
+  },
 
   // 静的生成時にAPIディレクトリをコピーするためのフック
   hooks: {
