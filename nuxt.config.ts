@@ -1,7 +1,21 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
-import vuetify from 'vite-plugin-vuetify'
+
 
 export default defineNuxtConfig({
+  app: {
+    head: {
+      link: [
+        {
+          rel: 'stylesheet',
+          href: 'https://cdn.jsdelivr.net/npm/@mdi/font@latest/css/materialdesignicons.min.css',
+        },
+        {
+          rel: 'stylesheet',
+          href: 'https://cdn.jsdelivr.net/npm/vuetify@latest/dist/vuetify.min.css',
+        },
+      ],
+    },
+  },
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   
@@ -19,7 +33,7 @@ export default defineNuxtConfig({
   },
 
   vite: {
-    plugins: [vuetify()],
+    plugins: [],
     server: {
       // PCスリープ後のタイムアウトエラーを防ぐ設定
       hmr: {
