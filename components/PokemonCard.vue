@@ -72,12 +72,16 @@ const props = defineProps({
 const appConfig = useAppConfig()
 
 const imgSrc = computed(() => {
+  // baseURLを取得
+  const config = useRuntimeConfig()
+  const baseURL = config.app.baseURL || '/'
+  
   // 画像ファイル名を決定
   // 優先度: id（完全なファイル名） > globalNo > no
   const id = props.pokemon.id
   if (id && id.length > 4) {
     // idが完全なファイル名パターンの場合（例: 0082_00000000_5_000_0）
-    return `/img/pokedex/${id}.png`
+    return `${baseURL}img/pokedex/${id}.png`
   }
   
   // フォールバック: globalNoまたはnoを使用して基本パターンを試行
@@ -85,7 +89,7 @@ const imgSrc = computed(() => {
   const imageNo = `0000${globalNo}`.slice(-4)
   
   // 基本パターンを試行（例: 0082_00000000_0_000_0.png）
-  return `/img/pokedex/${imageNo}_00000000_0_000_0.png`
+  return `${baseURL}img/pokedex/${imageNo}_00000000_0_000_0.png`
 })
 
 const noLabel = computed(() => {

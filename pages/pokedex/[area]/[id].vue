@@ -875,7 +875,7 @@ watch(pokedexData, (newData) => {
     Object.assign(pokedex, newData)
     // 画像パス(src)を最新データに合わせて再設定する
     for (const status of pokedex.result) {
-      status.src = `/img/pokedex/${status.id}.png`
+      status.src = `${config.app.baseURL || '/'}img/pokedex/${status.id}.png`
     }
     
     // pokedex データ取得後に、すべてのポケモンに対して存在情報と図鑑説明を再取得
@@ -895,7 +895,7 @@ watch(prevData, (newData) => {
   if (newData && newData.result && newData.result.length > 0) {
     Object.assign(prev, newData)
     for (const status of prev.result) {
-      status.src = `/img/pokedex/${status.id}.png`
+      status.src = `${config.app.baseURL || '/'}img/pokedex/${status.id}.png`
     }
   }
 }, { immediate: true })
@@ -905,7 +905,7 @@ watch(nextData, (newData) => {
   if (newData && newData.result && newData.result.length > 0) {
     Object.assign(next, newData)
     for (const status of next.result) {
-      status.src = `/img/pokedex/${status.id}.png`
+      status.src = `${config.app.baseURL || '/'}img/pokedex/${status.id}.png`
     }
   }
 }, { immediate: true })
@@ -920,7 +920,7 @@ if (pokedexData.value) {
 const hasPokedexData = computed(() => pokedex.result && pokedex.result.length > 0 && pokedex.result[0].name.jpn !== '不明');
 let src = '';
 if (pokedex.result.length > 0) {
-  src = "/img/pokedex/" + pokedex.result[0].id + ".png";
+  src = (config.app.baseURL || '/') + "img/pokedex/" + pokedex.result[0].id + ".png";
 }
 
 const globalNo = computed(() => route.params.area === 'global'
@@ -945,7 +945,7 @@ const breadcrumbs = computed(() => {
 });
 
 for(let pokedex_status in pokedex.result){
-  pokedex.result[pokedex_status].src = '/img/pokedex/' + pokedex.result[pokedex_status].id + '.png'
+  pokedex.result[pokedex_status].src = (config.app.baseURL || '/') + 'img/pokedex/' + pokedex.result[pokedex_status].id + '.png'
 }
 
 // バージョンごとの図鑑説明を保持（グループ版）

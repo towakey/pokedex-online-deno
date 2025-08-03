@@ -4,6 +4,8 @@ import { join } from 'path'
 
 export default defineNuxtConfig({
   app: {
+    // XAMPP環境用のbaseURL設定（一時的）
+    baseURL: '/pokedex-online/',
     head: {
       link: [
         {
@@ -88,20 +90,19 @@ export default defineNuxtConfig({
   },
 
   image: {
-    // IPXのサイズ制限やフォーマット制限を緩和して500エラーを回避
+    // 静的生成用の設定 - IPX処理を完全無効化
+    provider: 'static',
     domains: [],
-    alias: {
-      '/img': '/img'
-    },
-    // 静的アセットを直接提供するためのipx設定
-    ipx: {
-      maxAge: 60 * 60 * 24 * 365, // 1年
-      // 複雑なファイル名でも処理できるように設定
-      modifiers: {
-        quality: 100,
-        format: 'png'
-      }
-    }
+    // 静的アセットの直接配信
+    dir: 'public',
+    // ベースURLを考慮した設定
+    baseURL: process.env.NODE_ENV === 'production' ? '/pokedex-online/' : '/',
+    // IPXを無効化して直接画像配信
+    screens: {},
+    presets: {},
+    // 静的生成時は最適化処理をスキップ
+    format: ['webp', 'png', 'jpg'],
+    quality: 100
   }
 })
 
