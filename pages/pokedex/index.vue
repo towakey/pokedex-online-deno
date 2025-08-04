@@ -16,7 +16,7 @@
           variant="outlined"
           style="background-color: white; width: 100%;"
           >
-            <v-card-title>{{ appConfig.regionPokedex[item].name.jpn }}</v-card-title>
+            <v-card-title>{{ appConfig.regionPokedex[item].disp }}</v-card-title>
             <!-- <v-card-text style="min-height: 24px; display: block; width: 100%;">
               <div style="min-width: 150px;">
                 {{ appConfig.regionPokedex[item].name.eng || '\u00A0\u00A0\u00A0\u00A0\u00A0' }}

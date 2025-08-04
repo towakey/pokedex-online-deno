@@ -797,7 +797,7 @@ const getGameGroup = (verKey: string): string => {
 // area からゲームグループ名を取得
 const getGroupByArea = (area: string): string => {
   // appConfig.pokedex2gameVersion から area に対応するゲームバージョンキーを取得
-  const versions = appConfig.pokedex2gameVersion[area];
+  const versions = appConfig.regionPokedex[area]?.gameVersion;
   if (!versions || versions.length === 0) return '';
   
   // 最初のバージョンキーからゲームグループを取得

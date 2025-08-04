@@ -18,10 +18,10 @@
         </v-col>
       </v-row>
     </div>
-    <div class="api-test">
+    <!-- <div class="api-test">
       <v-btn color="primary" @click="callApi">APIテスト</v-btn>
       <p v-if="apiMessage">{{ apiMessage }}</p>
-    </div>
+    </div> -->
   </v-container>
 </template>
 <script setup lang="ts">
@@ -57,18 +57,18 @@ async function callApi() {
 
 const mainMenu = ref([
   { title: 'ポケモン図鑑', path: '/pokedex', img: '/icon.png', category: 'pokemon_data' },
-  { title: 'わざ', path: '/waza', img: '/icon.png', category: 'pokemon_data' },
-  { title: 'わざマシン', path: '/waza_machine', img: '/icon.png', category: 'pokemon_data' },
-  { title: 'とくせい', path: '/ability', img: '/icon.png', category: 'pokemon_data' },
-  { title: '図鑑カメラ', path: '/camera', img: '/camera.png', category: 'tools_gallery' },
-  { title: '検索', path: '/search', img: '/icon.png', category: 'tools_gallery' },
-  { title: 'pokedex.jsonについて', path: '/pokedexjson', img: '/icon.png', category: 'useful_information' },
-  { title: '年表', path: '/pokemon_history', img: '/icon.png', category: 'useful_information' },
+  // { title: 'わざ', path: '/waza', img: '/icon.png', category: 'pokemon_data' },
+  // { title: 'わざマシン', path: '/waza_machine', img: '/icon.png', category: 'pokemon_data' },
+  // { title: 'とくせい', path: '/ability', img: '/icon.png', category: 'pokemon_data' },
+  // { title: '図鑑カメラ', path: '/camera', img: '/camera.png', category: 'tools_gallery' },
+  // { title: '検索', path: '/search', img: '/icon.png', category: 'tools_gallery' },
+  // { title: 'pokedex.jsonについて', path: '/pokedexjson', img: '/icon.png', category: 'useful_information' },
+  // { title: '年表', path: '/pokemon_history', img: '/icon.png', category: 'useful_information' },
   { title: 'WebApp', path: '/webapp', img: '/icon.png', category: 'tools_gallery' },
-  { title: 'チートシート', path: '/cheatsheet', img: '/blog.png', category: 'useful_information' },
-  { title: 'リンク', path: '/link', img: '/icon.png', category: 'useful_information' },
-  { title: 'リーフ', path: '/leaf', img: '/icon.png', category: 'tools_gallery' },
-  { title: 'ギャラリー', path: '/gallery', img: '/icon.png', category: 'tools_gallery' },
+  // { title: 'チートシート', path: '/cheatsheet', img: '/blog.png', category: 'useful_information' },
+  // { title: 'リンク', path: '/link', img: '/icon.png', category: 'useful_information' },
+  // { title: 'リーフ', path: '/leaf', img: '/icon.png', category: 'tools_gallery' },
+  // { title: 'ギャラリー', path: '/gallery', img: '/icon.png', category: 'tools_gallery' },
 ])
 
 const groupedMenu = computed(() => {

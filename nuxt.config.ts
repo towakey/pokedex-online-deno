@@ -4,8 +4,8 @@ import { join } from 'path'
 
 export default defineNuxtConfig({
   app: {
-    // XAMPP環境用のbaseURL設定（一時的）
-    baseURL: '/pokedex-online/',
+    // 開発時は'/'、静的生成時は'/pokedex-online/'を使用
+    baseURL: process.env.NODE_ENV === 'production' ? '/pokedex-online/' : '/',
     head: {
       link: [
         {

@@ -6,7 +6,7 @@ export default defineAppConfig({
   // サイト基本情報
   site: {
     name: 'Pokédex-Online',
-    description: 'Nuxt.js で作成されたポケモン図鑑アプリケーション',
+    description: 'ポケモン図鑑',
   },
 
   personal: {
@@ -17,6 +17,7 @@ export default defineAppConfig({
   // リージョン図鑑データ
   regionPokedex: {
     global: {
+      disp: "全国図鑑",
       name: {
         jpn: '全国図鑑',
         eng: 'global'
@@ -497,26 +498,26 @@ export default defineAppConfig({
     "scarlet": {title: "ポケットモンスター スカーレット", shortTitle: "スカーレット", description: "発売日：2022年11月18日"},
     "violet": {title: "ポケットモンスター バイオレット", shortTitle: "バイオレット", description: "発売日：2022年11月18日"},
   },
-  pokedex2gameVersion: {
-    "kanto": ["red", "green", "blue", "pikachu"],
-    "johto": ["gold", "silver", "crystal"],
-    "hoenn": ["ruby", "sapphire", "emerald"],
-    "kanto_frlg": ["firered", "leafgreen"],
-    "sinnoh": ["diamond", "pearl", "platinum"],
-    "johto_hgss": ["heartgold", "soulsilver"],
-    "unova_bw": ["black", "white"],
-    "unova_b2w2": ["black2", "white2"],
-    "central_kalos": ["x", "y"],
-    "coast_kalos": ["x", "y"],
-    "mountain_kalos": ["x", "y"],
-    "alola_sm": ["sun", "moon"],
-    "alola_usum": ["ultrasun", "ultramoon"],
-    "galar": ["sword", "shield"],
-    "isle_of_armor": ["sword", "shield"],
-    "crown_tundra": ["sword", "shield"],
-    "hisui": ["legendsarceus"],
-    "paldea": ["scarlet", "violet"],
-    "kitakami": ["scarlet", "violet"],
-    "blueberry": ["scarlet", "violet"],
-  },
+  // pokedex2gameVersion: {
+  //   "kanto": ["red", "green", "blue", "pikachu"],
+  //   "johto": ["gold", "silver", "crystal"],
+  //   "hoenn": ["ruby", "sapphire", "emerald"],
+  //   "kanto_frlg": ["firered", "leafgreen"],
+  //   "sinnoh": ["diamond", "pearl", "platinum"],
+  //   "johto_hgss": ["heartgold", "soulsilver"],
+  //   "unova_bw": ["black", "white"],
+  //   "unova_b2w2": ["black2", "white2"],
+  //   "central_kalos": ["x", "y"],
+  //   "coast_kalos": ["x", "y"],
+  //   "mountain_kalos": ["x", "y"],
+  //   "alola_sm": ["sun", "moon"],
+  //   "alola_usum": ["ultrasun", "ultramoon"],
+  //   "galar": ["sword", "shield"],
+  //   "isle_of_armor": ["sword", "shield"],
+  //   "crown_tundra": ["sword", "shield"],
+  //   "hisui": ["legendsarceus"],
+  //   "paldea": ["scarlet", "violet"],
+  //   "kitakami": ["scarlet", "violet"],
+  //   "blueberry": ["scarlet", "violet"],
+  // },
 })
