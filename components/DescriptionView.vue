@@ -96,7 +96,7 @@ const openVersionDialog = (line) => {
         </v-menu>
         </h3>
         </v-list-item-title>
-        <v-list-item-subtitle class="wrap-text" style="color: #000;" v-if="ver !== ''"><p>{{ ver.jpn }}</p></v-list-item-subtitle>
+        <v-list-item-subtitle class="wrap-text" style="color: #000;" v-if="ver !== '' && ver.jpn !== ''"><p>{{ ver.jpn }}</p></v-list-item-subtitle>
         <v-list-item-subtitle class="wrap-text" style="color: #000;" v-else>じょうほう なし</v-list-item-subtitle>
       </v-list-item>
     </v-list>
