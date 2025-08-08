@@ -57,6 +57,7 @@ async function callApi() {
 
 const mainMenu = ref([
   { title: 'ポケモン図鑑', path: '/pokedex', img: '/icon.png', category: 'pokemon_data' },
+  { title: '検索', path: '/search', img: '/icon.png', category: 'pokemon_data' },
   // { title: 'わざ', path: '/waza', img: '/icon.png', category: 'pokemon_data' },
   // { title: 'わざマシン', path: '/waza_machine', img: '/icon.png', category: 'pokemon_data' },
   // { title: 'とくせい', path: '/ability', img: '/icon.png', category: 'pokemon_data' },

@@ -1,8 +1,13 @@
+// リージョン図鑑のキーの配列
+export const regionPokedexKeys = [
+  'global', 'kanto', 'johto', 'hoenn', 'kanto_frlg', 'sinnoh', 'johto_hgss',
+  'unova_bw', 'unova_b2w2', 'central_kalos', 'coast_kalos', 'mountain_kalos',
+  'alola_sm', 'alola_usum', 'galar', 'isle_of_armor', 'crown_tundra',
+  'hisui', 'paldea', 'kitakami', 'blueberry'
+] as const;
+
 // リージョン図鑑のキー型
-export type RegionPokedexKey = 'global' | 'kanto' | 'johto' | 'hoenn' | 'kanto_frlg' | 'sinnoh' | 'johto_hgss' | 
-  'unova_bw' | 'unova_b2w2' | 'central_kalos' | 'coast_kalos' | 'mountain_kalos' | 
-  'alola_sm' | 'alola_usum' | 'galar' | 'isle_of_armor' | 'crown_tundra' | 
-  'hisui' | 'paldea' | 'kitakami' | 'blueberry'
+export type RegionPokedexKey = typeof regionPokedexKeys[number];
 
 // リージョン図鑑の値の型
 export interface RegionPokedexItem {
