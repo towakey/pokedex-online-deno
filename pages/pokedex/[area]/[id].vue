@@ -155,6 +155,14 @@
           />
         </v-carousel-item>
       </v-carousel>
+      <AdSenseCard 
+      slot-type="banner"
+      :width="728"
+      :height="90"
+      label-type="sponsored"
+      variant="outlined"
+      color="surface"
+      />
     </v-container>
   </div>
 
@@ -328,6 +336,16 @@
           <!-- <evolveView :evolveData="pokedex.result[index]" :area="route.params.area" /> -->
         </v-carousel-item>
       </v-carousel>
+      <AdSenseCard
+        :ad-client="'ca-pub-xxxxxxxxxxxxxxxx'"
+        :ad-slot="'1234567890'"
+        :test-mode="true"
+        :width="'100%'"
+        :height="250"
+        label-text="スポンサードリンク"
+        variant="outlined"
+        color="grey-lighten-5"
+      />
     </v-container>
     </v-col>
   </v-row>

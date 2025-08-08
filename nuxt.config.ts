@@ -17,6 +17,15 @@ export default defineNuxtConfig({
           href: 'https://cdn.jsdelivr.net/npm/vuetify@latest/dist/vuetify.min.css',
         },
       ],
+      script: [
+        {
+          // Google AdSenseスクリプト
+          src: 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2849970156029655',
+          async: true,
+          crossorigin: 'anonymous',
+          // 実際のクライアントIDに置き換えてください
+        },
+      ],
     },
   },
   compatibilityDate: '2025-07-15',

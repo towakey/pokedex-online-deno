@@ -22,3 +22,7 @@ logs
 .env
 .env.*
 !.env.example
+
+# AdSense config files
+adsense.config.json
+!adsense.config.example.json
