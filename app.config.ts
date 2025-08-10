@@ -291,36 +291,7 @@ export default defineAppConfig({
     ]
   },
   
-  // ゲームバージョン情報
-  games: {
-    // リージョン → ゲームタイトル
-    // region2game: {
-    //   kanto: 'red-blue',
-    //   johto: 'gold-silver',
-    //   hoenn: 'ruby-sapphire',
-    //   sinnoh: 'diamond-pearl',
-    //   unova: 'black-white',
-    //   kalos: 'x-y',
-    //   alola: 'sun-moon',
-    //   galar: 'sword-shield',
-    //   hisui: 'legends-arceus',
-    //   paldea: 'scarlet-violet'
-    // },
-    
-    // ゲームID → 日本語名
-    // game2jpn: {
-    //   'red-blue': '赤・緑',
-    //   'gold-silver': '金・銀',
-    //   'ruby-sapphire': 'ルビー・サファイア',
-    //   'diamond-pearl': 'ダイヤモンド・パール',
-    //   'black-white': 'ブラック・ホワイト',
-    //   'x-y': 'X・Y',
-    //   'sun-moon': 'サン・ムーン',
-    //   'sword-shield': 'ソード・シールド',
-    //   'legends-arceus': 'Legends アルセウス',
-    //   'scarlet-violet': 'スカーレット・バイオレット'
-    // },
-  },
+  // ゲームバージョン情報: region2game / game2jpn は未使用のため削除
   
   // メニュー設定
   menus: {

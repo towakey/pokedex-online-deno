@@ -10,12 +10,12 @@
       <v-card
         v-if="area !== 'global'"
         elevation="0"
-        :variant="existsPokedex[area]?.result > -1 ? 'outlined' : 'outlined'"
-        :style="existsPokedex[area]?.result > -1 ? 'background-color: white;' : 'background-color: #f2f2f2;'"
+        :variant="(typeof existsPokedex[area]?.result === 'number' && existsPokedex[area]?.result > -1) ? 'outlined' : 'outlined'"
+        :style="(typeof existsPokedex[area]?.result === 'number' && existsPokedex[area]?.result > -1) ? 'background-color: white;' : 'background-color: #f2f2f2;'"
       >
         <v-card-title>
           <NuxtLink
-            v-if="existsPokedex[area]?.result > -1"
+            v-if="typeof existsPokedex[area]?.result === 'number' && existsPokedex[area]?.result > -1"
             :to="{ path: `/pokedex/${area}/${('0000' + existsPokedex[area]?.result).slice(-4)}` }"
             class="nuxtlink"
           >
@@ -40,9 +40,9 @@
           </div>
           <div v-else>
             <img
-              v-if="appConfig.games.region2game[area] && appConfig.verIcon[appConfig.games.region2game[area]]"
-              :src="`${config.app.baseURL || '/'}img/version/${appConfig.verIcon[appConfig.games.region2game[area]]}`"
-              :alt="appConfig.games.region2game[area]"
+              v-if="appConfig.regionPokedex[area]?.gameVersion && appConfig.regionPokedex[area].gameVersion.length > 0 && appConfig.verIcon[appConfig.regionPokedex[area].gameVersion[0]]"
+              :src="`${config.app.baseURL || '/'}img/version/${appConfig.verIcon[appConfig.regionPokedex[area].gameVersion[0]]}`"
+              :alt="appConfig.verDescription[appConfig.regionPokedex[area].gameVersion[0]]?.shortTitle || appConfig.regionPokedex[area].gameVersion[0]"
               style="height: 20px; width: 20px; vertical-align: middle; margin-right: 4px;"
             />
             図鑑説明文は存在しません

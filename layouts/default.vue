@@ -5,7 +5,7 @@
     prominent
     >
       <v-app-bar-nav-icon>
-        <img v-if="!isLoading" src="/public/icon.png" alt="Nav icon" :width="50" :height="50" />
+        <img v-if="!isLoading" src="/icon.png" alt="Nav icon" :width="50" :height="50" />
         <img v-else src="/img/loading/polygon_loading_2.gif" alt="Loading..." :width="50" :height="50" />
       </v-app-bar-nav-icon>
       <v-app-bar-title>

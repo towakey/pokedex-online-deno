@@ -38,6 +38,7 @@ useHead({
 })
 
 import { ref } from 'vue'
+import { useApiBase, useApiClient } from '#imports'
 
 const breadcrumbs = ref([
   { title: 'Home', disabled: true, href: '/' },
@@ -47,8 +48,11 @@ const apiMessage = ref('')
 
 async function callApi() {
   try {
-    // const res = await $fetch('/api/sample.php?name=pikachu')
-    const res = await $fetch('/api/pokedex/pokedex.php')
+    // const res = await fetchWithRetry('/api/sample.php?name=pikachu', { timeoutMs: 7000, retries: 2 })
+    const { buildUrl } = useApiBase()
+    const { fetchWithRetry } = useApiClient()
+    const endpoint = buildUrl('/pokedex/pokedex.php')
+    const res = await fetchWithRetry(endpoint, { timeoutMs: 7000, retries: 2 })
     apiMessage.value = JSON.stringify(res)
   } catch (e) {
     apiMessage.value = 'API Error: ' + (e instanceof Error ? e.message : String(e))

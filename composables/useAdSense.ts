@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue'
+import { ref, computed, readonly } from 'vue'
 
 // AdSense設定の型定義
 export interface AdSenseConfig {

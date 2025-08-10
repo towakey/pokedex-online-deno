@@ -1,30 +1,5 @@
 <template>
-  <v-dialog
-    v-model="isVersionDialogVisible"
-    width="auto"
-  >
-    <v-card>
-      <v-card-title></v-card-title>
-      <v-card-text>
-        <!-- ここに情報を表示 -->
-        <!-- greenバージョンの場合は画像を表示 -->
-        <div v-if="selectedVersionInfo?.ver === 'green'" class="text-center mb-4">
-          <!-- <v-img
-            :src="`/img/pokedexPic/green/${appConfig.verDescription[selectedVersionInfo?.ver]?.image}_${String(globalNo).padStart(4, '0')}_00000000_0_000_0.png`"
-            :alt="`ポケモン図鑑 ${selectedVersionInfo?.ver} 画像`"
-            max-width="300"
-            class="mx-auto"
-            @error="(e) => { e.target.style.display = 'none' }"
-          /> -->
-        </div>
-        <!-- <p>{{ appConfig.verDescription[selectedVersionInfo?.ver]?.title }}</p>
-        <p>{{ appConfig.verDescription[selectedVersionInfo?.ver]?.description }}</p> -->
-      </v-card-text>
-      <v-card-actions>
-        <v-btn color="primary" block @click="isVersionDialogVisible = false">閉じる</v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+  <!-- duplicate isVersionDialogVisible dialog removed; unified dialog exists at the bottom of this template -->
   <div
   v-if="route.params.area == 'global'">
     <ClientOnly>
@@ -34,11 +9,11 @@
         <v-container>
           <v-card>
             <v-card-title v-if="pokedex.result.length > 0">
-              {{ pokedex.result[model].name[personal.language] }}
+              {{ pokedex.result[Number(model)]?.name?.[personal.language] }}
             </v-card-title>
             <v-card-text v-if="pokedex.result.length > 0">
               <v-row
-              v-for='(name, key) in pokedex.result[model].name'
+              v-for='(name, key) in (pokedex.result[Number(model)]?.name || {})'
               :key='name'
               >
                 <v-col>
@@ -113,28 +88,6 @@
           </v-row>
         </v-carousel-item>
       </v-carousel>
-      <v-card
-      v-if="pokedex.result.length > 1"
-      elevation="0"
-      style="margin-top: 20px;background-color: white;"
-      variant="outlined"
-      >
-        <v-card-actions>
-          <v-btn @click="prevModel()">＜</v-btn>
-          <v-spacer />
-          <h2>{{ 
-            pokedex.result[model].gigantamax && pokedex.result[model].form ? `${pokedex.result[model].gigantamax} ${pokedex.result[model].form}` : 
-            pokedex.result[model].region && pokedex.result[model].form ? `${pokedex.result[model].region} ${pokedex.result[model].form}` : 
-            pokedex.result[model].mega_evolution ? pokedex.result[model].mega_evolution : 
-            pokedex.result[model].gigantamax ? pokedex.result[model].gigantamax : 
-            pokedex.result[model].region ? pokedex.result[model].region : 
-            pokedex.result[model].form ? pokedex.result[model].form : 
-            pokedex.result[model].name?.jpn || ''
-          }}</h2>
-          <v-spacer />
-          <v-btn @click="nextModel()">＞</v-btn>
-        </v-card-actions>
-      </v-card>
       <v-carousel
       :show-arrows="false"
       hide-delimiters
@@ -146,15 +99,41 @@
           v-for="(item, index) in pokedex.result" :key="index"
         >
           <!-- 各バージョンの図鑑説明とリンクを表示 -->
-          <PokedexVersionDescription 
-            v-if="route.params.area == 'global' && pokedex.result.length > 0"
-            :area="route.params.area"
-            :exists-pokedex="existsPokedex[item.id] || {}"
-            :get-description-lines="(area) => getDescriptionLines(area, item.id)"
-            :open-version-dialog="openVersionDialog"
-          />
+          <!-- <DescriptionView
+            v-if="item?.id != null && descriptionRows[String(item.id)] && descriptionRows[String(item.id)].length"
+            :description="getGlobalDescriptionMap(item.id)"
+            :title="metaTitle"
+            :openVersionDialog="openVersionDialog"
+          /> -->
         </v-carousel-item>
       </v-carousel>
+      <v-card
+      v-if="pokedex.result.length > 1"
+      elevation="0"
+      style="margin-top: 20px;background-color: white;"
+      variant="outlined"
+      >
+        <v-card-actions>
+          <v-btn @click="prevModel()">＜</v-btn>
+          <v-spacer />
+          <h2>{{ 
+            (pokedex.result[Number(model)]?.gigantamax && pokedex.result[Number(model)]?.form) ? `${pokedex.result[Number(model)]?.gigantamax} ${pokedex.result[Number(model)]?.form}` : 
+            (pokedex.result[Number(model)]?.region && pokedex.result[Number(model)]?.form) ? `${pokedex.result[Number(model)]?.region} ${pokedex.result[Number(model)]?.form}` : 
+            (pokedex.result[Number(model)]?.mega_evolution) ? pokedex.result[Number(model)]?.mega_evolution : 
+            (pokedex.result[Number(model)]?.gigantamax) ? pokedex.result[Number(model)]?.gigantamax : 
+            (pokedex.result[Number(model)]?.region) ? pokedex.result[Number(model)]?.region : 
+            (pokedex.result[Number(model)]?.form) ? pokedex.result[Number(model)]?.form : 
+            (pokedex.result[Number(model)]?.name?.jpn || '')
+          }}</h2>
+          <v-spacer />
+          <v-btn @click="nextModel()">＞</v-btn>
+        </v-card-actions>
+      </v-card>
+      <PokedexVersionDescription
+        :existsPokedex="(pokedex.result.length && existsPokedex[String(pokedex.result[Number(model)]?.id)]) ? existsPokedex[String(pokedex.result[Number(model)]?.id)] : {}"
+        :getDescriptionLines="(area: string) => getDescriptionLines(area, String(pokedex.result[Number(model)]?.id))"
+        :openVersionDialog="openVersionDialog"
+      />
       <AdSenseCard 
       slot-type="banner"
       :width="728"
@@ -177,11 +156,11 @@
       <v-container>
         <v-card>
           <v-card-title v-if="pokedex.result.length > 0">
-            {{ pokedex.result[model].name[personal.language] }}
+            {{ pokedex.result[Number(model)]?.name?.[personal.language] ?? '' }}
           </v-card-title>
           <v-card-text v-if="pokedex.result.length > 0">
             <v-row
-            v-for='(name, key) in pokedex.result[model].name'
+            v-for='(name, key) in (pokedex.result[Number(model)]?.name ?? {})'
             :key='name'
             >
               <v-col>
@@ -278,7 +257,7 @@
               width="100%"
               height="100%"
               :aspect-ratio="1/1"
-              :src="pokedex.result.length > 0 ? `${pokedex.result[model].src}` : ''"
+              :src="pokedex.result.length > 0 && pokedex.result[Number(model)]?.src ? String(pokedex.result[Number(model)]?.src) : ''"
               ></v-img>
               </v-card>
             </v-col>
@@ -330,12 +309,17 @@
             special_defense: Number(pokedex.result[index].special_defense),
             speed: Number(pokedex.result[index].speed)
           }" />
-          <AbilityView :pokedex="pokedex.result[index]" :area="route.params.area" />
-          <DescriptionView :description="pokedex.result[index].description" :title="metaTitle" />
+          <AbilityView :pokedex="pokedex.result[index]" :area="String(route.params.area)" />
+          <DescriptionView :description="pokedex.result[index].description" :title="metaTitle" :openVersionDialog="openVersionDialog" />
           <!-- <wazaView :wazaData="pokedex.result[index]" :area="route.params.area" /> -->
           <!-- <evolveView :evolveData="pokedex.result[index]" :area="route.params.area" /> -->
         </v-carousel-item>
       </v-carousel>
+      <PokedexVersionDescription
+        :existsPokedex="(pokedex.result.length && existsPokedex[String(pokedex.result[Number(model)]?.id)]) ? existsPokedex[String(pokedex.result[Number(model)]?.id)] : {}"
+        :getDescriptionLines="(area: string) => getDescriptionLines(area, String(pokedex.result[Number(model)]?.id))"
+        :openVersionDialog="openVersionDialog"
+      />
       <AdSenseCard
         :ad-client="'ca-pub-xxxxxxxxxxxxxxxx'"
         :ad-slot="'1234567890'"
@@ -354,7 +338,7 @@
 <v-dialog v-model="isVersionDialogVisible" max-width="500">
   <v-card v-if="selectedVersionInfo">
     <v-card-title class="text-h5">
-      {{ selectedVersionInfo.ver }}
+      {{ selectedVersionInfo.verJpn || selectedVersionInfo.ver }}
     </v-card-title>
     <v-card-text>
       <p>{{ selectedVersionInfo.description }}</p>
@@ -372,13 +356,19 @@ import { ref, reactive, onMounted, watch } from 'vue'
 const isVersionDialogVisible = ref(false)
 const selectedVersionInfo = ref<any>(null)
 
-// ポケモン図鑑存在情報保持用（ポケモンID・リージョン別）
-const existsPokedex = reactive<{ [pokemonId: string]: { [area: string]: any } }>({})
-
-const openVersionDialog = (line: any) => {
-  selectedVersionInfo.value = line
+// バージョン情報ダイアログを開く（呼び出し元の型差異を吸収）
+const openVersionDialog = (input: any) => {
+  const info = {
+    ver: String(input?.ver ?? ''),
+    description: String(input?.description ?? ''),
+    verJpn: typeof input?.verJpn === 'string' ? input.verJpn : String(input?.ver ?? '')
+  }
+  selectedVersionInfo.value = info
   isVersionDialogVisible.value = true
 }
+
+// ポケモン図鑑存在情報保持用（ポケモンID・リージョン別）
+const existsPokedex = reactive<{ [pokemonId: string]: { [area: string]: any } }>({})
 
 // ポケモン詳細データの型定義
 interface PokemonStatus {
@@ -448,6 +438,9 @@ route.meta.title = route.params.area
 
 const personal = appConfig.personal
 
+// 共通のフェッチラッパー（タイムアウト・リトライ）
+const { fetchWithRetry } = useApiClient()
+
 interface RawPokedexResponse {
   success: boolean;
   data: Record<string, PokemonStatus[]>;
@@ -501,7 +494,7 @@ const fetchPokedex = async (area: string, id: number | string) => {
     
     console.log(`[fetchPokedex] Client mode - Fetching from: ${apiUrl}`)
     
-    const res = await $fetch<RawPokedexResponse>(apiUrl)
+    const res = await fetchWithRetry<RawPokedexResponse>(apiUrl, { timeoutMs: 7000, retries: 2 })
     
     console.log(`[fetchPokedex] API Response:`, JSON.stringify(res, null, 2))
     console.log(`[fetchPokedex] Response type:`, typeof res)
@@ -631,9 +624,9 @@ const fetchTypeCompatibility = async (type1: string, type2: string, region: stri
     const apiUrl = `${baseUrl}/api/pokedex/type.php?${params.toString()}`
     
     console.log(`[fetchTypeCompatibility] Fetching from: ${apiUrl} (server: ${process.server})`)
-    
-    const data = await $fetch<{ data: { rates: { [key: string]: string } } }>(
-      apiUrl
+    const data = await fetchWithRetry<{ data: { rates: { [key: string]: string } } }>(
+      apiUrl,
+      { timeoutMs: 7000, retries: 2 }
     )
     const rawRates = data?.data?.rates ?? {}
     const rates: { [key: string]: string } = {}
@@ -650,8 +643,9 @@ const fetchTypeCompatibility = async (type1: string, type2: string, region: stri
 const fetchType = async (type1: string, type2: string) => {
   const baseUrl = process.server ? config.public.baseUrl || 'http://localhost:3001' : ''
   try {
-    const data = await $fetch(
-      `${baseUrl}/api/pokedex/type.php?mode=type&type1=${type1}&type2=${type2}`
+    const data = await fetchWithRetry(
+      `${baseUrl}/api/pokedex/type.php?mode=type&type1=${type1}&type2=${type2}`,
+      { timeoutMs: 7000, retries: 2 }
     )
     return data
   } catch (error) {
@@ -665,8 +659,9 @@ const fetchExists = async (pokeId: number | string) => {
     if (item === 'global') continue
     try {
       const baseUrl = process.server ? config.public.baseUrl || 'http://localhost:3001' : ''
-      const data = await $fetch(
-        `${baseUrl}/api/pokedex/pokedex.php?mode=exists&region=${item}&id=${pokeId}`
+      const data = await fetchWithRetry(
+        `${baseUrl}/api/pokedex/pokedex.php?mode=exists&region=${item}&id=${pokeId}`,
+        { timeoutMs: 7000, retries: 2 }
       )
       // pokeId ごとに area データを格納
       if (!existsPokedex[pokeId]) {
@@ -682,7 +677,8 @@ const fetchExists = async (pokeId: number | string) => {
       }
       existsPokedex[pokeId][item] = {
         query: { id: String(pokeId), region: item, mode: 'exists' },
-        result: -1
+        result: null,
+        error: true
       }
     }
   }
@@ -691,8 +687,9 @@ const fetchExists = async (pokeId: number | string) => {
 const fetchDescription = async (pokeId: number | string) => {
   try {
     const baseUrl = process.server ? config.public.baseUrl || 'http://localhost:3001' : ''
-    const data = await $fetch(
-      `${baseUrl}/api/pokedex/pokedex.php?mode=description&id=${pokeId}&language=jpn`
+    const data = await fetchWithRetry(
+      `${baseUrl}/api/pokedex/pokedex.php?mode=description&id=${pokeId}&language=jpn`,
+      { timeoutMs: 8000, retries: 2 }
     )
     
     // data と data.data のバリデーション（description モードのレスポンス構造）
@@ -805,17 +802,22 @@ const { data: nextData, refresh: refreshNext } = await useAsyncData<PokedexRespo
 // バージョンキーからゲームグループ名を取得
 // バージョンキーからゲームグループ名を取得
 const getGameGroup = (verKey: string): string => {
-  const entry = Object.entries(appConfig.games.region2game).find(([_, gameKey]) => {
-    // region2game は string なので単純比較で OK
-    return gameKey.toLowerCase() === verKey.toLowerCase()
-  })
-  return entry ? entry[0] : ''
+  // appConfig.regionPokedex の各リージョンを走査し、該当バージョンを含むリージョンキーを返す
+  for (const [area, info] of Object.entries(appConfig.regionPokedex)) {
+    if (area === 'global') continue
+    const versions = info?.gameVersion ?? []
+    if (versions.some(v => v.toLowerCase() === verKey.toLowerCase())) {
+      return area
+    }
+  }
+  return ''
 }
 
 // area からゲームグループ名を取得
 const getGroupByArea = (area: string): string => {
-  // appConfig.pokedex2gameVersion から area に対応するゲームバージョンキーを取得
-  const versions = appConfig.regionPokedex[area]?.gameVersion;
+  // regionPokedex から area に対応するゲームバージョンキーを取得
+  const rp = appConfig.regionPokedex as Record<string, { gameVersion?: string[] }>
+  const versions = rp[area]?.gameVersion;
   if (!versions || versions.length === 0) return '';
   
   // 最初のバージョンキーからゲームグループを取得
@@ -831,8 +833,23 @@ const getDescriptionLines = (area: string, pokemonId?: string) => {
   }
   
   // area に対応するregionPokedexのgameVersion配列と日本語名を取得
-  const areaGameVersions = appConfig.regionPokedex[area]?.gameVersion
-  const areaJpnName = appConfig.regionPokedex[area]?.name?.jpn
+  const rp2 = appConfig.regionPokedex as Record<string, { gameVersion?: string[]; name?: { jpn?: string } }>
+  const areaGameVersions = rp2[area]?.gameVersion
+  const areaJpnName = rp2[area]?.name?.jpn
+  
+  // global 特例: バージョン配列チェックはバイパスしつつ、図鑑名は『全国図鑑』に限定
+  if (area === 'global') {
+    const globalJpn = rp2[area]?.name?.jpn
+    console.log(`[getDescriptionLines] Special case 'global': filter by pokedex='${globalJpn}' for pokemonId: ${pokemonId}`)
+    return descriptionRows[pokemonId]
+      .filter(r => r.pokedex === globalJpn)
+      .map(r => ({
+        ver: r.ver,
+        verJpn: r.ver,
+        pokedex: r.pokedex,
+        description: r.description,
+      }))
+  }
   
   if (!areaGameVersions || !Array.isArray(areaGameVersions)) {
     console.warn(`[getDescriptionLines] No gameVersion array found for area: ${area}`)
@@ -872,6 +889,24 @@ const getDescriptionLines = (area: string, pokemonId?: string) => {
       pokedex: r.pokedex,
       description: r.description
     }))
+}
+
+// global 用: DescriptionView に渡す { [ver]: { jpn: string } } 形式へ変換
+const getGlobalDescriptionMap = (pokemonId?: string | number) => {
+  const key = String(pokemonId ?? '')
+  if (!key || !descriptionRows[key]) {
+    console.warn(`[getGlobalDescriptionMap] No description data for pokemonId: ${pokemonId}`)
+    return {}
+  }
+  const map: Record<string, { jpn: string }> = {}
+  const globalJpn = appConfig.regionPokedex.global?.name?.jpn
+  for (const r of descriptionRows[key]) {
+    if (r.pokedex !== globalJpn) continue
+    if (!map[r.ver]) {
+      map[r.ver] = { jpn: r.description }
+    }
+  }
+  return map
 }
 
 console.log(`[Main] pokedexData.value:`, pokedexData.value)

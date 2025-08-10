@@ -3,7 +3,7 @@ const appConfig = useAppConfig()
 const route = useRoute()
 const config = useRuntimeConfig()
 
-const props = defineProps(["description", "title"])
+const props = defineProps(["description", "title", "openVersionDialog"])
 
 const shareOptions = [
   { title: 'Twitter', icon: 'mdi-twitter', network: 'twitter' },
@@ -12,12 +12,13 @@ const shareOptions = [
   // 他のSNSオプションを追加できます
 ];
 
-const shareOn = (network, ver) => {
-  const urlObject = new URL(`${config.public.siteUrl}${route.fullPath}`)
-  // const currentUrl = `${config.public.siteUrl}${route.fullPath.slice(0, -1)}#${key}`
+const shareOn = (network, textContent) => {
+  const urlObject = (process.client && typeof window !== 'undefined')
+    ? new URL(window.location.href)
+    : new URL(`${(config.public && (config.public as any).siteUrl) || ''}${route.fullPath}`)
   urlObject.hash = ''
   const currentUrl = `${urlObject.toString()}`
-  const text = encodeURIComponent(`${ver}\n${props.title}\n`);
+  const text = encodeURIComponent(`${textContent}\n${props.title}\n`);
   const url = encodeURIComponent(currentUrl);
   
   let shareUrl;
@@ -43,11 +44,6 @@ const shareOn = (network, ver) => {
   }
 };
 
-const openVersionDialog = (line) => {
-  // バージョン情報のダイアログを開く処理
-  console.log('Version dialog:', line);
-};
-
 </script>
 <template>
   <v-card
@@ -66,11 +62,11 @@ const openVersionDialog = (line) => {
             <img
               v-if="appConfig.verIcon[index]"
               :src="`${config.app.baseURL || '/'}img/version/${appConfig.verIcon[index]}`"
-              :alt="appConfig.verDescription[index].shortTitle"
+              :alt="appConfig.verDescription[index]?.shortTitle || index"
               style="height: 20px; width: 20px; vertical-align: middle; margin-right: 4px; cursor: pointer;"
-              @click="openVersionDialog({ver: index, verJpn: appConfig.verDescription[index].shortTitle, description: ver.jpn})"
+              @click="props.openVersionDialog && props.openVersionDialog({ver: index, verJpn: appConfig.verDescription[index]?.shortTitle || String(index), description: ver.jpn})"
             />
-            {{ appConfig.verDescription[index].shortTitle }}
+            {{ appConfig.verDescription[index]?.shortTitle || index }}
           <v-menu>
           <template v-slot:activator="{ props }">
             <v-btn
@@ -85,7 +81,7 @@ const openVersionDialog = (line) => {
             <v-list-item
               v-for="(item, index) in shareOptions"
               :key="index"
-              @click="shareOn(item.network, ver)"
+              @click="shareOn(item.network, ver?.jpn || '')"
             >
               <v-list-item-title>
                 <v-icon :icon="item.icon" size="small" class="mr-2" />

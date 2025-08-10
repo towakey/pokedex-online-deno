@@ -83,7 +83,7 @@ export default defineNuxtConfig({
     prerender: {
       routes: [
         '/pokedex/central_kalos',
-        '/pokedex/coastal_kalos',
+        '/pokedex/coast_kalos',
         '/pokedex/mountain_kalos',
         '/pokedex/alola',
         '/pokedex/melemele',
@@ -116,7 +116,7 @@ export default defineNuxtConfig({
     // 動的エリアページは事前レンダリング + CSR
     '/pokedex/global': { prerender: true, ssr: false },
     '/pokedex/central_kalos': { prerender: true, ssr: false },
-    '/pokedex/coastal_kalos': { prerender: true, ssr: false },
+    '/pokedex/coast_kalos': { prerender: true, ssr: false },
     '/pokedex/mountain_kalos': { prerender: true, ssr: false },
     '/pokedex/alola': { prerender: true, ssr: false },
     '/pokedex/melemele': { prerender: true, ssr: false },
@@ -150,6 +150,16 @@ export default defineNuxtConfig({
         console.log('APIディレクトリを静的生成出力にコピー中...')
         copyDirectoryRecursive(sourceApiDir, targetApiDir)
         console.log('APIディレクトリのコピーが完了しました')
+      }
+
+      // analyticsディレクトリも.output/publicにコピー（PHPエンドポイント配置）
+      const sourceAnalyticsDir = join(process.cwd(), 'analytics')
+      const targetAnalyticsDir = join(nitro.options.output.publicDir, 'analytics')
+
+      if (existsSync(sourceAnalyticsDir)) {
+        console.log('analyticsディレクトリを静的生成出力にコピー中...')
+        copyDirectoryRecursive(sourceAnalyticsDir, targetAnalyticsDir)
+        console.log('analyticsディレクトリのコピーが完了しました')
       }
     }
   },

@@ -190,17 +190,19 @@ const { data: pokedex, pending, error } = await useAsyncData(
       let res: RawPokedexResponse;
       
       // SSR時は絶対URLを使用、クライアント時は相対パスを使用
-      const config = useRuntimeConfig()
-      const baseUrl = process.server ? config.public.baseUrl || 'http://localhost:3001' : ''
-      const apiUrl = `${baseUrl}/api/pokedex/pokedex.php`
+      const { buildUrl } = useApiBase()
+      const apiUrl = buildUrl('/pokedex/pokedex.php')
       
       console.log(`[API Call] Fetching from: ${apiUrl} (server: ${process.server})`)
       
       // APIからデータを取得
-      res = await $fetch<RawPokedexResponse>(
-        apiUrl,
-        { query: { region: area } }
-      );
+      const { fetchWithRetry } = useApiClient()
+      // グローバル地域はレスポンスが大きく時間がかかるため、タイムアウトとリトライを調整
+      const isGlobal = area === 'global'
+      const fetchOptions = isGlobal
+        ? { query: { region: area }, timeoutMs: 30000, retries: 0 }
+        : { query: { region: area }, timeoutMs: 10000, retries: 2 }
+      res = await fetchWithRetry<RawPokedexResponse>(apiUrl, fetchOptions)
       
       if (!res || !res.success) {
         console.error(`Data request failed for area: ${area}`);

@@ -178,6 +178,7 @@ useHead({
   ]
 })
 import { ref } from 'vue'
+import { useApiBase, useApiClient } from '#imports'
 
 const breadcrumbs = ref([
   { title: 'Home', disabled: false, href: '/' },
@@ -191,6 +192,11 @@ const searchResults = ref<any[]>([])
 const isLoading = ref(false)
 const hasSearched = ref(false)
 
+// API ベースURLユーティリティ
+const { buildUrl } = useApiBase()
+// タイムアウト・リトライ付きフェッチ
+const { fetchWithRetry } = useApiClient()
+
 // 検索処理
 const searchDescriptions = async () => {
   if (!searchWord.value || searchWord.value.trim().length === 0) {
@@ -203,15 +209,14 @@ const searchDescriptions = async () => {
   hasSearched.value = true
 
   try {
-    const apiUrl = '/api/pokedex/pokedex.php'
     const params = new URLSearchParams({
       mode: 'search',
       item: 'description',
       word: searchWord.value.trim()
     })
 
-    const response = await fetch(`${apiUrl}?${params.toString()}`)
-    const data = await response.json()
+    const endpoint = buildUrl('/pokedex/pokedex.php')
+    const data = await fetchWithRetry(`${endpoint}?${params.toString()}`, { timeoutMs: 7000, retries: 2 })
 
     if (data.success) {
       searchResults.value = data.data || []
