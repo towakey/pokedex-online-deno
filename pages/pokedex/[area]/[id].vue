@@ -88,6 +88,18 @@
           </v-row>
         </v-carousel-item>
       </v-carousel>
+      <!-- デバッグ情報 -->
+      <!-- <v-card v-if="route.params.area === 'global'" style="margin: 10px; padding: 10px; background-color: #ffffcc;">
+        <div>Debug Info for Global Area:</div>
+        <div v-for="(item, index) in pokedex.result" :key="`debug-${index}`">
+          <div>Index: {{ index }}, ID: {{ item?.id }}</div>
+          <div>Has descriptionRows[{{ String(item?.id) }}]: {{ !!descriptionRows[String(item?.id)] }}</div>
+          <div>Description length: {{ descriptionRows[String(item?.id)]?.length || 0 }}</div>
+          <div>v-if condition: {{ item?.id != null && descriptionRows[String(item.id)] && descriptionRows[String(item.id)].length > 0 }}</div>
+          <div>getGlobalDescriptionMap result: {{ JSON.stringify(getGlobalDescriptionMap(item.id)) }}</div>
+        </div>
+      </v-card> -->
+      
       <v-carousel
       :show-arrows="false"
       hide-delimiters
@@ -315,11 +327,11 @@
           <!-- <evolveView :evolveData="pokedex.result[index]" :area="route.params.area" /> -->
         </v-carousel-item>
       </v-carousel>
-      <PokedexVersionDescription
+      <!-- <PokedexVersionDescription
         :existsPokedex="(pokedex.result.length && existsPokedex[String(pokedex.result[Number(model)]?.id)]) ? existsPokedex[String(pokedex.result[Number(model)]?.id)] : {}"
         :getDescriptionLines="(area: string) => getDescriptionLines(area, String(pokedex.result[Number(model)]?.id))"
         :openVersionDialog="openVersionDialog"
-      />
+      /> -->
       <AdSenseCard
         :ad-client="'ca-pub-xxxxxxxxxxxxxxxx'"
         :ad-slot="'1234567890'"
@@ -687,6 +699,7 @@ const fetchExists = async (pokeId: number | string) => {
 const fetchDescription = async (pokeId: number | string) => {
   try {
     const baseUrl = process.server ? config.public.baseUrl || 'http://localhost:3001' : ''
+    console.log(`[fetchDescription] Fetching description for pokeId: ${pokeId}, key will be: ${String(pokeId)}`)
     const data = await fetchWithRetry(
       `${baseUrl}/api/pokedex/pokedex.php?mode=description&id=${pokeId}&language=jpn`,
       { timeoutMs: 8000, retries: 2 }
@@ -700,8 +713,10 @@ const fetchDescription = async (pokeId: number | string) => {
       return { result: [] }
     }
     console.log(`[Main] fetchDescription: Data for pokeId ${pokeId}`, data)
+    console.log(`[fetchDescription] Storing ${data.data.length} rows with key: ${String(pokeId)}`)
     // descriptionRows にポケモンIDごとにデータを設定
     descriptionRows[String(pokeId)] = [...data.data]
+    console.log(`[fetchDescription] Current descriptionRows keys:`, Object.keys(descriptionRows))
     
     // descriptions にデータを設定（グループごと）
     const groups: { [key: string]: string } = {}
@@ -730,8 +745,28 @@ let model = ref(0)
 
 // 初回マウント時に存在情報を取得
 onMounted(() => {
-  // fetchExists は pokedex データ取得後に実行する必要がある
-  // ここではまだ pokedex.result[0]?.id が未定なので、watch に任せる
+  console.log(`[onMounted] Component mounted, checking initial data...`)
+  console.log(`[onMounted] pokedex.result:`, pokedex.result)
+  console.log(`[onMounted] pokedex.result.length:`, pokedex.result.length)
+  
+  // 初期データがある場合は、存在情報と説明文を取得
+  if (pokedex.result && pokedex.result.length > 0) {
+    console.log(`[onMounted] Initial data found, fetching exists and descriptions...`)
+    for (const pokemon of pokedex.result) {
+      if (pokemon?.id) {
+        console.log(`[onMounted] Fetching exists for ${pokemon.id}`)
+        fetchExists(pokemon.id)
+        console.log(`[onMounted] Fetching description for ${pokemon.id}`)
+        fetchDescription(pokemon.id)
+        
+        // DescriptionView の v-if 条件をデバッグ
+        const idStr = String(pokemon.id)
+        console.log(`[onMounted] Checking v-if condition for id: ${idStr}`)
+        console.log(`[onMounted] descriptionRows[${idStr}]:`, descriptionRows[idStr])
+        console.log(`[onMounted] descriptionRows[${idStr}]?.length:`, descriptionRows[idStr]?.length)
+      }
+    }
+  }
 })
 
 watch(() => [route.params.area, route.params.id], async () => {
@@ -826,9 +861,13 @@ const getGroupByArea = (area: string): string => {
 
 // 指定リージョン(area) とポケモンIDから図鑑説明を取得するヘルパー（最初の1行）
 const getDescriptionLines = (area: string, pokemonId?: string) => {
+  console.log(`[getDescriptionLines] Called with area: ${area}, pokemonId: ${pokemonId}`)
+  console.log(`[getDescriptionLines] Available keys in descriptionRows:`, Object.keys(descriptionRows))
+  
   // ポケモンIDが指定されていない場合は空配列を返す
   if (!pokemonId || !descriptionRows[pokemonId]) {
     console.warn(`[getDescriptionLines] No description data for pokemonId: ${pokemonId}`)
+    console.warn(`[getDescriptionLines] descriptionRows[${pokemonId}]:`, descriptionRows[pokemonId])
     return []
   }
   
@@ -893,19 +932,26 @@ const getDescriptionLines = (area: string, pokemonId?: string) => {
 
 // global 用: DescriptionView に渡す { [ver]: { jpn: string } } 形式へ変換
 const getGlobalDescriptionMap = (pokemonId?: string | number) => {
+  console.log(`[getGlobalDescriptionMap] Called with pokemonId: ${pokemonId}`)
   const key = String(pokemonId ?? '')
+  console.log(`[getGlobalDescriptionMap] key: ${key}, descriptionRows[key]:`, descriptionRows[key])
+  
   if (!key || !descriptionRows[key]) {
     console.warn(`[getGlobalDescriptionMap] No description data for pokemonId: ${pokemonId}`)
     return {}
   }
   const map: Record<string, { jpn: string }> = {}
   const globalJpn = appConfig.regionPokedex.global?.name?.jpn
+  console.log(`[getGlobalDescriptionMap] globalJpn: ${globalJpn}`)
+  
   for (const r of descriptionRows[key]) {
+    console.log(`[getGlobalDescriptionMap] Checking row: ver=${r.ver}, pokedex=${r.pokedex}`)
     if (r.pokedex !== globalJpn) continue
     if (!map[r.ver]) {
       map[r.ver] = { jpn: r.description }
     }
   }
+  console.log(`[getGlobalDescriptionMap] Returning map:`, map)
   return map
 }
 
@@ -921,10 +967,10 @@ console.log(`[Main] Reactive pokedex.result:`, pokedex.result)
 console.log(`[Main] Reactive pokedex.result.length:`, pokedex.result.length)
 
 // ポケモンデータが取得されたらリアクティブ状態を更新
-watch(pokedexData, (newData) => {
-  console.log(`[Watch] pokedexData changed:`, newData)
+watch(() => pokedexData.value, (newData) => {
+  console.log(`[Watch pokedexData] Data changed:`, newData)
   if (newData && newData.result && newData.result.length > 0) {
-    console.log(`[Watch] Updating reactive state with new data:`, newData.result)
+    console.log(`[Watch pokedexData] Updating reactive state with new data:`, newData.result)
     Object.assign(pokedex, newData)
     // 画像パス(src)を最新データに合わせて再設定する
     for (const status of pokedex.result) {
@@ -934,9 +980,9 @@ watch(pokedexData, (newData) => {
     // pokedex データ取得後に、すべてのポケモンに対して存在情報と図鑑説明を再取得
     for (const pokemon of pokedex.result) {
       if (pokemon?.id) {
-        console.log(`[Watch] Fetching exists for ${pokemon.id}`)
+        console.log(`[Watch pokedexData] Fetching exists for ${pokemon.id}`)
         fetchExists(pokemon.id)
-        console.log(`[Watch] Fetching description for ${pokemon.id}`)
+        console.log(`[Watch pokedexData] Fetching description for ${pokemon.id}`)
         fetchDescription(pokemon.id)
       }
     }
@@ -981,25 +1027,55 @@ const globalNo = computed(() => route.params.area === 'global'
   : (pokedex.result[0]?.globalNo ?? Number(route.params.id)))
 
 const id = computed(() => pokedex.result[0]?.id ?? Number(route.params.id))
-// const paddedId = String(id).padStart(4, '0')
 
 const breadcrumbs = computed(() => {
-  const area = route.params.area as string;
-  const areaJpn = appConfig.regionPokedex[area]?.name.jpn ?? '';
-  // const areaJpn = area ?? '';
-  const pokemonName = pokedex.result[0]?.name[personal.language] ?? String(route.params.id);
-
-  return [
-    { title: 'TOP', disabled: false, href: '/' },
-    { title: 'ポケモン図鑑', disabled: false, href: '/pokedex' },
-    { title: areaJpn, disabled: false, href: `/pokedex/${area}` },
-    { title: pokemonName, disabled: true, href: '' }
+  const area = route.params.area as string
+  let list: { title: string; to?: string; disabled?: boolean }[] = [
+    { title: 'TOP', to: '/' },
+    { title: 'ポケモン図鑑', to: '/pokedex' }
   ]
-});
+  
+  if(area === 'global'){
+    list.push({ title: '全国図鑑', to: '/pokedex/global' })
+  }else{
+    list.push({ title: appConfig.regionPokedex[area]?.disp, to: `/pokedex/${area}` })
+  }
+  
+  const pokemonName = pokedex.result.length > 0 && pokedex.result[0]?.name?.jpn 
+    ? pokedex.result[0].name.jpn 
+    : appTitle.value
+  list.push({ title: pokemonName, disabled: true })
+  
+  return list
+})
 
-for(let pokedex_status in pokedex.result){
-  pokedex.result[pokedex_status].src = (config.app.baseURL || '/') + 'img/pokedex/' + pokedex.result[pokedex_status].id + '.png'
-}
+// DescriptionViewのv-if条件をデバッグするcomputed
+const descriptionViewDebug = computed(() => {
+  const area = route.params.area as string
+  const result = pokedex.result.map((item, index) => {
+    const id = item?.id
+    const idStr = String(id)
+    const hasId = id != null
+    const hasDescriptionRows = !!descriptionRows[idStr]
+    const descriptionLength = descriptionRows[idStr]?.length || 0
+    const shouldShow = hasId && hasDescriptionRows && descriptionLength > 0
+    
+    console.log(`[descriptionViewDebug] index: ${index}, id: ${id}, hasId: ${hasId}, hasDescriptionRows: ${hasDescriptionRows}, descriptionLength: ${descriptionLength}, shouldShow: ${shouldShow}`)
+    console.log(`[descriptionViewDebug] descriptionRows[${idStr}]:`, descriptionRows[idStr])
+    
+    return {
+      index,
+      id,
+      hasId,
+      hasDescriptionRows,
+      descriptionLength,
+      shouldShow
+    }
+  })
+  
+  console.log(`[descriptionViewDebug] area: ${area}, total items: ${result.length}`)
+  return result
+})
 
 // バージョンごとの図鑑説明を保持（グループ版）
 const descriptions = reactive<{ [key: string]: string }>({})
