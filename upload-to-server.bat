@@ -104,6 +104,16 @@ if not exist ".output\public" (
     exit /b 1
 )
 
+REM Ensure .htaccess (and dotfiles) are present in output if in project
+if exist ".htaccess" (
+    echo Found .htaccess in project root. Copying to .output\public\.htaccess ...
+    copy /Y ".htaccess" ".output\public\.htaccess" >nul
+)
+if exist "public\.htaccess" (
+    echo Found public\.htaccess. Copying to .output\public\.htaccess ...
+    copy /Y "public\.htaccess" ".output\public\.htaccess" >nul
+)
+
 REM Count files
 for /f %%i in ('dir /s /b ".output\public\*" ^| find /c /v ""') do set FILE_COUNT=%%i
 echo Generated file count: !FILE_COUNT! files
@@ -184,7 +194,8 @@ if %errorlevel% == 0 (
         ssh -p %SSH_PORT% %SSH_USER%@%SSH_HOST% "rm -rf %REMOTE_PATH%/* %REMOTE_PATH%/.*[!.]*"
     )
     
-    REM Upload files using scp
+    REM Upload files using scp (include dotfiles)
+    REM First upload regular files and directories
     if not "%SSH_KEY_FILE%" == "" (
         scp -i "%SSH_KEY_FILE%" -P %SSH_PORT% -r ".output\public\*" "%SSH_USER%@%SSH_HOST%:%REMOTE_PATH%/"
     ) else (
@@ -195,6 +206,25 @@ if %errorlevel% == 0 (
         echo [ERROR] scp upload failed.
         pause
         exit /b 1
+    )
+    
+    REM Then upload dotfiles (e.g., .htaccess, .well-known)
+    dir /b /a ".output\public\.*" >nul 2>nul
+    if %errorlevel%==0 (
+        for /f "usebackq delims=" %%F in (`dir /b /a ".output\public\.*"`) do (
+            if not "%SSH_KEY_FILE%" == "" (
+                scp -i "%SSH_KEY_FILE%" -P %SSH_PORT% -r ".output\public\%%F" "%SSH_USER%@%SSH_HOST%:%REMOTE_PATH%/"
+            ) else (
+                scp -P %SSH_PORT% -r ".output\public\%%F" "%SSH_USER%@%SSH_HOST%:%REMOTE_PATH%/"
+            )
+            if errorlevel 1 (
+                echo [ERROR] scp upload failed for dotfile/dotdir: %%F
+                pause
+                exit /b 1
+            )
+        )
+    ) else (
+        echo No dotfiles found to upload.
     )
 )
 
