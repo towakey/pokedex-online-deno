@@ -148,7 +148,7 @@ if ($pdo) {
 <body>
   <header>
     <h1>Analytics Viewer</h1>
-    <div class="muted">SQLite: <?php echo h($dbFile); ?></div>
+    <div class="muted">SQLite</div>
   </header>
   <main>
     <section class="card">
