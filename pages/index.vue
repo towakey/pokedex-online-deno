@@ -39,6 +39,7 @@ useHead({
 
 import { ref } from 'vue'
 import { useApiBase, useApiClient } from '#imports'
+import appConfig from '~/app.config'
 
 const breadcrumbs = ref([
   { title: 'Home', disabled: true, href: '/' },
@@ -59,9 +60,10 @@ async function callApi() {
   }
 }
 
-const mainMenu = ref([
-  { title: 'ポケモン図鑑', path: '/pokedex', img: '/icon.png', category: 'pokemon_data' },
-  { title: '検索', path: '/search', img: '/icon.png', category: 'pokemon_data' },
+const mainMenu = appConfig.menus.main
+// const mainMenu = ref([
+  // { title: 'ポケモン図鑑', path: '/pokedex', img: '/icon.png', category: 'pokemon_data' },
+  // { title: '検索', path: '/search', img: '/icon.png', category: 'pokemon_data' },
   // { title: 'わざ', path: '/waza', img: '/icon.png', category: 'pokemon_data' },
   // { title: 'わざマシン', path: '/waza_machine', img: '/icon.png', category: 'pokemon_data' },
   // { title: 'とくせい', path: '/ability', img: '/icon.png', category: 'pokemon_data' },
@@ -69,16 +71,16 @@ const mainMenu = ref([
   // { title: '検索', path: '/search', img: '/icon.png', category: 'tools_gallery' },
   // { title: 'pokedex.jsonについて', path: '/pokedexjson', img: '/icon.png', category: 'useful_information' },
   // { title: '年表', path: '/pokemon_history', img: '/icon.png', category: 'useful_information' },
-  { title: 'WebApp', path: '/webapp', img: '/icon.png', category: 'tools_gallery' },
+  // { title: 'WebApp', path: '/webapp', img: '/icon.png', category: 'tools_gallery' },
   // { title: 'チートシート', path: '/cheatsheet', img: '/blog.png', category: 'useful_information' },
   // { title: 'リンク', path: '/link', img: '/icon.png', category: 'useful_information' },
   // { title: 'リーフ', path: '/leaf', img: '/icon.png', category: 'tools_gallery' },
   // { title: 'ギャラリー', path: '/gallery', img: '/icon.png', category: 'tools_gallery' },
-])
+// ])
 
 const groupedMenu = computed(() => {
   const groups: { [key: string]: any[] } = {}
-  mainMenu.value.forEach(item => {
+  mainMenu.forEach(item => {
     if (!groups[item.category]) {
       groups[item.category] = []
     }

@@ -9,7 +9,7 @@
         <v-container>
           <v-card>
             <v-card-title v-if="pokedex.result.length > 0">
-              {{ pokedex.result[Number(model)]?.name?.[personal.language] }}
+              {{ pokedex.result[Number(model)]?.name?.[settings.language] }}
             </v-card-title>
             <v-card-text v-if="pokedex.result.length > 0">
               <v-row
@@ -37,7 +37,7 @@
             :to='{path: `/pokedex/${route.params.area}/${prev.result[0].no}`}'
             style="background-color: white; width: 120px;"
             variant="outlined"
-            >{{ prev.result[0].name[personal.language] }}</v-btn>
+            >{{ prev.result[0].name[settings.language] }}</v-btn>
         </div>
         <div style="flex: 1; display: flex; justify-content: center;">
           <v-btn
@@ -52,7 +52,7 @@
             :to='{path: `/pokedex/${route.params.area}/${next.result[0].no}`}'
             style="background-color: white; width: 120px;"
             variant="outlined"
-            >{{ next.result[0].name[personal.language] }}</v-btn>
+            >{{ next.result[0].name[settings.language] }}</v-btn>
         </div>
       </div>
       <v-carousel
@@ -69,10 +69,10 @@
             <v-col :cols="7">
               <v-card elevation="0" width="100%" variant="outlined" style="background-color: white;margin-top: 5px;">
                 <v-card-title @click="nameDialog = true" width="auto">
-                  <h2 class="responsive-text-name">{{ item.name[personal.language] }}</h2>
+                  <h2 class="responsive-text-name">{{ item.name[settings.language] }}</h2>
                 </v-card-title>
                 <v-card-text width="auto">
-                  <div class="responsive-text">分類　　　　{{ item.classification[personal.language] }}</div>
+                  <div class="responsive-text">分類　　　　{{ item.classification[settings.language] }}</div>
                   <!-- <div class="responsive-text">図鑑番号　　　No.{{ ('0000' + item.no).slice(-4) }}</div> -->
                   <div class="responsive-text">図鑑番号　　No.{{ ('0000' + item.globalNo).slice(-4) }}</div>
                   <div class="responsive-text">たかさ　　　{{ item.height }} m</div>
@@ -168,7 +168,7 @@
       <v-container>
         <v-card>
           <v-card-title v-if="pokedex.result.length > 0">
-            {{ pokedex.result[Number(model)]?.name?.[personal.language] ?? '' }}
+            {{ pokedex.result[Number(model)]?.name?.[settings.language] ?? '' }}
           </v-card-title>
           <v-card-text v-if="pokedex.result.length > 0">
             <v-row
@@ -202,7 +202,7 @@
             :to='{path: `/pokedex/${route.params.area}/${prev.result[0].no}`}'
             style="background-color: white; width: 120px;"
             variant="outlined"
-            >{{ prev.result[0].name[personal.language] }}</v-btn>
+            >{{ prev.result[0].name[settings.language] }}</v-btn>
         </div>
         <div style="flex: 1; display: flex; justify-content: center;">
           <v-btn
@@ -217,7 +217,7 @@
             :to='{path: `/pokedex/${route.params.area}/${next.result[0].no}`}'
             style="background-color: white; width: 120px;"
             variant="outlined"
-            >{{ next.result[0].name[personal.language] }}</v-btn>
+            >{{ next.result[0].name[settings.language] }}</v-btn>
         </div>
       </div>
       <v-carousel
@@ -246,8 +246,8 @@
                 class=""
                 >
                   <h2 class="responsive-text-name" @click="nameDialog = true"
-                  >{{ item.name[personal.language] }}</h2>
-                  <div class="responsive-text">分類　　　　　{{ item.classification[personal.language] }}</div>
+                  >{{ item.name[settings.language] }}</h2>
+                  <div class="responsive-text">分類　　　　　{{ item.classification[settings.language] }}</div>
                   <div class="responsive-text">図鑑番号　　　No.{{ ('0000' + item.no).slice(-4) }}</div>
                   <NuxtLink class="nuxtlink" :to="{path: `/pokedex/global/${item.globalNo}`}">
                     <div class="responsive-text">全国図鑑番号　No.{{ ('0000' + item.globalNo).slice(-4) }}</div>
@@ -448,7 +448,8 @@ const route = useRoute()
 const router = useRouter()
 route.meta.title = route.params.area
 
-const personal = appConfig.personal
+// 設定管理composableを使用
+const { settings } = useSettings()
 
 // 共通のフェッチラッパー（タイムアウト・リトライ）
 const { fetchWithRetry } = useApiClient()
@@ -701,7 +702,7 @@ const fetchDescription = async (pokeId: number | string) => {
     const baseUrl = process.server ? config.public.baseUrl || 'http://localhost:3001' : ''
     console.log(`[fetchDescription] Fetching description for pokeId: ${pokeId}, key will be: ${String(pokeId)}`)
     const data = await fetchWithRetry(
-      `${baseUrl}/api/pokedex/pokedex.php?mode=description&id=${pokeId}&language=jpn`,
+      `${baseUrl}/api/pokedex/pokedex.php?mode=description&id=${pokeId}&language=${settings.value.language}`,
       { timeoutMs: 8000, retries: 2 }
     )
     
@@ -1089,7 +1090,7 @@ if (pokedex.result.length) {
 
 const metaTitle = computed(() => 
   hasPokedexData.value
-    ? `${pokedex.result[0].name[personal.language]} - ポケモンずかん`
+    ? `${pokedex.result[0].name[settings.language]} - ポケモンずかん`
     : `ポケモンずかん`
 );
 

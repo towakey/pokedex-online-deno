@@ -299,64 +299,25 @@ export default defineAppConfig({
     categories: {
       pokemon_data: 'ポケモンデータ',
       tools_gallery: 'ツール・図鑑',
-      useful_information: '便利情報'
+      useful_information: '便利情報',
+      setting: '設定'
     },
     
     // メインメニュー
     main: [
-      { title: 'ポケモン図鑑', path: '/pokedex', category: 'pokemon_data' },
-      { title: 'わざ', path: '/waza', category: 'pokemon_data' },
-      { title: 'とくせい', path: '/ability', category: 'pokemon_data' },
-      { title: '図鑑カメラ', path: '/camera', category: 'tools_gallery' },
-      { title: '検索', path: '/search', category: 'tools_gallery' },
-      { title: 'pokedex.json', path: '/pokedexjson', category: 'useful_information' },
-      { title: '年表', path: '/pokemon_history', category: 'useful_information' },
-      { title: 'チートシート', path: '/cheatsheet', category: 'useful_information' }
+      { title: 'ポケモン図鑑', path: '/pokedex', category: 'pokemon_data', img: '/icon.png' },
+      // { title: 'わざ', path: '/waza', category: 'pokemon_data', img: '/icon.png' },
+      // { title: 'とくせい', path: '/ability', category: 'pokemon_data', img: '/icon.png' },
+      // { title: '図鑑カメラ', path: '/camera', category: 'tools_gallery', img: '/icon.png' },
+      { title: '検索', path: '/search', category: 'tools_gallery', img: '/icon.png' },
+      // { title: 'pokedex.json', path: '/pokedexjson', category: 'useful_information', img: '/icon.png' },
+      // { title: '年表', path: '/pokemon_history', category: 'useful_information', img: '/icon.png' },
+      // { title: 'チートシート', path: '/cheatsheet', category: 'useful_information', img: '/icon.png' }
+      { title: '設定', path: '/setting', category: 'setting', img: '/icon.png' },
     ]
   },
 
-  // Vueファイルとの互換性のための旧形式設定
-  // pokedex_eng2jpn: {
-  //   global: '全国図鑑',
-  //   kanto: 'カントー図鑑',
-  //   johto: 'ジョウト図鑑',
-  //   hoenn: 'ホウエン図鑑',
-  //   kanto_frlg: 'カントー図鑑(FRLG)',
-  //   sinnoh: 'シンオウ図鑑',
-  //   johto_hgss: 'ジョウト図鑑(HGSS)',
-  //   unova_bw: 'イッシュ図鑑(BW)',
-  //   unova_b2w2: 'イッシュ図鑑(B2W2)',
-  //   central_kalos: 'セントラルカロス図鑑',
-  //   coast_kalos: 'コーストカロス図鑑',
-  //   mountain_kalos: 'マウンテンカロス図鑑',
-  //   alola_sm: 'アローラ図鑑(SM)',
-  //   alola_usum: 'アローラ図鑑(USUM)',
-  //   galar: 'ガラル図鑑',
-  //   isle_of_armor: 'ヨロイ島図鑑',
-  //   crown_tundra: 'カンムリ雪原図鑑',
-  //   hisui: 'ヒスイ図鑑',
-  //   paldea: 'パルデア図鑑',
-  //   kitakami: 'キタカミ図鑑',
-  //   blueberry: 'ブルーベリー図鑑'
-  // },
-
-  // ポケモン図鑑リスト
-  // pokedex_list: [
-  //   { area: 'global', title: '全国図鑑', path: '/global' },
-  //   { area: 'kanto', title: 'カントー図鑑', path: '/kanto' },
-  //   { area: 'johto', title: 'ジョウト図鑑', path: '/johto' },
-  //   { area: 'hoenn', title: 'ホウエン図鑑', path: '/hoenn' },
-  //   { area: 'sinnoh', title: 'シンオウ図鑑', path: '/sinnoh' },
-  //   { area: 'unova', title: 'イッシュ図鑑', path: '/unova' },
-  //   { area: 'central_kalos', title: 'セントラルカロス図鑑', path: '/central_kalos' },
-  //   { area: 'coast_kalos', title: 'コーストカロス図鑑', path: '/coast_kalos' },
-  //   { area: 'mountain_kalos', title: 'マウンテンカロス図鑑', path: '/mountain_kalos' },
-  //   { area: 'alola', title: 'アローラ図鑑', path: '/alola' },
-  //   { area: 'galar', title: 'ガラル図鑑', path: '/galar' },
-  //   { area: 'hisui', title: 'ヒスイ図鑑', path: '/hisui' },
-  //   { area: 'paldea', title: 'パルデア図鑑', path: '/paldea' }
-  // ],
-
+ 
   // 言語名変換
   lang_eng2jpn: {
     jpn: '日本語',
@@ -369,15 +330,6 @@ export default defineAppConfig({
     chs: '中国語(簡体)',
     cht: '中国語(繁体)'
   },
-
-  // バージョン説明（ダミーデータ）
-  // verDescription: {
-  //   green: {
-  //     title: 'ポケットモンスター 緑',
-  //     description: '初代ポケットモンスターの緑バージョン',
-  //     image: 'green'
-  //   }
-  // },
 
   typeList: {
     'kanto': 1,
@@ -469,26 +421,4 @@ export default defineAppConfig({
     "scarlet": {title: "ポケットモンスター スカーレット", shortTitle: "スカーレット", description: "発売日：2022年11月18日"},
     "violet": {title: "ポケットモンスター バイオレット", shortTitle: "バイオレット", description: "発売日：2022年11月18日"},
   },
-  // pokedex2gameVersion: {
-  //   "kanto": ["red", "green", "blue", "pikachu"],
-  //   "johto": ["gold", "silver", "crystal"],
-  //   "hoenn": ["ruby", "sapphire", "emerald"],
-  //   "kanto_frlg": ["firered", "leafgreen"],
-  //   "sinnoh": ["diamond", "pearl", "platinum"],
-  //   "johto_hgss": ["heartgold", "soulsilver"],
-  //   "unova_bw": ["black", "white"],
-  //   "unova_b2w2": ["black2", "white2"],
-  //   "central_kalos": ["x", "y"],
-  //   "coast_kalos": ["x", "y"],
-  //   "mountain_kalos": ["x", "y"],
-  //   "alola_sm": ["sun", "moon"],
-  //   "alola_usum": ["ultrasun", "ultramoon"],
-  //   "galar": ["sword", "shield"],
-  //   "isle_of_armor": ["sword", "shield"],
-  //   "crown_tundra": ["sword", "shield"],
-  //   "hisui": ["legendsarceus"],
-  //   "paldea": ["scarlet", "violet"],
-  //   "kitakami": ["scarlet", "violet"],
-  //   "blueberry": ["scarlet", "violet"],
-  // },
 })
