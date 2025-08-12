@@ -161,6 +161,28 @@ export default defineNuxtConfig({
         copyDirectoryRecursive(sourceAnalyticsDir, targetAnalyticsDir)
         console.log('analyticsディレクトリのコピーが完了しました')
       }
+
+      // ルートまたはpublic配下の .htaccess を .output/public にコピー
+      const publicDir = nitro.options.output.publicDir
+      const rootHtaccess = join(process.cwd(), '.htaccess')
+      const publicHtaccess = join(process.cwd(), 'public', '.htaccess')
+      const targetHtaccess = join(publicDir, '.htaccess')
+
+      try {
+        if (existsSync(rootHtaccess)) {
+          console.log('.htaccess をプロジェクトルートから静的生成出力にコピー中...')
+          copyFileSync(rootHtaccess, targetHtaccess)
+          console.log('.htaccess のコピーが完了しました（ルート）')
+        } else if (existsSync(publicHtaccess)) {
+          console.log('.htaccess をpublic/から静的生成出力にコピー中...')
+          copyFileSync(publicHtaccess, targetHtaccess)
+          console.log('.htaccess のコピーが完了しました（public/）')
+        } else {
+          console.log('.htaccess が見つかりませんでした（ルートまたはpublic/）。スキップします。')
+        }
+      } catch (e) {
+        console.error('.htaccess のコピー中にエラーが発生しました:', e)
+      }
     }
   },
 

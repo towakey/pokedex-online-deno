@@ -1,0 +1,25 @@
+# Nuxt SPA動的ルートのリダイレクト設定（XAMPP用）
+RewriteEngine On
+
+# 実際のファイルまたはディレクトリが存在する場合はそのまま表示
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# 静的アセット（CSS、JS、画像等）は除外
+RewriteCond %{REQUEST_URI} !\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|json)$
+
+# API呼び出しは除外
+RewriteCond %{REQUEST_URI} !^/pokedex-online/api/
+
+# _nuxtアセットは除外
+RewriteCond %{REQUEST_URI} !^/pokedex-online/_nuxt/
+
+# 個別ポケモンページ（/pokedex/[area]/[id]）を対応するエリアページにリダイレクト
+RewriteRule ^pokedex/([^/]+)/[0-9]+/?$ pokedex/$1/index.html [L]
+
+# その他のポケモン図鑑ルートをメインindex.htmlにリダイレクト
+RewriteRule ^pokedex/(.*)$ index.html [L]
+
+# すべての残りのリクエストをindex.htmlにリダイレクト（SPAフォールバック）
+RewriteRule ^(.*)$ index.html [L]

@@ -114,6 +114,13 @@ if exist "public\.htaccess" (
     copy /Y "public\.htaccess" ".output\public\.htaccess" >nul
 )
 
+REM Confirm presence of .output\public\.htaccess after copy
+if exist ".output\public\.htaccess" (
+    echo Confirm: .output\public\.htaccess is present.
+) else (
+    echo Warning: .output\public\.htaccess not found after copy phase.
+)
+
 REM Count files
 for /f %%i in ('dir /s /b ".output\public\*" ^| find /c /v ""') do set FILE_COUNT=%%i
 echo Generated file count: !FILE_COUNT! files
@@ -206,6 +213,25 @@ if %errorlevel% == 0 (
         echo [ERROR] scp upload failed.
         pause
         exit /b 1
+    )
+
+    REM Explicitly upload .htaccess if present
+    if exist ".output\public\.htaccess" (
+        echo Uploading .htaccess explicitly...
+        if not "%SSH_KEY_FILE%" == "" (
+            scp -i "%SSH_KEY_FILE%" -P %SSH_PORT% ".output\public\.htaccess" "%SSH_USER%@%SSH_HOST%:%REMOTE_PATH%/"
+        ) else (
+            scp -P %SSH_PORT% ".output\public\.htaccess" "%SSH_USER%@%SSH_HOST%:%REMOTE_PATH%/"
+        )
+        if errorlevel 1 (
+            echo [ERROR] scp upload failed for .htaccess
+            pause
+            exit /b 1
+        ) else (
+            echo .htaccess uploaded successfully.
+        )
+    ) else (
+        echo .htaccess not found locally under .output\public, skipping explicit upload.
     )
     
     REM Then upload dotfiles (e.g., .htaccess, .well-known)
