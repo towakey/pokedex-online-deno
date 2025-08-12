@@ -10,7 +10,6 @@ REM ===========================================
 REM SSH Connection Settings (Default Values)
 REM ===========================================
 
-REM SSH接続設定（デフォルト値）
 set DEFAULT_SSH_HOST=your-server.com
 set DEFAULT_SSH_USER=your-username
 set DEFAULT_REMOTE_PATH=/path/to/your/web/directory
