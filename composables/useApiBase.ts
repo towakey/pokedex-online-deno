@@ -12,19 +12,13 @@ export function useApiBase() {
     return { apiBase, buildUrl }
   }
 
-  // クライアント側ではベースのマウントパスを動的に算出
-  const { port, pathname } = window.location
+  // クライアント側では常に '/api' を使用
+  const { port } = window.location
   const isDevServer = port === '3001'
 
-  // 開発サーバでは Vite/Nitro のプロキシに合わせて '/api' をそのまま使う
-  // 本番（XAMPP 配下）では先頭セグメント（例: '/pokedex-online-deno'）を付与
-  let baseMount = ''
-  if (!isDevServer) {
-    const segments = pathname.split('/').filter(Boolean)
-    baseMount = segments.length > 0 ? `/${segments[0]}` : ''
-  }
-
-  const apiBase = `${baseMount}/api`
+  // 開発サーバでも本番サーバでも '/api' を使用
+  // 本番では静的生成時に api ディレクトリがルートにコピーされるため
+  const apiBase = '/api'
   const buildUrl = (path: string) => {
     const p = path.startsWith('/') ? path : `/${path}`
     return `${apiBase}${p}`
