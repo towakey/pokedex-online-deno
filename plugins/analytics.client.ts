@@ -2,7 +2,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   const computeEndpoint = (): string => {
     const config = useRuntimeConfig()
     // NuxtのbaseURLに追従（開発時は'/'、静的生成時は'/pokedex-online/'など）
-    const baseURL = (config.app && (config.app as any).baseURL) || '/'
+    const baseURL = (config.public && (config.public as any).appBaseURL) || (config.app && (config.app as any).baseURL) || '/'
     // 開発サーバではVite/Nitroのプロキシ（/analytics -> XAMPP）を使用
     const isDevServer = window.location.port === '3001' || import.meta.dev
     if (isDevServer) {

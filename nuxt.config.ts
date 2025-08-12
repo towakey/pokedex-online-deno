@@ -2,10 +2,12 @@
 import { copyFileSync, mkdirSync, readdirSync, statSync, existsSync } from 'fs'
 import { join } from 'path'
 
+const APP_BASE_URL = process.env.NUXT_PUBLIC_APP_BASE_URL || (process.env.NODE_ENV === 'production' ? '/pokedex-online/' : '/')
+
 export default defineNuxtConfig({
   app: {
     // 開発時は'/'、静的生成時は'/pokedex-online/'を使用
-    baseURL: process.env.NODE_ENV === 'production' ? '/pokedex-online/' : '/',
+    baseURL: APP_BASE_URL,
     head: {
       link: [
         {
@@ -30,6 +32,14 @@ export default defineNuxtConfig({
   },
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
+  
+  // .env から読み込むランタイム設定
+  runtimeConfig: {
+    public: {
+      // クライアントでも参照可能
+      appBaseURL: APP_BASE_URL
+    }
+  },
   
   // デバッグとエラー詳細表示設定
   ssr: true,
@@ -204,7 +214,7 @@ export default defineNuxtConfig({
     // 静的アセットの直接配信
     dir: 'public',
     // ベースURLを考慮した設定
-    baseURL: process.env.NODE_ENV === 'production' ? '/pokedex-online/' : '/',
+    baseURL: APP_BASE_URL,
     // IPXを無効化して直接画像配信
     screens: {},
     presets: {},
