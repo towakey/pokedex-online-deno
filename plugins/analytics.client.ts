@@ -1,17 +1,20 @@
 export default defineNuxtPlugin((nuxtApp) => {
   const computeEndpoint = (): string => {
-    const { protocol, port, origin, pathname } = window.location
-    // 開発サーバ（:3001）からXAMPP（:80/443）へ送信するためのオリジン
-    const isDevServer = port === '3001'
-    const phpOrigin = isDevServer ? `${protocol}//localhost` : origin
-    let baseMount = ''
+    const config = useRuntimeConfig()
+    // NuxtのbaseURLに追従（開発時は'/'、静的生成時は'/pokedex-online/'など）
+    const baseURL = (config.app && (config.app as any).baseURL) || '/'
+    // 開発サーバではVite/Nitroのプロキシ（/analytics -> XAMPP）を使用
+    const isDevServer = window.location.port === '3001' || import.meta.dev
     if (isDevServer) {
-      baseMount = '/pokedex-online-deno'
-    } else {
-      const segments = pathname.split('/').filter(Boolean)
-      baseMount = segments.length > 0 ? `/${segments[0]}` : ''
+      return '/analytics/analytics.php'
     }
-    return `${phpOrigin}${baseMount}/analytics/analytics.php`
+    // 本番は app.baseURL を優先し、なければパス名から先頭セグメントを推定
+    let basePrefix = String(baseURL || '/').replace(/\/$/, '')
+    if (!basePrefix || basePrefix === '/') {
+      const segments = window.location.pathname.split('/').filter(Boolean)
+      basePrefix = segments.length > 0 ? `/${segments[0]}` : ''
+    }
+    return `${basePrefix}/analytics/analytics.php`
   }
 
   const send = () => {
@@ -50,11 +53,12 @@ export default defineNuxtPlugin((nuxtApp) => {
   }
 
   // ルート遷移時
-  if (nuxtApp.$router) {
-    nuxtApp.$router.afterEach(() => {
+  try {
+    const router = useRouter()
+    router.afterEach(() => {
       send()
     })
-  } else {
+  } catch {
     // 念のためNuxtのフックでも送信
     nuxtApp.hook('page:finish', () => send())
   }

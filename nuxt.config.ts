@@ -57,6 +57,11 @@ export default defineNuxtConfig({
         '/api': {
           target: 'http://localhost/pokedex-online-deno',
           changeOrigin: true
+        },
+        // analytics(PHP) も開発サーバからXAMPPへプロキシ
+        '/analytics': {
+          target: 'http://localhost/pokedex-online-deno',
+          changeOrigin: true
         }
       }
     },
@@ -74,6 +79,12 @@ export default defineNuxtConfig({
   nitro: {
     devProxy: {
       '/api': {
+        target: 'http://localhost/pokedex-online-deno',
+        prependPath: true,
+        changeOrigin: true
+      },
+      // analytics(PHP) も開発サーバからXAMPPへプロキシ
+      '/analytics': {
         target: 'http://localhost/pokedex-online-deno',
         prependPath: true,
         changeOrigin: true
