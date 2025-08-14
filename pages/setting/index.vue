@@ -145,10 +145,22 @@ const lastSavedTime = ref<string>('')
 
 // 言語選択肢
 const languageOptions = computed(() => {
-  return Object.entries(appConfig.lang_eng2jpn).map(([key, value]) => ({
+  const t = appConfig.translation as Record<string, { jpn: string; eng: string }>
+  const dispKey = (settings.value.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng'
+  const allowed = ['jpn', 'eng'] as const
+  return allowed.map((key) => ({
     value: key,
-    text: value
+    text: t[key]?.[dispKey] ?? key
   }))
+})
+
+// 一時制限: 選択可能言語が jpn/eng のみのため、外れている場合は jpn に強制
+const allowedLangs = ['jpn', 'eng'] as const
+watchEffect(() => {
+  const current = localSettings.value.language
+  if (!allowedLangs.includes(current as any)) {
+    localSettings.value.language = 'jpn'
+  }
 })
 
 // 現在の設定と編集中の設定を比較して変更があるかチェック
@@ -156,9 +168,11 @@ const hasChanges = computed(() => {
   return JSON.stringify(settings.value) !== JSON.stringify(localSettings.value)
 })
 
-// 言語コードから表示名を取得
+// 言語コードから表示名を取得（translationに対応）
 const getCurrentLanguageName = (languageCode: string) => {
-  return (appConfig.lang_eng2jpn as Record<string, string>)[languageCode] || languageCode
+  const t = appConfig.translation as Record<string, { jpn: string; eng: string }>
+  const dispKey = (settings.value.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng'
+  return t?.[languageCode]?.[dispKey] || languageCode
 }
 
 // 最終保存時刻を更新

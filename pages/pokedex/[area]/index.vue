@@ -62,7 +62,7 @@
                     size="small"
                     @click="toggleType(type)"
                   >
-                    {{ appConfig.type[type]?.jpn || type }}
+                    {{ typeMap[type]?.jpn || type }}
                   </v-btn>
                 </div>
               </v-col>
@@ -80,7 +80,7 @@
                     text-color="black"
                     @click:close="toggleType(type)"
                   >
-                    {{ appConfig.type[type]?.jpn || type }}
+                    {{ typeMap[type]?.jpn || type }}
                   </v-chip>
                 </v-chip-group>
               </v-col>
@@ -152,6 +152,16 @@ import PokemonCard from '~/components/PokemonCard.vue'
 const appConfig = useAppConfig();
 const route = useRoute();
 const area = route.params.area as string;
+const typeMap = appConfig.type as Record<string, { jpn: string; eng: string; color: string }>;
+
+// パンくず「ポケモン図鑑」多言語対応タイトル
+const { settings } = useSettings()
+const breadcrumbPokedexTitle = computed(() => {
+  const lang = settings.value.language
+  const dispKey = (lang === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng'
+  const t = appConfig.translation as Record<string, { jpn: string; eng: string }>
+  return t?.pokedex?.[dispKey] ?? 'ポケモン図鑑'
+})
 
 // ポケモンデータの型を定義
 interface Pokemon {
@@ -162,7 +172,7 @@ interface Pokemon {
   status: Array<{
     weight: string;
     height: string;
-    name?: { jpn: string };  // 地域別エリアで使用
+    name?: { jpn: string; eng?: string };  // 地域別エリアで使用（英語対応）
     type1?: string;
     type2?: string;
     form?: string | string[];
@@ -220,7 +230,7 @@ const { data: pokedex, pending, error } = await useAsyncData(
           const statusObj = {
             weight: s.weight,
             height: s.height,
-            name: s.name ? { jpn: s.name.jpn } : undefined,
+            name: s.name ? { jpn: s.name.jpn, eng: s.name.eng } : undefined,
             type1: s.type1,
             type2: s.type2,
             form: s.form,
@@ -267,18 +277,28 @@ const { data: pokedex, pending, error } = await useAsyncData(
   { default: () => [] }
 );
 
-// コンポーネントマウント後にappConfigを取得してページタイトル更新
-onMounted(async () => {
+// ページタイトル（多言語対応）を更新
+const updatePageTitle = () => {
   try {
-    if (appConfig.regionPokedex && appConfig.regionPokedex[area as keyof typeof appConfig.regionPokedex]) {
-      pageTitleState.title = appConfig.regionPokedex[area as keyof typeof appConfig.regionPokedex].name.jpn;
+    const dispKey = (settings.value.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng'
+    const region = appConfig.regionPokedex?.[area as keyof typeof appConfig.regionPokedex] as
+      | { disp?: { jpn: string; eng: string } }
+      | undefined
+    if (region?.disp && region.disp[dispKey]) {
+      pageTitleState.title = region.disp[dispKey]
+    } else {
+      pageTitleState.title = dispKey === 'eng' ? `${area} Pokédex` : `${area} 図鑑`
     }
   } catch (error) {
-    console.error('AppConfig取得エラー:', error);
-    // フォールバック値を使用
-    pageTitleState.title = `${area} 図鑑`;
+    console.error('AppConfig取得エラー:', error)
+    const dispKey = (settings.value.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng'
+    pageTitleState.title = dispKey === 'eng' ? `${area} Pokédex` : `${area} 図鑑`
   }
-});
+}
+
+// 初期化と設定変更時に同期
+onMounted(() => updatePageTitle())
+watch(() => settings.value.language, () => updatePageTitle())
 
 // 検索モーダル関連の状態
 const searchModalOpen = ref(false);
@@ -322,31 +342,9 @@ function toggleType(type: string) {
   }
 }
 
-// タイプの色の定義
-const typeColors: Record<string, string> = {
-  'ノーマル': '#dcdcdc',
-  'ほのお': '#ff0000',
-  'みず': '#0000ff',
-  'でんき': '#f5c842',
-  'くさ': '#32cd32',
-  'こおり': '#87ceeb',
-  'かくとう': '#8b4513',
-  'どく': '#9932cc',
-  'じめん': '#daa520',
-  'ひこう': '#87ceeb',
-  'エスパー': '#ff1493',
-  'むし': '#9acd32',
-  'いわ': '#8b4513',
-  'ゴースト': '#6a5acd',
-  'ドラゴン': '#4169e1',
-  'あく': '#4b0082',
-  'はがね': '#b0c4de',
-  'フェアリー': '#ee82ee'
-};
-
-// タイプに応じた色を取得する関数
+// タイプに応じた色を取得する関数（app.config.ts の type 統合版から参照）
 function getTypeColor(type: string): string {
-  return typeColors[type] || '#dcdcdc';
+  return typeMap?.[type]?.color || '#dcdcdc';
 }
 
 // フィルタリングされたポケモンリスト
@@ -398,7 +396,7 @@ definePageMeta({
 
 const breadcrumbs = computed(() => [
   { title: 'Home', disabled: false, href: '/' },
-  { title: 'ポケモン図鑑', disabled: false, href: '/pokedex' },
+  { title: breadcrumbPokedexTitle.value, disabled: false, href: '/pokedex' },
   { title: pageTitle.value, disabled: true, href: `/pokedex/${area}` },
 ]);
 

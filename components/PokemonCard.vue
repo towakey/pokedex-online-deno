@@ -41,7 +41,7 @@ import { computed, PropType } from 'vue'
 interface PokemonStatus {
   weight: string
   height: string
-  name?: { jpn: string }
+  name?: { jpn: string; eng?: string }
   type1?: string
   type2?: string
   form?: string | string[]
@@ -69,7 +69,9 @@ const props = defineProps({
   },
 })
 
+const { settings } = useSettings()
 const appConfig = useAppConfig()
+const currentLanguage = computed(() => settings.value.language)
 
 const imgSrc = computed(() => {
   // baseURLを取得
@@ -94,19 +96,21 @@ const imgSrc = computed(() => {
 
 const noLabel = computed(() => {
   const serial = `0000${props.pokemon.no}`.slice(-4)
+  const lang = currentLanguage.value as 'jpn' | 'eng'
   if (props.area === 'global') {
-    return `全国図鑑No.${serial}`
+    return `${appConfig.translation.globalNo[lang]} ${serial}`
   }
-  // appConfigから地域名を取得
-  const regionName = appConfig.regionPokedex?.[props.area]?.name?.jpn || props.area;
-  return `${regionName}No.${serial}`
+  // appConfigから地域名を取得（settingsに基づき言語を選択）
+  const disp = appConfig.regionPokedex[props.area]?.disp
+  const regionName = (disp && disp[lang]) || props.area
+  return `${regionName} ${appConfig.translation.no[lang]}${serial}`
 })
 
 const mainName = computed(() => {
   if (props.area === 'global') {
     return typeof props.pokemon.name === 'string' ? props.pokemon.name : (props.pokemon.name as any).jpn
   }
-  return props.pokemon.status[0].name?.jpn ?? ''
+  return props.pokemon.status[0].name[currentLanguage.value as 'jpn' | 'eng'] ?? '???'
 })
 
 const subName = computed(() => {

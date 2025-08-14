@@ -10,7 +10,7 @@ import {
   LinearScale,
 } from 'chart.js'
 import ChartDataLabels from 'chartjs-plugin-datalabels'
-import { reactive, watch } from 'vue'
+import { reactive, watch, computed } from 'vue'
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 ChartJS.register(ChartDataLabels)
@@ -25,6 +25,27 @@ interface StatusData {
 }
 
 const props = defineProps<{ statusData?: StatusData }>()
+
+const { settings } = useSettings()
+const appConfig = useAppConfig()
+
+// 統一された言語設定
+const currentLanguage = computed(() => {
+  return (settings.value.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng'
+})
+
+// 多言語対応ラベル
+const statusLabels = computed(() => {
+  const lang = currentLanguage.value
+  return [
+    appConfig.translation.hp[lang],
+    appConfig.translation.attack[lang],
+    appConfig.translation.defense[lang],
+    appConfig.translation.spAttack[lang],
+    appConfig.translation.spDefense[lang],
+    appConfig.translation.speed[lang],
+  ]
+})
 
 const chartOptions = reactive({
   responsive: true,
@@ -55,7 +76,7 @@ const chartOptions = reactive({
 })
 
 const chartData = reactive({
-  labels: ['HP', 'こうげき', 'ぼうぎょ', 'とくこう', 'とくぼう', 'すばやさ'],
+  labels: statusLabels.value,
   datasets: [
     {
       data: [
@@ -77,6 +98,14 @@ const chartData = reactive({
     },
   ],
 })
+
+// 言語が変わったらラベルを更新
+watch(
+  statusLabels,
+  (newLabels) => {
+    chartData.labels = newLabels
+  }
+)
 
 // プロップスが変わったらデータセットを更新
 watch(

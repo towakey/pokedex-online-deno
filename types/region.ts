@@ -11,7 +11,10 @@ export type RegionPokedexKey = typeof regionPokedexKeys[number];
 
 // リージョン図鑑の値の型
 export interface RegionPokedexItem {
-  disp: string
+  disp: {
+    jpn: string
+    eng: string
+  }
   name: {
     jpn: string
     eng: string

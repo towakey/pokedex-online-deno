@@ -17,7 +17,10 @@ export default defineAppConfig({
   // リージョン図鑑データ
   regionPokedex: {
     global: {
-      disp: "全国図鑑",
+      disp: {
+        jpn: '全国図鑑',
+        eng: 'National Pokédex'
+      },
       name: {
         jpn: '全国図鑑',
         eng: 'global'
@@ -25,7 +28,10 @@ export default defineAppConfig({
       gameVersion: [],
     },
     kanto: {
-      disp: "カントー図鑑",
+      disp: {
+        jpn: 'カントー図鑑',
+        eng: 'Kanto Pokédex'
+      },
       name: {
         jpn: 'カントー図鑑',
         eng: 'kanto'
@@ -33,7 +39,10 @@ export default defineAppConfig({
       gameVersion: ["red", "green", "blue", "pikachu"],
     },
     johto: {
-      disp: "ジョウト図鑑",
+      disp: {
+        jpn: 'ジョウト図鑑',
+        eng: 'Johto Pokédex'
+      },
       name: {
         jpn: 'ジョウト図鑑',
         eng: 'johto'
@@ -41,7 +50,10 @@ export default defineAppConfig({
       gameVersion: ["gold", "silver", "crystal"],
     },
     hoenn: {
-      disp: "ホウエン図鑑",
+      disp:   {
+        jpn: 'ホウエン図鑑',
+        eng: 'Hoenn Pokédex'
+      },
       name: {
         jpn: 'ホウエン図鑑',
         eng: 'hoenn'
@@ -49,15 +61,21 @@ export default defineAppConfig({
       gameVersion: ["ruby", "sapphire", "emerald"],
     },
     kanto_frlg: {
-      disp: "カントー図鑑(ファイアレッド・リーフグリーン)",
+      disp: {
+        jpn: 'カントー図鑑(ファイアレッド・リーフグリーン)',
+        eng: 'Kanto Pokédex(firered / leafgreen)'
+      },
       name: {
         jpn: 'カントー図鑑',
-        eng: 'kanto(firered / leafgreen)'
+        eng: 'kanto'
       },
       gameVersion: ["firered", "leafgreen"],
     },
     sinnoh: {
-      disp: "シンオウ図鑑",
+      disp: {
+        jpn: 'シンオウ図鑑',
+        eng: 'Sinnoh Pokédex'
+      },
       name: {
         jpn: 'シンオウ図鑑',
         eng: 'sinnoh'
@@ -65,71 +83,98 @@ export default defineAppConfig({
       gameVersion: ["diamond", "pearl", "platinum"],
     },
     johto_hgss: {
-      disp: "ジョウト図鑑(ハートゴールド・ソウルシルバー)",
+      disp: {
+        jpn: 'ジョウト図鑑(ハートゴールド・ソウルシルバー)',
+        eng: 'Johto Pokédex(heartgold / soulsilver)'
+      },
       name: {
         jpn: 'ジョウト図鑑',
-        eng: 'johto(heartgold / soulsilver)'
+        eng: 'johto'
       },
       gameVersion: ["heartgold", "soulsilver"],
     },
     unova_bw: {
-      disp: "イッシュ図鑑",
+      disp: {
+        jpn: 'イッシュ図鑑',
+        eng: 'Unova Pokédex(black / white)'
+      },
       name: {
         jpn: 'イッシュ図鑑',
-        eng: 'unova(black / white)'
+        eng: 'unova'
       },
       gameVersion: ["black", "white"],
     },
     unova_b2w2: {
-      disp: "イッシュ図鑑(ブラック2・ホワイト2)",
+      disp: {
+        jpn: 'イッシュ図鑑(ブラック2・ホワイト2)',
+        eng: 'Unova Pokédex(black2 / white2)'
+      },
       name: {
         jpn: 'イッシュ図鑑',
-        eng: 'unova(black2 / white2)'
+        eng: 'unova'
       },
       gameVersion: ["black2", "white2"],
     },
     central_kalos: {
-      disp: "セントラルカロス図鑑",
+      disp: {
+        jpn: 'セントラルカロス図鑑',
+        eng: 'Central Kalos Pokédex'
+      },
       name: {
         jpn: 'セントラルカロス図鑑',
         eng: 'central_kalos'
       },
-      gameVersion: ["x", "y"],
+      gameVersion: ["x", "x_kanji", "y", "y_kanji"],
     },
     coast_kalos: {
-      disp: "コーストカロス図鑑",
+      disp: {
+        jpn: 'コーストカロス図鑑',
+        eng: 'Coast Kalos Pokédex'
+      },
       name: {
         jpn: 'コーストカロス図鑑',
         eng: 'coast_kalos'
       },
-      gameVersion: ["x", "y"],
+      gameVersion: ["x", "x_kanji", "y", "y_kanji"],
     },
     mountain_kalos: {
-      disp: "マウンテンカロス図鑑",
+      disp: {
+        jpn: 'マウンテンカロス図鑑',
+        eng: 'Mountain Kalos Pokédex'
+      },
       name: {
         jpn: 'マウンテンカロス図鑑',
         eng: 'mountain_kalos'
       },
-      gameVersion: ["x", "y"],
+      gameVersion: ["x", "x_kanji", "y", "y_kanji"],
     },
     alola_sm: {
-      disp: "アローラ図鑑",
+      disp: {
+        jpn: 'アローラ図鑑',
+        eng: 'Alola Pokédex(sun / moon)'
+      },
       name: {
         jpn: 'アローラ図鑑',
-        eng: 'alola(sun / moon)'
+        eng: 'alola'
       },
       gameVersion: ["sun", "moon"],
     },
     alola_usum: {
-      disp: "アローラ図鑑(ウルトラサン・ウルトラムーン)",
+      disp: {
+        jpn: 'アローラ図鑑(ウルトラサン・ウルトラムーン)',
+        eng: 'Alola Pokédex(ultra_sun / ultra_moon)'
+      },
       name: {
         jpn: 'アローラ図鑑',
-        eng: 'alola(ultra_sun / ultra_moon)'
+        eng: 'alola'
       },
       gameVersion: ["ultrasun", "ultramoon"],
     },
     galar: {
-      disp: "ガラル図鑑",
+      disp: {
+        jpn: 'ガラル図鑑',
+        eng: 'Galar Pokédex'
+      },
       name: {
         jpn: 'ガラル図鑑',
         eng: 'galar'
@@ -137,7 +182,10 @@ export default defineAppConfig({
       gameVersion: ["sword", "shield"],
     },
     isle_of_armor: {
-      disp: "ヨロイ島図鑑",
+      disp: {
+        jpn: 'ヨロイ島図鑑',
+        eng: 'Isle of Armor Pokédex'
+      },
       name: {
         jpn: 'ヨロイ島図鑑',
         eng: 'isle_of_armor'
@@ -145,7 +193,10 @@ export default defineAppConfig({
       gameVersion: ["sword", "shield"],
     },
     crown_tundra: {
-      disp: "カンムリ雪原図鑑",
+      disp: {
+        jpn: 'カンムリ雪原図鑑',
+        eng: 'Crown Tundra Pokédex'
+      },
       name: {
         jpn: 'カンムリ雪原図鑑',
         eng: 'crown_tundra'
@@ -153,7 +204,10 @@ export default defineAppConfig({
       gameVersion: ["sword", "shield"],
     },
     hisui: {
-      disp: "ヒスイ図鑑",
+      disp: {
+        jpn: 'ヒスイ図鑑',
+        eng: 'Hisui Pokédex'
+      },
       name: {
         jpn: 'ヒスイ図鑑',
         eng: 'hisui'
@@ -161,7 +215,10 @@ export default defineAppConfig({
       gameVersion: ["legendsarceus"],
     },
     paldea: {
-      disp: "パルデア図鑑",
+      disp: {
+        jpn: 'パルデア図鑑',
+        eng: 'Paldea Pokédex'
+      },
       name: {
         jpn: 'パルデア図鑑',
         eng: 'paldea'
@@ -169,7 +226,10 @@ export default defineAppConfig({
       gameVersion: ["scarlet", "violet"],
     },
     kitakami: {
-      disp: "キタカミ図鑑",
+      disp: {
+        jpn: 'キタカミ図鑑',
+        eng: 'Kitakami Pokédex'
+      },
       name: {
         jpn: 'キタカミ図鑑',
         eng: 'kitakami'
@@ -177,7 +237,10 @@ export default defineAppConfig({
       gameVersion: ["scarlet", "violet"],
     },
     blueberry: {
-      disp: "ブルーベリー図鑑",
+      disp: {
+        jpn: 'ブルーベリー図鑑',
+        eng: 'Blueberry Pokédex'
+      },
       name: {
         jpn: 'ブルーベリー図鑑',
         eng: 'blueberry'
@@ -212,25 +275,27 @@ export default defineAppConfig({
   ] as const satisfies RegionPokedexKey[],
 
   type: {
-    ノーマル: { jpn: 'ノーマル', eng: 'normal' },
-    ほのお: { jpn: 'ほのお', eng: 'fire' },
-    みず: { jpn: 'みず', eng: 'water' },
-    でんき: { jpn: 'でんき', eng: 'electric' },
-    くさ: { jpn: 'くさ', eng: 'grass' },
-    こおり: { jpn: 'こおり', eng: 'ice' },
-    かくとう: { jpn: 'かくとう', eng: 'fighting' },
-    どく: { jpn: 'どく', eng: 'poison' },
-    じめん: { jpn: 'じめん', eng: 'ground' },
-    ひこう: { jpn: 'ひこう', eng: 'flying' },
-    エスパー: { jpn: 'エスパー', eng: 'psychic' },
-    むし: { jpn: 'むし', eng: 'bug' },
-    いわ: { jpn: 'いわ', eng: 'rock' },
-    ゴースト: { jpn: 'ゴースト', eng: 'ghost' },
-    ドラゴン: { jpn: 'ドラゴン', eng: 'dragon' },
-    あく: { jpn: 'あく', eng: 'dark' },
-    はがね: { jpn: 'はがね', eng: 'steel' },
-    フェアリー: { jpn: 'フェアリー', eng: 'fairy' }
-  } satisfies Record<string, { readonly jpn: string; readonly eng: string }>,
+    ノーマル: { jpn: 'ノーマル', eng: 'normal', color: '#dcdcdc' },
+    ほのお: { jpn: 'ほのお', eng: 'fire', color: '#ff0000' },
+    みず: { jpn: 'みず', eng: 'water', color: '#0000ff' },
+    でんき: { jpn: 'でんき', eng: 'electric', color: '#f5c842' },
+    くさ: { jpn: 'くさ', eng: 'grass', color: '#32cd32' },
+    こおり: { jpn: 'こおり', eng: 'ice', color: '#87ceeb' },
+    かくとう: { jpn: 'かくとう', eng: 'fighting', color: '#8b4513' },
+    どく: { jpn: 'どく', eng: 'poison', color: '#9932cc' },
+    じめん: { jpn: 'じめん', eng: 'ground', color: '#daa520' },
+    ひこう: { jpn: 'ひこう', eng: 'flying', color: '#87ceeb' },
+    エスパー: { jpn: 'エスパー', eng: 'psychic', color: '#ff1493' },
+    むし: { jpn: 'むし', eng: 'bug', color: '#9acd32' },
+    いわ: { jpn: 'いわ', eng: 'rock', color: '#8b4513' },
+    ゴースト: { jpn: 'ゴースト', eng: 'ghost', color: '#6a5acd' },
+    ドラゴン: { jpn: 'ドラゴン', eng: 'dragon', color: '#4169e1' },
+    あく: { jpn: 'あく', eng: 'dark', color: '#4b0082' },
+    はがね: { jpn: 'はがね', eng: 'steel', color: '#b0c4de' },
+    フェアリー: { jpn: 'フェアリー', eng: 'fairy', color: '#ee82ee' }
+  } satisfies Record<string, { readonly jpn: string; readonly eng: string; readonly color: string }>,
+
+  
 
   type_list: {
     '1': [
@@ -299,7 +364,7 @@ export default defineAppConfig({
     categories: {
       pokemon_data: 'ポケモンデータ',
       tools_gallery: 'ツール・図鑑',
-      useful_information: '便利情報',
+      useful_information: '情報',
       setting: '設定'
     },
     
@@ -318,18 +383,80 @@ export default defineAppConfig({
   },
 
  
-  // 言語名変換
-  lang_eng2jpn: {
-    jpn: '日本語',
-    eng: '英語',
-    ger: 'ドイツ語',
-    spa: 'スペイン語',
-    fre: 'フランス語',
-    ita: 'イタリア語',
-    kor: '韓国語',
-    chs: '中国語(簡体)',
-    cht: '中国語(繁体)'
+  translation: {
+    jpn: {jpn: '日本語', eng: 'Japanese'},
+    eng: {jpn: '英語', eng: 'English'},
+    ger: {jpn: 'ドイツ語', eng: 'German'},
+    spa: {jpn: 'スペイン語', eng: 'Spanish'},
+    fre: {jpn: 'フランス語', eng: 'French'},
+    ita: {jpn: 'イタリア語', eng: 'Italian'},
+    kor: {jpn: '韓国語', eng: 'Korean'},
+    chs: {jpn: '中国語(簡体)', eng: 'Chinese (Simplified)'},
+    cht: {jpn: '中国語(繁体)', eng: 'Chinese (Traditional)'},
+    pokedex: {jpn: 'ポケモン図鑑', eng: 'Pokédex'},
+    classification: {jpn: '分類', eng: 'Classification'},
+    height: {jpn: '高さ', eng: 'Height'},
+    weight: {jpn: '重さ', eng: 'Weight'},
+    no: {jpn: '図鑑番号', eng: 'No.'},
+    globalNo: {jpn: '全国図鑑番号', eng: 'Global No.'},
+    top: {jpn: 'TOP', eng: 'Top'},
+    prev: {jpn: '前', eng: 'Previous'},
+    next: {jpn: '次', eng: 'Next'},
+    name: {jpn: '名前', eng: 'Name'},
+    hp: {jpn: 'HP', eng: 'HP'},
+    attack: {jpn: 'こうげき', eng: 'Attack'},
+    defense: {jpn: 'ぼうぎょ', eng: 'Defense'},
+    spAttack: {jpn: 'とくこう', eng: 'Special Attack'},
+    spDefense: {jpn: 'とくぼう', eng: 'Special Defense'},
+    speed: {jpn: 'すばやさ', eng: 'Speed'},
+    ability1: {jpn: 'とくせい1', eng: 'Ability 1'},
+    ability2: {jpn: 'とくせい2', eng: 'Ability 2'},
+    hiddenAbility: {jpn: 'かくれとくせい', eng: 'Hidden Ability'},
+    red: {jpn: '赤', eng: 'Red'},
+    green: {jpn: '緑', eng: 'Green'},
+    blue: {jpn: '青', eng: 'Blue'},
+    pikachu: {jpn: 'ピカチュウ', eng: 'Pikachu'},
+    gold: {jpn: '金', eng: 'Gold'},
+    silver: {jpn: '銀', eng: 'Silver'},
+    crystal: {jpn: 'クリスタル', eng: 'Crystal'},
+    ruby: {jpn: 'ルビー', eng: 'Ruby'},
+    sapphire: {jpn: 'サファイア', eng: 'Sapphire'},
+    emerald: {jpn: 'エメラルド', eng: 'Emerald'},
+    firered: {jpn: 'ファイアーレッド', eng: 'Fire Red'},
+    leafgreen: {jpn: 'リーフグリーン', eng: 'Leaf Green'},
+    diamond: {jpn: 'ダイヤモンド', eng: 'Diamond'},
+    pearl: {jpn: 'パール', eng: 'Pearl'},
+    platinum: {jpn: 'プラチナ', eng: 'Platinum'},
+    heartgold: {jpn: 'ハートゴールド', eng: 'Heart Gold'},
+    soulsilver: {jpn: 'ソウルシルバー', eng: 'Soul Silver'},
+    black: {jpn: 'ブラック', eng: 'Black'},
+    white: {jpn: 'ホワイト', eng: 'White'},
+    black2: {jpn: 'ブラック2', eng: 'Black 2'},
+    white2: {jpn: 'ホワイト2', eng: 'White 2'},
+    x: {jpn: 'X', eng: 'X'},
+    y: {jpn: 'Y', eng: 'Y'},
+    sun: {jpn: 'サン', eng: 'Sun'},
+    moon: {jpn: 'ムーン', eng: 'Moon'},
+    ultrasun: {jpn: 'ウルトラサン', eng: 'Ultra Sun'},
+    ultramoon: {jpn: 'ウルトラムーン', eng: 'Ultra Moon'},
+    sword: {jpn: 'ソード', eng: 'Sword'},
+    shield: {jpn: 'シールド', eng: 'Shield'},
+    legendsarceus: {jpn: 'レジェンズ アルセウス', eng: 'Legends Arceus'},
+    scarlet: {jpn: 'スカレット', eng: 'Scarlet'},
+    violet: {jpn: 'ヴィオレット', eng: 'Violet'},
   },
+  // 言語名変換
+  // lang_eng2jpn: {
+  //   jpn: '日本語',
+  //   eng: '英語',
+  //   ger: 'ドイツ語',
+  //   spa: 'スペイン語',
+  //   fre: 'フランス語',
+  //   ita: 'イタリア語',
+  //   kor: '韓国語',
+  //   chs: '中国語(簡体)',
+  //   cht: '中国語(繁体)'
+  // },
 
   typeList: {
     'kanto': 1,

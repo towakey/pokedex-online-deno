@@ -19,10 +19,10 @@
             :to="{ path: `/pokedex/${area}/${('0000' + existsPokedex[area]?.result).slice(-4)}` }"
             class="nuxtlink"
           >
-            {{ appConfig.regionPokedex[area]?.disp }}
+            {{ appConfig.regionPokedex[area]?.disp[currentLanguage] }}
           </NuxtLink>
           <span v-else>
-            {{ appConfig.regionPokedex[area]?.disp }}
+            {{ appConfig.regionPokedex[area]?.disp[currentLanguage] }}
           </span>
         </v-card-title>
         <v-card-text>
@@ -45,7 +45,7 @@
               :alt="appConfig.verDescription[appConfig.regionPokedex[area].gameVersion[0]]?.shortTitle || appConfig.regionPokedex[area].gameVersion[0]"
               style="height: 20px; width: 20px; vertical-align: middle; margin-right: 4px;"
             />
-            図鑑説明文は存在しません
+            {{ currentLanguage === 'eng' ? 'No Pokédex description available' : '図鑑説明文は存在しません' }}
           </div>
         </v-card-text>
       </v-card>
@@ -55,6 +55,12 @@
 <script setup lang="ts">
 const appConfig = useAppConfig()
 const config = useRuntimeConfig()
+const { settings } = useSettings()
+
+// 統一された言語設定
+const currentLanguage = computed(() => {
+  return (settings.value.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng'
+})
 
 // propsの定義
 const props = defineProps({

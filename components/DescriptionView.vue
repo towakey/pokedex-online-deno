@@ -5,6 +5,24 @@ const config = useRuntimeConfig()
 
 const props = defineProps(["description", "title", "openVersionDialog"])
 
+const { settings } = useSettings()
+
+// 統一された言語設定
+const currentLanguage = computed(() => {
+  return (settings.value.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng'
+})
+
+// ゲームバージョン名の多言語対応
+const getVersionName = (versionKey: string) => {
+  // app.config.tsの翻訳キーを使用
+  const translation = appConfig.translation[versionKey as keyof typeof appConfig.translation]
+  if (translation && typeof translation === 'object' && 'jpn' in translation && 'eng' in translation) {
+    return translation[currentLanguage.value]
+  }
+  // フォールバック: verDescriptionのshortTitleまたはversionKey自体
+  return appConfig.verDescription[versionKey]?.shortTitle || versionKey
+}
+
 const shareOptions = [
   { title: 'Twitter', icon: 'mdi-twitter', network: 'twitter' },
   { title: 'Mastodon', icon: 'mdi-mastodon', network: 'mastodon' },
@@ -66,7 +84,7 @@ const shareOn = (network, textContent) => {
               style="height: 20px; width: 20px; vertical-align: middle; margin-right: 4px; cursor: pointer;"
               @click="props.openVersionDialog && props.openVersionDialog({ver: index, verJpn: appConfig.verDescription[index]?.shortTitle || String(index), description: ver.jpn})"
             />
-            {{ appConfig.verDescription[index]?.shortTitle || index }}
+            {{ getVersionName(index) }}
           <v-menu>
           <template v-slot:activator="{ props }">
             <v-btn
@@ -93,7 +111,7 @@ const shareOn = (network, textContent) => {
         </h3>
         </v-list-item-title>
         <v-list-item-subtitle class="wrap-text" style="color: #000;" v-if="ver !== '' && ver.jpn !== ''"><p>{{ ver.jpn }}</p></v-list-item-subtitle>
-        <v-list-item-subtitle class="wrap-text" style="color: #000;" v-else>じょうほう なし</v-list-item-subtitle>
+        <v-list-item-subtitle class="wrap-text" style="color: #000;" v-else>{{ currentLanguage === 'eng' ? 'No information available' : 'じょうほう なし' }}</v-list-item-subtitle>
       </v-list-item>
     </v-list>
   </v-card>

@@ -9,7 +9,7 @@
         <v-container>
           <v-card>
             <v-card-title v-if="pokedex.result.length > 0">
-              {{ pokedex.result[Number(model)]?.name?.[settings.language] }}
+              {{ pokedex.result[Number(model)]?.name?.[currentLanguage] }}
             </v-card-title>
             <v-card-text v-if="pokedex.result.length > 0">
               <v-row
@@ -37,7 +37,7 @@
             :to='{path: `/pokedex/${route.params.area}/${prev.result[0].no}`}'
             style="background-color: white; width: 120px;"
             variant="outlined"
-            >{{ prev.result[0].name[settings.language] }}</v-btn>
+            >{{ prev.result[0].name[currentLanguage] }}</v-btn>
         </div>
         <div style="flex: 1; display: flex; justify-content: center;">
           <v-btn
@@ -52,7 +52,7 @@
             :to='{path: `/pokedex/${route.params.area}/${next.result[0].no}`}'
             style="background-color: white; width: 120px;"
             variant="outlined"
-            >{{ next.result[0].name[settings.language] }}</v-btn>
+            >{{ next.result[0].name[currentLanguage] }}</v-btn>
         </div>
       </div>
       <v-carousel
@@ -69,14 +69,14 @@
             <v-col :cols="7">
               <v-card elevation="0" width="100%" variant="outlined" style="background-color: white;margin-top: 5px;">
                 <v-card-title @click="nameDialog = true" width="auto">
-                  <h2 class="responsive-text-name">{{ item.name[settings.language] }}</h2>
+                  <h2 class="responsive-text-name">{{ item.name[currentLanguage] }}</h2>
                 </v-card-title>
                 <v-card-text width="auto">
-                  <div class="responsive-text">分類　　　　{{ item.classification[settings.language] }}</div>
-                  <!-- <div class="responsive-text">図鑑番号　　　No.{{ ('0000' + item.no).slice(-4) }}</div> -->
-                  <div class="responsive-text">図鑑番号　　No.{{ ('0000' + item.globalNo).slice(-4) }}</div>
-                  <div class="responsive-text">たかさ　　　{{ item.height }} m</div>
-                  <div class="responsive-text">おもさ　　　{{ item.weight }} kg</div>
+                  <div class="responsive-text">{{ appConfig.translation.classification[currentLanguage] }}　　　　{{ item.classification[currentLanguage] }}</div>
+                  <!-- <div class="responsive-text">{{ appConfig.translation.no[currentLanguage] }}　　　No.{{ ('0000' + item.no).slice(-4) }}</div> -->
+                  <div class="responsive-text">{{ appConfig.translation.no[currentLanguage] }}　　No.{{ ('0000' + item.globalNo).slice(-4) }}</div>
+                  <div class="responsive-text">{{ appConfig.translation.height[currentLanguage] }}　　　{{ item.height }} m</div>
+                  <div class="responsive-text">{{ appConfig.translation.weight[currentLanguage] }}　　　{{ item.weight }} kg</div>
                 </v-card-text>
               </v-card>
             </v-col>
@@ -168,7 +168,7 @@
       <v-container>
         <v-card>
           <v-card-title v-if="pokedex.result.length > 0">
-            {{ pokedex.result[Number(model)]?.name?.[settings.language] ?? '' }}
+            {{ pokedex.result[Number(model)]?.name?.[currentLanguage] ?? '' }}
           </v-card-title>
           <v-card-text v-if="pokedex.result.length > 0">
             <v-row
@@ -202,7 +202,7 @@
             :to='{path: `/pokedex/${route.params.area}/${prev.result[0].no}`}'
             style="background-color: white; width: 120px;"
             variant="outlined"
-            >{{ prev.result[0].name[settings.language] }}</v-btn>
+            >{{ prev.result[0].name[currentLanguage] }}</v-btn>
         </div>
         <div style="flex: 1; display: flex; justify-content: center;">
           <v-btn
@@ -217,7 +217,7 @@
             :to='{path: `/pokedex/${route.params.area}/${next.result[0].no}`}'
             style="background-color: white; width: 120px;"
             variant="outlined"
-            >{{ next.result[0].name[settings.language] }}</v-btn>
+            >{{ next.result[0].name[currentLanguage] }}</v-btn>
         </div>
       </div>
       <v-carousel
@@ -246,14 +246,14 @@
                 class=""
                 >
                   <h2 class="responsive-text-name" @click="nameDialog = true"
-                  >{{ item.name[settings.language] }}</h2>
-                  <div class="responsive-text">分類　　　　　{{ item.classification[settings.language] }}</div>
-                  <div class="responsive-text">図鑑番号　　　No.{{ ('0000' + item.no).slice(-4) }}</div>
+                  >{{ item.name[currentLanguage] }}</h2>
+                  <div class="responsive-text">{{ appConfig.translation.classification[currentLanguage] }}　　　　　{{ item.classification[currentLanguage] }}</div>
+                  <div class="responsive-text">{{ appConfig.translation.no[currentLanguage] }}　　　No.{{ ('0000' + item.no).slice(-4) }}</div>
                   <NuxtLink class="nuxtlink" :to="{path: `/pokedex/global/${item.globalNo}`}">
-                    <div class="responsive-text">全国図鑑番号　No.{{ ('0000' + item.globalNo).slice(-4) }}</div>
+                    <div class="responsive-text">{{ appConfig.translation.globalNo[currentLanguage] }}　No.{{ ('0000' + item.globalNo).slice(-4) }}</div>
                   </NuxtLink>
-                  <div class="responsive-text">たかさ　　　　{{ item.height }} m</div>
-                  <div class="responsive-text">おもさ　　　　{{ item.weight }} kg</div>
+                  <div class="responsive-text">{{ appConfig.translation.height[currentLanguage] }}　　　　{{ item.height }} m</div>
+                  <div class="responsive-text">{{ appConfig.translation.weight[currentLanguage] }}　　　　{{ item.weight }} kg</div>
                 </v-card-title>
               </v-card>
             </v-col>
@@ -363,7 +363,8 @@
 </v-dialog>
 </template>
 <script setup lang="ts">
-import { ref, reactive, onMounted, watch } from 'vue'
+import { ref, reactive, onMounted, watch, computed } from 'vue'
+import type { RegionPokedexKey } from '~~/types/region'
 
 const isVersionDialogVisible = ref(false)
 const selectedVersionInfo = ref<any>(null)
@@ -450,6 +451,7 @@ route.meta.title = route.params.area
 
 // 設定管理composableを使用
 const { settings } = useSettings()
+const currentLanguage = computed(() => (settings.value.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng')
 
 // 共通のフェッチラッパー（タイムアウト・リトライ）
 const { fetchWithRetry } = useApiClient()
@@ -782,7 +784,7 @@ watch(() => [route.params.area, route.params.id], async () => {
     console.log(`[Watch] Refreshing pokedex data for ${route.params.id}`)
     await refresh()
     
-    // ポケモンデータ取得後に存在情報と図鑑説明を再取得
+    // ポケモンデータ取得後に、すべてのポケモンに対して存在情報と図鑑説明を再取得
     if (pokedex.result.length > 0) {
       for (const pokemon of pokedex.result) {
         if (pokemon?.id) {
@@ -865,10 +867,14 @@ const getDescriptionLines = (area: string, pokemonId?: string) => {
   console.log(`[getDescriptionLines] Called with area: ${area}, pokemonId: ${pokemonId}`)
   console.log(`[getDescriptionLines] Available keys in descriptionRows:`, Object.keys(descriptionRows))
   
-  // ポケモンIDが指定されていない場合は空配列を返す
-  if (!pokemonId || !descriptionRows[pokemonId]) {
+  // ポケモンIDが未指定なら空配列を返す（undefined を添字に使わない）
+  if (!pokemonId) {
     console.warn(`[getDescriptionLines] No description data for pokemonId: ${pokemonId}`)
-    console.warn(`[getDescriptionLines] descriptionRows[${pokemonId}]:`, descriptionRows[pokemonId])
+    return []
+  }
+  const key = String(pokemonId)
+  if (!descriptionRows[key]) {
+    console.warn(`[getDescriptionLines] descriptionRows[${key}] is empty or undefined`)
     return []
   }
   
@@ -881,7 +887,7 @@ const getDescriptionLines = (area: string, pokemonId?: string) => {
   if (area === 'global') {
     const globalJpn = rp2[area]?.name?.jpn
     console.log(`[getDescriptionLines] Special case 'global': filter by pokedex='${globalJpn}' for pokemonId: ${pokemonId}`)
-    return descriptionRows[pokemonId]
+    return descriptionRows[key]
       .filter(r => r.pokedex === globalJpn)
       .map(r => ({
         ver: r.ver,
@@ -902,10 +908,10 @@ const getDescriptionLines = (area: string, pokemonId?: string) => {
   }
   
   // 指定されたポケモンIDの descriptionRows から該当する行をフィルタリング
-  console.log(`[getDescriptionLines] Description data for ${pokemonId}:`, descriptionRows[pokemonId])
+  console.log(`[getDescriptionLines] Description data for ${pokemonId}:`, descriptionRows[key])
   console.log(`[getDescriptionLines] Filtering for area: ${area}, gameVersions:`, areaGameVersions, 'areaJpnName:', areaJpnName)
   
-  return descriptionRows[pokemonId]
+  return descriptionRows[key]
     .filter(r => {
       // 1. line.verがappConfig.regionPokedex[area].gameVersion配列に含まれるかチェック
       const isVersionMatched = areaGameVersions.includes(r.ver)
@@ -1030,23 +1036,30 @@ const globalNo = computed(() => route.params.area === 'global'
 const id = computed(() => pokedex.result[0]?.id ?? Number(route.params.id))
 
 const breadcrumbs = computed(() => {
+  const lang = currentLanguage.value
   const area = route.params.area as string
-  let list: { title: string; to?: string; disabled?: boolean }[] = [
-    { title: 'TOP', to: '/' },
-    { title: 'ポケモン図鑑', to: '/pokedex' }
+
+  const t = appConfig.translation as Record<string, { jpn: string; eng: string }>
+  const pokedexTitle = t?.pokedex?.[lang] ?? (lang === 'eng' ? 'Pokédex' : 'ポケモン図鑑')
+
+  const list: { title: string; to?: string; disabled?: boolean }[] = [
+    { title: (lang === 'eng' ? 'Home' : 'ホーム'), to: '/' },
+    { title: pokedexTitle, to: '/pokedex' }
   ]
-  
-  if(area === 'global'){
-    list.push({ title: '全国図鑑', to: '/pokedex/global' })
-  }else{
-    list.push({ title: appConfig.regionPokedex[area]?.disp, to: `/pokedex/${area}` })
+
+  if (area === 'global') {
+    const dispGlobal = (appConfig.regionPokedex.global?.disp as Record<string, string> | undefined)?.[lang]
+    list.push({ title: dispGlobal ?? (lang === 'eng' ? 'National Dex' : '全国図鑑'), to: '/pokedex/global' })
+  } else {
+    const disp = (appConfig.regionPokedex[area as RegionPokedexKey]?.disp as Record<string, string> | undefined)?.[lang]
+    list.push({ title: disp ?? area, to: `/pokedex/${area}` })
   }
-  
-  const pokemonName = pokedex.result.length > 0 && pokedex.result[0]?.name?.jpn 
-    ? pokedex.result[0].name.jpn 
-    : appTitle.value
+
+  const nameLang = pokedex.result[0]?.name?.[lang]
+  const nameFallback = pokedex.result[0]?.name?.jpn || pokedex.result[0]?.name?.eng || ''
+  const pokemonName = pokedex.result.length > 0 ? (nameLang ?? nameFallback) : ''
   list.push({ title: pokemonName, disabled: true })
-  
+
   return list
 })
 
@@ -1088,11 +1101,16 @@ if (pokedex.result.length) {
   metaImage.value = "https://pokedex-online.jp/img/pokedex/" + pokedex.result[0].id + ".png";
 }
 
-const metaTitle = computed(() => 
-  hasPokedexData.value
-    ? `${pokedex.result[0].name[settings.language]} - ポケモンずかん`
-    : `ポケモンずかん`
-);
+const metaTitle = computed(() => {
+  const lang = currentLanguage.value
+  const t = appConfig.translation as Record<string, { jpn: string; eng: string }>
+  const pokedexTitle = t?.pokedex?.[lang] ?? (lang === 'eng' ? 'Pokédex' : 'ポケモンずかん')
+  if (hasPokedexData.value) {
+    const name = pokedex.result[0]?.name?.[lang] ?? pokedex.result[0]?.name?.jpn ?? pokedex.result[0]?.name?.eng ?? ''
+    return `${name} - ${pokedexTitle}`
+  }
+  return pokedexTitle
+})
 
 // const updateMetadata = inject('updateMetadata') as (title: string) => void
 // updateMetadata(metaTitle.value)
