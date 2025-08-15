@@ -207,11 +207,12 @@ const { data: pokedex, pending, error } = await useAsyncData(
       
       // APIからデータを取得
       const { fetchWithRetry } = useApiClient()
-      // グローバル地域はレスポンスが大きく時間がかかるため、タイムアウトとリトライを調整
+      // 一部リージョンはPHP側で重い処理（多数クエリ）が走るため、タイムアウトを十分長く設定
+      // グローバル/非グローバルともに 30 秒、重い処理の二重実行を避けるため retries は 0
       const isGlobal = area === 'global'
       const fetchOptions = isGlobal
         ? { query: { region: area }, timeoutMs: 30000, retries: 0 }
-        : { query: { region: area }, timeoutMs: 10000, retries: 2 }
+        : { query: { region: area }, timeoutMs: 30000, retries: 0 }
       res = await fetchWithRetry<RawPokedexResponse>(apiUrl, fetchOptions)
       
       if (!res || !res.success) {
@@ -311,14 +312,14 @@ const allTypes = Object.keys(appConfig.type || {});
 // リンク用ハッシュ生成
 function getFirstString(val: string | string[] | undefined): string {
   if (typeof val === 'string') return val;
-  if (Array.isArray(val) && val.length > 0) return val[0];
+  if (Array.isArray(val) && val.length > 0) return String(val[0] ?? '');
   return '';
 }
 
 function getHashForPokemon(pokemon: Pokemon): string {
   if (!pokemon.status || pokemon.status.length === 0) return '';
-  const status = pokemon.status[0];
-  const parts = [];
+  const status = pokemon.status[0]!;
+  const parts: string[] = [];
   if (status.form && status.form !== '') parts.push(getFirstString(status.form));
   if (status.region && status.region !== '') parts.push(getFirstString(status.region));
   if (status.mega_evolution && status.mega_evolution !== '') parts.push(getFirstString(status.mega_evolution));

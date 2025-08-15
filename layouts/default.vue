@@ -10,9 +10,11 @@
       <v-list>
         <!-- ヘッダー -->
         <v-list-item class="px-4 py-4">
-          <v-list-item-avatar>
-            <img src="/icon.png" alt="App icon" :width="40" :height="40" />
-          </v-list-item-avatar>
+          <template #prepend>
+            <v-avatar :size="40">
+              <img src="/icon.png" alt="App icon" width="40" height="40" />
+            </v-avatar>
+          </template>
           <v-list-item-title class="text-h6 font-weight-bold">
             {{ appConfig.site.name }}
           </v-list-item-title>
@@ -23,7 +25,7 @@
         <!-- メニューアイテム（カテゴリごとに分類） -->
         <template v-for="category in Object.keys(appConfig.menus.categories)" :key="category">
           <v-list-subheader class="text-uppercase font-weight-bold">
-            {{ appConfig.menus.categories[category] }}
+            {{ getCategoryLabel(category) }}
           </v-list-subheader>
           
           <template v-for="item in getMenuItemsByCategory(category)" :key="item.path">
@@ -34,7 +36,7 @@
               class="mx-2 mb-1"
               @click="drawer = false"
             >
-              <v-list-item-title>{{ item.title }}</v-list-item-title>
+              <v-list-item-title>{{ getItemTitle(item) }}</v-list-item-title>
             </v-list-item>
           </template>
           
@@ -47,21 +49,34 @@
     color="primary"
     prominent
     >
-      <v-app-bar-nav-icon @click="drawer = !drawer">
-        <v-icon v-if="!isLoading">
-          <img src="/icon.png" alt="Nav icon" :width="40" :height="40" />
-        </v-icon>
-        <img v-else src="/img/loading/polygon_loading_2.gif" alt="Loading..." :width="30" :height="30" />
+      <v-app-bar-nav-icon
+      @click.stop="drawer = !drawer"
+      class="btn-fix"
+      >
+        <img
+          v-if="!isLoading"
+          src="/icon.png"
+          alt="Nav icon"
+          :width="50"
+          :height="50"
+        />
+        <img
+          v-else
+          src="/img/loading/polygon_loading_2.gif"
+          alt="Loading..."
+          :width="50"
+          :height="50"
+        />
       </v-app-bar-nav-icon>
-      <v-app-bar-title>
+      <v-toolbar-title>
         <NuxtLink
-        :to="{path: `/`}"
+        :to="{path: `/`}" 
         class="nuxtlink"
         style="color: white;"
         >
         {{ pageTitle }}
         </NuxtLink>
-      </v-app-bar-title>
+      </v-toolbar-title>
     </v-app-bar>
     <v-main
     style="height: 100%;background-color: #f2f2f2;"
@@ -73,19 +88,39 @@
 <script setup lang="ts">
 import { ref, onMounted, provide, reactive, computed } from 'vue'
 import { useNuxtApp, useAppConfig } from 'nuxt/app'
+import { useSettings } from '#imports'
 const nuxtApp = useNuxtApp()
 const appConfig = useAppConfig()
 const isLoading = ref(false)
 const drawer = ref(false)
 
-// リアクティブなページタイトル管理
-const pageTitleState = reactive({ title: 'Pokédex-Online' })
+// リアクティブなページタイトル管理（初期値はサイト名に統一）
+const pageTitleState = reactive({ title: appConfig.site.name })
 provide('pageTitle', pageTitleState)
 const pageTitle = computed(() => pageTitleState.title)
+
+// 設定（言語）
+const { settings } = useSettings()
+const currentLanguage = computed(() => (settings.value.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng')
 
 // カテゴリごとのメニューアイテムを取得する関数
 const getMenuItemsByCategory = (category: string) => {
   return appConfig.menus.main.filter((item: any) => item.category === category)
+}
+
+// カテゴリ名（多言語）
+const getCategoryLabel = (key: string) => {
+  const cat = (appConfig.menus.categories as Record<string, { jpn: string; eng: string }>)[key]
+  return cat?.[currentLanguage.value] ?? key
+}
+
+// メニュー項目タイトル（多言語）
+const getItemTitle = (item: any) => {
+  const title = item?.title
+  if (title && typeof title === 'object') {
+    return (title as { jpn: string; eng: string })[currentLanguage.value] ?? ''
+  }
+  return String(title ?? '')
 }
 
 onMounted(() => {

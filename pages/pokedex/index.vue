@@ -73,7 +73,7 @@ useSeoMeta({
 
 // パンくず（多言語対応）
 const breadcrumbs = computed(() => [
-  { title: (settings.value.language === 'eng' ? 'Home' : 'ホーム'), disabled: false, to: '/' },
+  { title: (settings.value.language === 'eng' ? 'Home' : 'Home'), disabled: false, to: '/' },
   { title: breadcrumbPokedexTitle.value, disabled: true, to: '/pokedex' },
 ])
 </script>

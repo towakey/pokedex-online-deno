@@ -75,8 +75,8 @@
                   <div class="responsive-text">{{ appConfig.translation.classification[currentLanguage] }}　　　　{{ item.classification[currentLanguage] }}</div>
                   <!-- <div class="responsive-text">{{ appConfig.translation.no[currentLanguage] }}　　　No.{{ ('0000' + item.no).slice(-4) }}</div> -->
                   <div class="responsive-text">{{ appConfig.translation.no[currentLanguage] }}　　No.{{ ('0000' + item.globalNo).slice(-4) }}</div>
-                  <div class="responsive-text">{{ appConfig.translation.height[currentLanguage] }}　　　{{ item.height }} m</div>
-                  <div class="responsive-text">{{ appConfig.translation.weight[currentLanguage] }}　　　{{ item.weight }} kg</div>
+                  <div class="responsive-text">{{ appConfig.translation.height[currentLanguage] }}　　　　{{ item.height }} m</div>
+                  <div class="responsive-text">{{ appConfig.translation.weight[currentLanguage] }}　　　　{{ item.weight }} kg</div>
                 </v-card-text>
               </v-card>
             </v-col>
@@ -252,8 +252,8 @@
                   <NuxtLink class="nuxtlink" :to="{path: `/pokedex/global/${item.globalNo}`}">
                     <div class="responsive-text">{{ appConfig.translation.globalNo[currentLanguage] }}　No.{{ ('0000' + item.globalNo).slice(-4) }}</div>
                   </NuxtLink>
-                  <div class="responsive-text">{{ appConfig.translation.height[currentLanguage] }}　　　　{{ item.height }} m</div>
-                  <div class="responsive-text">{{ appConfig.translation.weight[currentLanguage] }}　　　　{{ item.weight }} kg</div>
+                  <div class="responsive-text">{{ appConfig.translation.height[currentLanguage] }}　　　　　{{ item.height }} m</div>
+                  <div class="responsive-text">{{ appConfig.translation.weight[currentLanguage] }}　　　　　{{ item.weight }} kg</div>
                 </v-card-title>
               </v-card>
             </v-col>
@@ -332,15 +332,13 @@
         :getDescriptionLines="(area: string) => getDescriptionLines(area, String(pokedex.result[Number(model)]?.id))"
         :openVersionDialog="openVersionDialog"
       /> -->
-      <AdSenseCard
-        :ad-client="'ca-pub-xxxxxxxxxxxxxxxx'"
-        :ad-slot="'1234567890'"
-        :test-mode="true"
-        :width="'100%'"
-        :height="250"
-        label-text="スポンサードリンク"
-        variant="outlined"
-        color="grey-lighten-5"
+      <AdSenseCard 
+      slot-type="banner"
+      :width="728"
+      :height="90"
+      label-type="sponsored"
+      variant="outlined"
+      color="surface"
       />
     </v-container>
     </v-col>
@@ -926,6 +924,32 @@ const getDescriptionLines = (area: string, pokemonId?: string) => {
         return false
       }
       
+      // 3. _kanjiバージョンの場合は、実際に有効なデータが存在する場合のみ表示
+      if (r.ver.includes('_kanji')) {
+        // 空値、null、undefined、空文字列、空白文字のみ、「じょうほう なし」を無効と判定
+        const isEmptyOrInvalid = (desc: string | null | undefined): boolean => {
+          return !desc || 
+                 desc.trim() === '' || 
+                 desc === 'じょうほう なし' ||
+                 desc === 'null' ||
+                 desc === 'undefined' ||
+                 /^\s*$/.test(desc)
+        }
+        
+        // 該当バージョンのデータが存在し、かつ有効な内容があるかチェック
+        const kanjiData = descriptionRows[key].find(row => row.ver === r.ver)
+        if (!kanjiData || isEmptyOrInvalid(kanjiData.description)) {
+          console.log(`[getDescriptionLines] Kanji version has no valid data: ${r.ver} - data: ${kanjiData?.description}`)
+          return false
+        }
+        
+        // 現在処理中のデータr自体も同様にチェック
+        if (isEmptyOrInvalid(r.description)) {
+          console.log(`[getDescriptionLines] Current row has no valid data: ${r.ver} - data: ${r.description}`)
+          return false
+        }
+      }
+      
       return true
     })
     .map(r => ({
@@ -954,6 +978,33 @@ const getGlobalDescriptionMap = (pokemonId?: string | number) => {
   for (const r of descriptionRows[key]) {
     console.log(`[getGlobalDescriptionMap] Checking row: ver=${r.ver}, pokedex=${r.pokedex}`)
     if (r.pokedex !== globalJpn) continue
+    
+    // _kanjiバージョンの場合は、実際に有効なデータが存在する場合のみ追加
+    if (r.ver.includes('_kanji')) {
+      // 空値、null、undefined、空文字列、空白文字のみ、「じょうほう なし」を無効と判定
+      const isEmptyOrInvalid = (desc: string | null | undefined): boolean => {
+        return !desc || 
+               desc.trim() === '' || 
+               desc === 'じょうほう なし' ||
+               desc === 'null' ||
+               desc === 'undefined' ||
+               /^\s*$/.test(desc)
+      }
+      
+      // 有効なデータがあるか詳細なチェック
+      if (isEmptyOrInvalid(r.description)) {
+        console.log(`[getGlobalDescriptionMap] Kanji version has no valid data: ${r.ver} - data: ${r.description}`)
+        continue
+      }
+      
+      // descriptionRows内にも同様のデータがあるか再確認
+      const kanjiData = descriptionRows[key].find(row => row.ver === r.ver)
+      if (!kanjiData || isEmptyOrInvalid(kanjiData.description)) {
+        console.log(`[getGlobalDescriptionMap] Kanji version data not found in descriptionRows: ${r.ver} - data: ${kanjiData?.description}`)
+        continue
+      }
+    }
+    
     if (!map[r.ver]) {
       map[r.ver] = { jpn: r.description }
     }
@@ -1043,7 +1094,7 @@ const breadcrumbs = computed(() => {
   const pokedexTitle = t?.pokedex?.[lang] ?? (lang === 'eng' ? 'Pokédex' : 'ポケモン図鑑')
 
   const list: { title: string; to?: string; disabled?: boolean }[] = [
-    { title: (lang === 'eng' ? 'Home' : 'ホーム'), to: '/' },
+    { title: (lang === 'eng' ? 'Home' : 'Home'), to: '/' },
     { title: pokedexTitle, to: '/pokedex' }
   ]
 
