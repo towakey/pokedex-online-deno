@@ -5,7 +5,7 @@
       <v-col
       cols="12"
       sm="6"
-      v-for="item in appConfig.regionPokedexOrder" :key="item"
+      v-for="item in regionPokedexOrder" :key="item"
       >
         <NuxtLink
         :to="{path: `/pokedex/${item}`}"
@@ -16,7 +16,7 @@
           variant="outlined"
           style="background-color: white; width: 100%;"
           >
-            <v-card-title>{{ appConfig.regionPokedex[item].disp[settings.language] }}</v-card-title>
+            <v-card-title>{{ getRegionDisp(item as RegionPokedexKey) }}</v-card-title>
             <!-- <v-card-text style="min-height: 24px; display: block; width: 100%;">
               <div style="min-width: 150px;">
                 {{ appConfig.regionPokedex[item].name.eng || '\u00A0\u00A0\u00A0\u00A0\u00A0' }}
@@ -30,23 +30,17 @@
 </template>
 <script setup lang="ts">
 import type { RegionPokedexKey } from '~~/types/region'
-import { computed } from 'vue'
+import { computed, inject, onMounted, watch } from 'vue'
 // import { useAppConfig } from '#app'
 
 definePageMeta({
   pageTitle: 'ポケモン図鑑'
 })
-useHead({
-  title: 'ポケモン図鑑',
-  meta: [
-    { name: 'description', content: 'Nuxt.js で作成されたポケモン図鑑アプリケーション' }
-  ]
-})
 
 const { settings } = useSettings()
 const appConfig = useAppConfig()
 
-const regionPokedexOrder = computed(() => appConfig.regionPokedexOrder)
+const regionPokedexOrder = computed<RegionPokedexKey[]>(() => appConfig.regionPokedexOrder as RegionPokedexKey[])
 
 // 「ポケモン図鑑」タイトルの多言語化
 const breadcrumbPokedexTitle = computed(() => {
@@ -54,6 +48,27 @@ const breadcrumbPokedexTitle = computed(() => {
   const dispKey = (lang === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng'
   const t = appConfig.translation as Record<string, { jpn: string; eng: string }>
   return t?.pokedex?.[dispKey] ?? 'ポケモン図鑑'
+})
+
+// 地域図鑑の表示名（多言語）取得（型安全に）
+const getRegionDisp = (item: RegionPokedexKey) => {
+  const lang = (settings.value.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng'
+  const region = (appConfig.regionPokedex as Record<RegionPokedexKey, { disp: { jpn: string; eng: string } }>)[item]
+  return region?.disp?.[lang] ?? ''
+}
+
+// レイアウトAppBarのタイトルを更新（多言語対応）
+const pageTitleState = inject('pageTitle', { title: 'Pokédex-Online' })
+const pageTitle = computed(() => pageTitleState.title)
+const updatePageTitle = () => {
+  pageTitleState.title = breadcrumbPokedexTitle.value
+}
+onMounted(() => updatePageTitle())
+watch(() => settings.value.language, () => updatePageTitle())
+
+// SEO タイトルも同期
+useSeoMeta({
+  title: pageTitle
 })
 
 // パンくず（多言語対応）

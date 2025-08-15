@@ -362,23 +362,23 @@ export default defineAppConfig({
   menus: {
     // メインカテゴリ
     categories: {
-      pokemon_data: 'ポケモンデータ',
-      tools_gallery: 'ツール・図鑑',
-      useful_information: '情報',
-      setting: '設定'
+      pokemon_data: {jpn: 'ポケモンデータ', eng: 'Pokemon Data'},
+      tools_gallery: {jpn: 'ツール・図鑑', eng: 'Tools & Gallery'},
+      useful_information: {jpn: '情報', eng: 'Information'},
+      setting: {jpn: '設定', eng: 'Setting'}
     },
     
     // メインメニュー
     main: [
-      { title: 'ポケモン図鑑', path: '/pokedex', category: 'pokemon_data', img: '/icon.png' },
+      { title: {jpn: 'ポケモン図鑑', eng: 'Pokedex'}, path: '/pokedex', category: 'pokemon_data', img: '/icon.png' },
       // { title: 'わざ', path: '/waza', category: 'pokemon_data', img: '/icon.png' },
       // { title: 'とくせい', path: '/ability', category: 'pokemon_data', img: '/icon.png' },
       // { title: '図鑑カメラ', path: '/camera', category: 'tools_gallery', img: '/icon.png' },
-      { title: '検索', path: '/search', category: 'tools_gallery', img: '/icon.png' },
+      { title: {jpn: '検索', eng: 'Search'}, path: '/search', category: 'tools_gallery', img: '/icon.png' },
       // { title: 'pokedex.json', path: '/pokedexjson', category: 'useful_information', img: '/icon.png' },
       // { title: '年表', path: '/pokemon_history', category: 'useful_information', img: '/icon.png' },
       // { title: 'チートシート', path: '/cheatsheet', category: 'useful_information', img: '/icon.png' }
-      { title: '設定', path: '/setting', category: 'setting', img: '/icon.png' },
+      { title: {jpn: '設定', eng: 'Setting'}, path: '/setting', category: 'setting', img: '/icon.png' },
     ]
   },
 

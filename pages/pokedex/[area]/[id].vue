@@ -363,7 +363,7 @@
 </v-dialog>
 </template>
 <script setup lang="ts">
-import { ref, reactive, onMounted, watch, computed } from 'vue'
+import { ref, reactive, onMounted, watch, computed, inject } from 'vue'
 import type { RegionPokedexKey } from '~~/types/region'
 
 const isVersionDialogVisible = ref(false)
@@ -1111,6 +1111,27 @@ const metaTitle = computed(() => {
   }
   return pokedexTitle
 })
+
+// レイアウト(AppBar)のタイトルを「地域別図鑑名（例: カントー図鑑 / Kanto Pokédex）」に設定
+const pageTitleState = inject('pageTitle', { title: 'Pokédex-Online' })
+const layoutRegionDexTitle = computed(() => {
+  const lang = currentLanguage.value
+  const area = route.params.area as string
+  const region = appConfig.regionPokedex?.[area as keyof typeof appConfig.regionPokedex] as
+    | { disp?: { jpn: string; eng: string } }
+    | undefined
+  if (region?.disp) {
+    const key = (lang === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng'
+    return region.disp[key] ?? (lang === 'eng' ? `${area} Pokédex` : `${area} 図鑑`)
+  }
+  return lang === 'eng' ? `${area} Pokédex` : `${area} 図鑑`
+})
+const updateLayoutTitle = () => {
+  pageTitleState.title = layoutRegionDexTitle.value
+}
+onMounted(() => updateLayoutTitle())
+watch(() => settings.value.language, () => updateLayoutTitle())
+watch(() => route.params.area, () => updateLayoutTitle())
 
 // const updateMetadata = inject('updateMetadata') as (title: string) => void
 // updateMetadata(metaTitle.value)

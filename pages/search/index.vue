@@ -171,19 +171,40 @@
 definePageMeta({
   pageTitle: '検索'
 })
-useHead({
-  title: '検索',
-  meta: [
-    { name: 'description', content: '検索' }
-  ]
-})
 import { ref } from 'vue'
 import { useApiBase, useApiClient } from '#imports'
 
-const breadcrumbs = ref([
+// レイアウトのページタイトル制御（多言語対応）
+const appConfig = useAppConfig()
+const { settings } = useSettings()
+// default レイアウトで provide 済みの pageTitle を受け取り、ここから更新する
+const pageTitleState = inject('pageTitle', { title: 'Pokédex-Online' })
+const pageTitle = computed(() => pageTitleState.title)
+
+// 検索ページのタイトル（言語依存）を app.config.menus.main から取得
+const searchTitle = computed(() => {
+  const lang = (settings.value.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng'
+  const menuItem = (appConfig.menus?.main as any[] | undefined)?.find((m: any) => m.path === '/search')
+  const titleObj = menuItem?.title as { jpn: string; eng: string } | undefined
+  return titleObj?.[lang] ?? (lang === 'eng' ? 'Search' : '検索')
+})
+
+const updatePageTitle = () => {
+  pageTitleState.title = searchTitle.value
+}
+
+onMounted(() => updatePageTitle())
+watch(() => settings.value.language, () => updatePageTitle())
+
+// SEO タイトルも同期
+useSeoMeta({
+  title: pageTitle
+})
+
+const breadcrumbs = computed(() => ([
   { title: 'Home', disabled: false, href: '/' },
-  { title: '検索', disabled: true, href: '/search' },
-])
+  { title: searchTitle.value, disabled: true, href: '/search' },
+]))
 
 // リアクティブな状態管理
 const searchWord = ref('')

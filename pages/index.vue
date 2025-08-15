@@ -29,20 +29,32 @@
 definePageMeta({
   pageTitle: 'Pokédex-Online'
 })
-
-useHead({
-  title: 'Pokédex-Online',
-  meta: [
-    { name: 'description', content: 'Nuxt.js で作成されたポケデックスアプリケーション' }
-  ]
-})
-
-import { ref } from 'vue'
-import { useApiBase, useApiClient } from '#imports'
+import { ref, computed, inject, onMounted, watch } from 'vue'
+import { useApiBase, useApiClient, useSettings } from '#imports'
 import appConfig from '~/app.config'
 
-const breadcrumbs = ref([
-  { title: 'Home', disabled: true, href: '/' },
+const { settings } = useSettings()
+const currentLanguage = computed(() => settings.value.language)
+
+// レイアウトのページタイトル制御（ホームは常にサイト名固定表示）
+const pageTitleState = inject('pageTitle', { title: appConfig.site.name })
+const pageTitle = computed(() => pageTitleState.title)
+const updatePageTitle = () => {
+  pageTitleState.title = appConfig.site.name
+}
+onMounted(() => updatePageTitle())
+watch(() => settings.value.language, () => updatePageTitle())
+
+// SEO タイトルも同期
+useSeoMeta({
+  title: pageTitle
+})
+
+const breadcrumbs = computed(() => [
+  (() => {
+    const lang = (currentLanguage.value === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng'
+    return { title: appConfig.translation.top?.[lang] ?? (lang === 'eng' ? 'Top' : 'TOP'), disabled: true, href: '/' }
+  })(),
 ])
 
 const apiMessage = ref('')
@@ -61,39 +73,37 @@ async function callApi() {
 }
 
 const mainMenu = appConfig.menus.main
-// const mainMenu = ref([
-  // { title: 'ポケモン図鑑', path: '/pokedex', img: '/icon.png', category: 'pokemon_data' },
-  // { title: '検索', path: '/search', img: '/icon.png', category: 'pokemon_data' },
-  // { title: 'わざ', path: '/waza', img: '/icon.png', category: 'pokemon_data' },
-  // { title: 'わざマシン', path: '/waza_machine', img: '/icon.png', category: 'pokemon_data' },
-  // { title: 'とくせい', path: '/ability', img: '/icon.png', category: 'pokemon_data' },
-  // { title: '図鑑カメラ', path: '/camera', img: '/camera.png', category: 'tools_gallery' },
-  // { title: '検索', path: '/search', img: '/icon.png', category: 'tools_gallery' },
-  // { title: 'pokedex.jsonについて', path: '/pokedexjson', img: '/icon.png', category: 'useful_information' },
-  // { title: '年表', path: '/pokemon_history', img: '/icon.png', category: 'useful_information' },
-  // { title: 'WebApp', path: '/webapp', img: '/icon.png', category: 'tools_gallery' },
-  // { title: 'チートシート', path: '/cheatsheet', img: '/blog.png', category: 'useful_information' },
-  // { title: 'リンク', path: '/link', img: '/icon.png', category: 'useful_information' },
-  // { title: 'リーフ', path: '/leaf', img: '/icon.png', category: 'tools_gallery' },
-  // { title: 'ギャラリー', path: '/gallery', img: '/icon.png', category: 'tools_gallery' },
-// ])
 
 const groupedMenu = computed(() => {
   const groups: { [key: string]: any[] } = {}
-  mainMenu.forEach(item => {
+  const lang = (currentLanguage.value === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng'
+  mainMenu.forEach((item: any) => {
+    const localizedItem = {
+      ...item,
+      title: item.title?.[lang] ?? item.title
+    }
     if (!groups[item.category]) {
       groups[item.category] = []
     }
-    groups[item.category]!.push(item)
+    groups[item.category]!.push(localizedItem)
   })
   return groups
 })
 // カテゴリ情報を追加
-const categoryTitles: Record<string, string> = {
-  pokemon_data: 'ポケモン関連データ',
-  tools_gallery: 'ツールとギャラリー',
-  useful_information: 'Information'
-}
+// const categoryTitles: Record<string, string> = {
+//   pokemon_data: 'ポケモン関連データ',
+//   tools_gallery: 'ツールとギャラリー',
+//   useful_information: 'Information'
+// }
+const categoryTitles = computed(() => {
+  const titles: Record<string, string> = {}
+  const lang = (settings.value.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng'
+  Object.keys(appConfig.menus.categories).forEach(key => {
+    const cat = (appConfig.menus.categories as Record<string, { jpn: string; eng: string }>)[key]
+    titles[key] = cat?.[lang] ?? key
+  })
+  return titles
+})
 
 </script>
 <style scoped>
