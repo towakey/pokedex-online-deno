@@ -375,6 +375,7 @@ export default defineAppConfig({
       // { title: 'とくせい', path: '/ability', category: 'pokemon_data', img: '/icon.png' },
       // { title: '図鑑カメラ', path: '/camera', category: 'tools_gallery', img: '/icon.png' },
       { title: {jpn: '検索', eng: 'Search'}, path: '/search', category: 'tools_gallery', img: '/icon.png' },
+      { title: {jpn: '会員証作成', eng: 'Membership Card'}, path: '/webapp/membership_card_generater', category: 'tools_gallery', img: '/icon.png' },
       // { title: 'pokedex.json', path: '/pokedexjson', category: 'useful_information', img: '/icon.png' },
       // { title: '年表', path: '/pokemon_history', category: 'useful_information', img: '/icon.png' },
       // { title: 'チートシート', path: '/cheatsheet', category: 'useful_information', img: '/icon.png' }
