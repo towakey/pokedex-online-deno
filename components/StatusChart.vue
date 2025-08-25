@@ -1,18 +1,19 @@
 <script setup lang="ts">
-import { Bar } from 'vue-chartjs'
+import { Radar } from 'vue-chartjs'
 import {
   Chart as ChartJS,
   Title,
   Tooltip,
   Legend,
-  BarElement,
-  CategoryScale,
-  LinearScale,
+  RadialLinearScale,
+  PointElement,
+  LineElement,
+  Filler,
 } from 'chart.js'
 import ChartDataLabels from 'chartjs-plugin-datalabels'
 import { reactive, watch, computed } from 'vue'
 
-ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
+ChartJS.register(Title, Tooltip, Legend, RadialLinearScale, PointElement, LineElement, Filler)
 ChartJS.register(ChartDataLabels)
 
 interface StatusData {
@@ -49,36 +50,59 @@ const statusLabels = computed(() => {
 
 const chartOptions = reactive({
   responsive: true,
-  indexAxis: 'y' as const,
+  maintainAspectRatio: true,
   scales: {
-    x: {
+    r: {
+      beginAtZero: true,
       max: 260,
+      ticks: {
+        stepSize: 50,
+        color: '#666',
+        font: {
+          size: 12,
+        },
+      } as any,
+      grid: {
+        color: '#ddd',
+      },
+      pointLabels: {
+        color: '#333',
+        font: {
+          size: 14,
+          weight: 'bold' as const,
+        },
+      } as any,
     },
   },
   plugins: {
     legend: {
       display: false,
-      labels: {
-        color: '#000',
-      },
     },
     datalabels: {
-      color: '#fff',
+      display: true,
+      color: '#333',
       font: {
-        weight: 'bold',
-        size: 14,
+        weight: 'bold' as const,
+        size: 12,
       },
-    },
+      backgroundColor: 'rgba(255, 255, 255, 0.8)',
+      borderRadius: 4,
+      padding: 4,
+    } as any,
     tooltip: {
-      enabled: false,
+      enabled: true,
+      backgroundColor: 'rgba(0, 0, 0, 0.8)',
+      titleColor: '#fff',
+      bodyColor: '#fff',
     },
   },
-})
+} as any)
 
 const chartData = reactive({
   labels: statusLabels.value,
   datasets: [
     {
+      label: 'ステータス',
       data: [
         props.statusData?.hp ?? 0,
         props.statusData?.attack ?? 0,
@@ -87,14 +111,14 @@ const chartData = reactive({
         props.statusData?.special_defense ?? 0,
         props.statusData?.speed ?? 0,
       ],
-      backgroundColor: [
-        '#3F88C5',
-        '#3F88C5',
-        '#3F88C5',
-        '#3F88C5',
-        '#3F88C5',
-        '#3F88C5',
-      ],
+      backgroundColor: 'rgba(63, 136, 197, 0.2)',
+      borderColor: '#3F88C5',
+      borderWidth: 2,
+      pointBackgroundColor: '#3F88C5',
+      pointBorderColor: '#fff',
+      pointBorderWidth: 2,
+      pointRadius: 5,
+      pointHoverRadius: 7,
     },
   ],
 })
@@ -133,7 +157,7 @@ watch(
   >
     <v-card-text>
       <ClientOnly>
-        <Bar id="status-chart" :options="chartOptions" :data="chartData" />
+        <Radar id="status-chart" :options="chartOptions" :data="chartData" />
       </ClientOnly>
     </v-card-text>
   </v-card>
