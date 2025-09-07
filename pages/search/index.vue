@@ -174,6 +174,10 @@ definePageMeta({
 import { ref } from 'vue'
 import { useApiBase, useApiClient } from '#imports'
 
+// ルート情報とナビゲーション
+const route = useRoute()
+const router = useRouter()
+
 // レイアウトのページタイトル制御（多言語対応）
 const appConfig = useAppConfig()
 const { settings } = useSettings()
@@ -193,8 +197,30 @@ const updatePageTitle = () => {
   pageTitleState.title = searchTitle.value
 }
 
-onMounted(() => updatePageTitle())
+onMounted(() => {
+  updatePageTitle()
+  initializeFromQuery()
+})
 watch(() => settings.value.language, () => updatePageTitle())
+
+// ルート変更時の監視（戻る/進む対応）
+watch(() => route.query.q, (newQuery) => {
+  const queryValue = newQuery as string
+  if (queryValue !== searchWord.value) {
+    if (queryValue && queryValue.trim()) {
+      searchWord.value = queryValue.trim()
+      nextTick(() => {
+        searchDescriptions()
+      })
+    } else {
+      // クエリパラメータが空の場合は検索結果をクリア
+      searchWord.value = ''
+      searchedWord.value = ''
+      searchResults.value = []
+      hasSearched.value = false
+    }
+  }
+})
 
 // SEO タイトルも同期
 useSeoMeta({
@@ -213,6 +239,27 @@ const searchResults = ref<any[]>([])
 const isLoading = ref(false)
 const hasSearched = ref(false)
 
+// URLクエリパラメータから検索ワードを初期化
+const initializeFromQuery = () => {
+  const query = route.query.q as string
+  if (query && query.trim()) {
+    searchWord.value = query.trim()
+    // 初期化時に自動検索を実行
+    nextTick(() => {
+      searchDescriptions()
+    })
+  }
+}
+
+// URLクエリパラメータを更新する関数
+const updateQueryParam = (word: string) => {
+  const query = word && word.trim() ? { q: word.trim() } : {}
+  router.replace({
+    path: route.path,
+    query
+  })
+}
+
 // API ベースURLユーティリティ
 const { buildUrl } = useApiBase()
 // タイムアウト・リトライ付きフェッチ
@@ -228,6 +275,9 @@ const searchDescriptions = async () => {
   searchResults.value = []
   searchedWord.value = searchWord.value
   hasSearched.value = true
+
+  // URLクエリパラメータを更新
+  updateQueryParam(searchWord.value)
 
   try {
     const params = new URLSearchParams({
