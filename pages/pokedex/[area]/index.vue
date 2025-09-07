@@ -196,6 +196,10 @@ const pageTitle = computed(() => pageTitleState.title);
 const { data: pokedex, pending, error } = await useAsyncData(
   `pokedex-index-${area}`,
   async () => {
+    // タイムアウト設定をスコープ外に定義
+    const isGlobal = area === 'global'
+    const timeoutMs = isGlobal ? 120000 : 30000  // 2分 または 30秒
+    
     try {
       let res: RawPokedexResponse;
       
@@ -208,11 +212,14 @@ const { data: pokedex, pending, error } = await useAsyncData(
       // APIからデータを取得
       const { fetchWithRetry } = useApiClient()
       // 一部リージョンはPHP側で重い処理（多数クエリ）が走るため、タイムアウトを十分長く設定
-      // グローバル/非グローバルともに 30 秒、重い処理の二重実行を避けるため retries は 0
-      const isGlobal = area === 'global'
-      const fetchOptions = isGlobal
-        ? { query: { region: area }, timeoutMs: 30000, retries: 0 }
-        : { query: { region: area }, timeoutMs: 30000, retries: 0 }
+      // グローバルは特に重いため120秒、その他は30秒、重い処理の二重実行を避けるため retries は 0
+      const fetchOptions = { 
+        query: { region: area }, 
+        timeoutMs, 
+        retries: 0 
+      }
+      
+      console.log(`[API Call] Using timeout: ${timeoutMs}ms for area: ${area}`)
       res = await fetchWithRetry<RawPokedexResponse>(apiUrl, fetchOptions)
       
       if (!res || !res.success) {
@@ -272,7 +279,18 @@ const { data: pokedex, pending, error } = await useAsyncData(
       return pokedexArray;
     } catch (error) {
       console.error(`Failed to fetch pokedex data for area ${area}:`, error);
-      throw error;
+      
+      // より詳細なエラー情報を提供
+      let errorMessage = `Failed to fetch pokedex data for area: ${area}`;
+      if (error instanceof Error) {
+        if (error.name === 'AbortError' || error.message.includes('aborted')) {
+          errorMessage += ` (タイムアウト: ${timeoutMs/1000}秒経過)`;
+        } else {
+          errorMessage += ` (${error.message})`;
+        }
+      }
+      
+      throw new Error(errorMessage);
     }
   },
   { default: () => [] }
