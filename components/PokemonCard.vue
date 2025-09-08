@@ -6,12 +6,20 @@
     <div class="d-flex gap-10">
       <v-avatar size="120" tile class="flex-shrink-0">
         <img
+          v-if="!imageError"
           :src="imgSrc"
           alt=""
           width="120"
           height="120"
           style="object-fit: cover; width: 120px; height: 120px;"
+          @error="handleImageError"
         />
+        <div
+          v-else
+          class="no-image-placeholder d-flex align-center justify-center"
+        >
+          <span class="no-image-text">No Image</span>
+        </div>
       </v-avatar>
       <div class="flex-grow-1 overflow-hidden ms-2">
         <div class="no-label">{{ noLabel }}</div>
@@ -19,13 +27,13 @@
         <div v-if="subName" class="sub-name text-truncate">{{ subName }}</div>
         <div class="d-flex mt-1">
           <TypeIcon
-            v-if="pokemon.status[0].type1"
+            v-if="pokemon.status[0]?.type1"
             :type="pokemon.status[0].type1"
             :mode="'icon'"
             class="me-1"
           />
           <TypeIcon
-            v-if="pokemon.status[0].type2"
+            v-if="pokemon.status[0]?.type2"
             :type="pokemon.status[0].type2"
             :mode="'icon'"
           />
@@ -36,7 +44,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, PropType } from 'vue'
+import { computed, ref, type PropType } from 'vue'
 
 interface PokemonStatus {
   weight: string
@@ -73,6 +81,14 @@ const { settings } = useSettings()
 const appConfig = useAppConfig()
 const currentLanguage = computed(() => settings.value.language)
 
+// 画像エラー状態を管理
+const imageError = ref(false)
+
+// 画像読み込みエラー時の処理
+const handleImageError = () => {
+  imageError.value = true
+}
+
 const imgSrc = computed(() => {
   // baseURLを取得
   const config = useRuntimeConfig()
@@ -101,7 +117,8 @@ const noLabel = computed(() => {
     return `${appConfig.translation.globalNo[lang]} ${serial}`
   }
   // appConfigから地域名を取得（settingsに基づき言語を選択）
-  const disp = appConfig.regionPokedex[props.area]?.disp
+  const regionPokedex = appConfig.regionPokedex as any
+  const disp = regionPokedex?.[props.area]?.disp
   const regionName = (disp && disp[lang]) || props.area
   return `${regionName} ${appConfig.translation.no[lang]}${serial}`
 })
@@ -110,7 +127,7 @@ const mainName = computed(() => {
   if (props.area === 'global') {
     return typeof props.pokemon.name === 'string' ? props.pokemon.name : (props.pokemon.name as any).jpn
   }
-  return props.pokemon.status[0].name[currentLanguage.value as 'jpn' | 'eng'] ?? '???'
+  return props.pokemon.status[0]?.name?.[currentLanguage.value as 'jpn' | 'eng'] ?? '???'
 })
 
 const subName = computed(() => {
@@ -153,5 +170,17 @@ const subName = computed(() => {
 .sub-name {
   font-size: 0.9rem;
   color: #555;
+}
+.no-image-placeholder {
+  width: 120px;
+  height: 120px;
+  background-color: #f5f5f5;
+  border: 1px dashed #ccc;
+  border-radius: 8px;
+}
+.no-image-text {
+  font-size: 0.85rem;
+  color: #999;
+  font-weight: 500;
 }
 </style>

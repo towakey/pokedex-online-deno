@@ -179,7 +179,7 @@ const filteredDescription = computed<Record<string, any>>(() => {
         </v-menu>
         </h3>
         </v-list-item-title>
-        <v-list-item-subtitle class="wrap-text" style="color: #000;" v-if="ver !== '' && ver.jpn !== ''"><p>{{ ver.jpn }}</p></v-list-item-subtitle>
+        <v-list-item-subtitle class="wrap-text" style="color: #000;" v-if="ver && ver[currentLanguage] && ver[currentLanguage] !== ''"><p>{{ ver[currentLanguage] }}</p></v-list-item-subtitle>
         <v-list-item-subtitle class="wrap-text" style="color: #000;" v-else>{{ currentLanguage === 'eng' ? 'No information available' : 'じょうほう なし' }}</v-list-item-subtitle>
       </v-list-item>
     </v-list>

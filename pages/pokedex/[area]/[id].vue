@@ -135,7 +135,7 @@
             (pokedex.result[Number(model)]?.gigantamax) ? pokedex.result[Number(model)]?.gigantamax : 
             (pokedex.result[Number(model)]?.region) ? pokedex.result[Number(model)]?.region : 
             (pokedex.result[Number(model)]?.form) ? pokedex.result[Number(model)]?.form : 
-            (pokedex.result[Number(model)]?.name?.jpn || '')
+            (pokedex.result[Number(model)]?.forms?.[currentLanguage] || '')
           }}</h2>
           <v-spacer />
           <v-btn @click="nextModel()">＞</v-btn>
@@ -294,7 +294,7 @@
             pokedex.result[model].gigantamax ? pokedex.result[model].gigantamax : 
             pokedex.result[model].region ? pokedex.result[model].region : 
             pokedex.result[model].form ? pokedex.result[model].form : 
-            pokedex.result[model].name?.jpn || ''
+            pokedex.result[model].forms?.[currentLanguage] || ''
           }}</h2>
           <v-spacer />
           <v-btn
@@ -394,6 +394,11 @@ interface PokemonStatus {
   mega_evolution: string;
   gigantamax: string;
   name: {
+    jpn: string;
+    eng: string;
+    [key: string]: string;
+  };
+  forms: {
     jpn: string;
     eng: string;
     [key: string]: string;
@@ -655,11 +660,14 @@ const fetchTypeCompatibility = async (type1: string, type2: string, region: stri
 
 const fetchType = async (type1: string, type2: string) => {
   const baseUrl = process.server ? config.public.baseUrl || 'http://localhost:3001' : ''
+  const apiUrl = `${baseUrl}/api/pokedex/type.php?mode=type&type1=${type1}&type2=${type2}`
+  console.log(`[fetchType] Fetching from: ${apiUrl}`)
   try {
     const data = await fetchWithRetry(
-      `${baseUrl}/api/pokedex/type.php?mode=type&type1=${type1}&type2=${type2}`,
+      apiUrl,
       { timeoutMs: 7000, retries: 2 }
     )
+    console.log(`[fetchType] API Response for type1=${type1}, type2=${type2}:`, JSON.stringify(data, null, 2))
     return data
   } catch (error) {
     console.error('[Main] fetchType error:', error)
@@ -670,12 +678,15 @@ const fetchType = async (type1: string, type2: string) => {
 const fetchExists = async (pokeId: number | string) => {
   for (const item of appConfig.regionPokedexOrder) {
     if (item === 'global') continue
+    const baseUrl = process.server ? config.public.baseUrl || 'http://localhost:3001' : ''
+    const apiUrl = `${baseUrl}/api/pokedex/pokedex.php?mode=exists&region=${item}&id=${pokeId}`
+    console.log(`[fetchExists] Fetching from: ${apiUrl}`)
     try {
-      const baseUrl = process.server ? config.public.baseUrl || 'http://localhost:3001' : ''
       const data = await fetchWithRetry(
-        `${baseUrl}/api/pokedex/pokedex.php?mode=exists&region=${item}&id=${pokeId}`,
+        apiUrl,
         { timeoutMs: 7000, retries: 2 }
       )
+      console.log(`[fetchExists] API Response for region=${item}, pokeId=${pokeId}:`, JSON.stringify(data, null, 2))
       // pokeId ごとに area データを格納
       if (!existsPokedex[pokeId]) {
         existsPokedex[pokeId] = {}
@@ -685,6 +696,7 @@ const fetchExists = async (pokeId: number | string) => {
         result: data?.result ?? -1
       }
     } catch (error) {
+      console.log(`[fetchExists] Error for region=${item}, pokeId=${pokeId}:`, error)
       if (!existsPokedex[pokeId]) {
         existsPokedex[pokeId] = {}
       }
@@ -700,9 +712,10 @@ const fetchExists = async (pokeId: number | string) => {
 const fetchDescription = async (pokeId: number | string) => {
   try {
     const baseUrl = process.server ? config.public.baseUrl || 'http://localhost:3001' : ''
-    console.log(`[fetchDescription] Fetching description for pokeId: ${pokeId}, key will be: ${String(pokeId)}`)
+    const apiUrl = `${baseUrl}/api/pokedex/pokedex.php?mode=description&id=${pokeId}&language=${settings.value.language}`
+    console.log(`[fetchDescription] Fetching from: ${apiUrl}`)
     const data = await fetchWithRetry(
-      `${baseUrl}/api/pokedex/pokedex.php?mode=description&id=${pokeId}&language=${settings.value.language}`,
+      apiUrl,
       { timeoutMs: 8000, retries: 2 }
     )
     
