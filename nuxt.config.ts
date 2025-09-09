@@ -9,6 +9,10 @@ export default defineNuxtConfig({
     // 開発時は'/'、静的生成時は'/pokedex-online/'を使用
     baseURL: APP_BASE_URL,
     head: {
+      meta: [
+        // 軽度なキャッシュ制御（静的アセットは除外）
+        { name: 'version', content: `${Date.now()}` }
+      ],
       link: [
         {
           rel: 'stylesheet',
@@ -87,6 +91,8 @@ export default defineNuxtConfig({
   css: ['@/assets/styles/common.scss'],
 
   nitro: {
+    // アセットファイル名にハッシュを自動追加
+    minify: true,
     devProxy: {
       '/api': {
         target: 'http://localhost/pokedex-online-deno',
@@ -122,7 +128,26 @@ export default defineNuxtConfig({
         '/pokedex/johto',
         '/pokedex/hoenn',
         '/pokedex/sinnoh',
-        '/pokedex/unova'
+        '/pokedex/unova',
+        // リーフページのルート
+        '/leaf',
+        '/leaf/leaf/1',
+        '/leaf/leaf/2',
+        '/leaf/leaf/3',
+        '/leaf/leaf/4',
+        '/leaf/leaf/5',
+        '/leaf/leaf/6',
+        '/leaf/leaf/7',
+        '/leaf/leaf/8',
+        '/leaf/leaf/9',
+        '/leaf/leaf/10',
+        '/leaf/leaf/11',
+        '/leaf/leaf/12',
+        '/leaf/leaf/13',
+        '/leaf/leaf/14',
+        '/leaf/leaf/16',
+        '/leaf/leaf/17',
+        '/leaf/leaf/18'
       ]
     }
   },
@@ -134,6 +159,9 @@ export default defineNuxtConfig({
     // ルートレベルは事前レンダリング
     '/': { prerender: true },
     '/pokedex': { prerender: true },
+    // リーフページは事前レンダリング
+    '/leaf': { prerender: true },
+    '/leaf/**': { prerender: true },
     // 動的エリアページは事前レンダリング + CSR
     '/pokedex/global': { prerender: true, ssr: false },
     '/pokedex/central_kalos': { prerender: true, ssr: false },

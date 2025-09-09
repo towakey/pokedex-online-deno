@@ -380,8 +380,9 @@ export default defineAppConfig({
     // メインカテゴリ
     categories: {
       pokemon_data: {jpn: 'ポケモンデータ', eng: 'Pokemon Data'},
-      tools_gallery: {jpn: 'ツール・図鑑', eng: 'Tools & Gallery'},
+      tools: {jpn: 'ツール', eng: 'Tools'},
       useful_information: {jpn: '情報', eng: 'Information'},
+      gallery: {jpn: 'ギャラリー', eng: 'Gallery'},
       setting: {jpn: '設定', eng: 'Setting'}
     },
     
@@ -391,10 +392,11 @@ export default defineAppConfig({
       // { title: 'わざ', path: '/waza', category: 'pokemon_data', img: '/icon.png' },
       // { title: 'とくせい', path: '/ability', category: 'pokemon_data', img: '/icon.png' },
       // { title: '図鑑カメラ', path: '/camera', category: 'tools_gallery', img: '/icon.png' },
-      { title: {jpn: '検索', eng: 'Search'}, path: '/search', category: 'tools_gallery', img: '/icon.png' },
-      { title: {jpn: 'ギャラリー', eng: 'Gallery'}, path: '/gallery', category: 'tools_gallery', img: '/icon.png' },
-      { title: {jpn: '会員証作成', eng: 'Membership Card'}, path: '/webapp/membership_card_generater', category: 'tools_gallery', img: '/icon.png' },
-      { title: {jpn: '3Dフィールドビュー', eng: '3D Field Viewer'}, path: '/webapp/stadium_view', category: 'tools_gallery', img: '/icon.png' },
+      { title: {jpn: '検索', eng: 'Search'}, path: '/search', category: 'tools', img: '/icon.png' },
+      { title: {jpn: 'ギャラリー', eng: 'Gallery'}, path: '/gallery', category: 'gallery', img: '/icon.png' },
+      { title: {jpn: 'リーフ', eng: 'leaf'}, path: '/leaf', category: 'gallery', img: '/icon.png' },
+      { title: {jpn: '会員証作成', eng: 'Membership Card'}, path: '/webapp/membership_card_generater', category: 'tools', img: '/icon.png' },
+      { title: {jpn: '3Dフィールドビュー', eng: '3D Field Viewer'}, path: '/webapp/stadium_view', category: 'tools', img: '/icon.png' },
       // { title: 'pokedex.json', path: '/pokedexjson', category: 'useful_information', img: '/icon.png' },
       // { title: '年表', path: '/pokemon_history', category: 'useful_information', img: '/icon.png' },
       // { title: 'チートシート', path: '/cheatsheet', category: 'useful_information', img: '/icon.png' }
