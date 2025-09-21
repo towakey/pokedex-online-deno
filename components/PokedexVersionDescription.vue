@@ -1,33 +1,63 @@
 <template>
-  <v-row style="margin-top: 20px;">
-    <v-col
-      v-for="(versions, area) in appConfig.regionPokedex"
-      :key="area"
-      v-if="area !== 'global'"
-      cols="12"
-      sm="12"
-    >
-      <v-card
-        v-if="area !== 'global'"
-        elevation="0"
-        :variant="(typeof existsPokedex[area]?.result === 'number' && existsPokedex[area]?.result > -1) ? 'outlined' : 'outlined'"
-        :style="(typeof existsPokedex[area]?.result === 'number' && existsPokedex[area]?.result > -1) ? 'background-color: white;' : 'background-color: #f2f2f2;'"
+  <v-card
+    elevation="0"
+    variant="outlined"
+    style="margin-top: 20px;"
+  >
+    <!-- Global用の新しい表示ロジック -->
+    <div v-if="area === 'global' && globalDescriptionMap && Object.keys(globalDescriptionMap).length > 0">
+      <div v-for="(versionGroup, versionGroupKey) in getCurrentPokemonDescriptions()" :key="versionGroupKey">
+        <v-card-text>
+          <!-- 複数バージョンのアイコンを表示 -->
+          <div style="margin-bottom: 8px;">
+            <span v-for="version in String(versionGroupKey).split(',')" :key="version" style="margin-right: 2px;">
+              <img
+                v-if="appConfig.verIcon && appConfig.verIcon[version.trim()]"
+                :src="`${config.app.baseURL || '/'}img/version/${appConfig.verIcon[version.trim()]}`"
+                :alt="version.trim()"
+                style="height: 20px; width: 20px; vertical-align: middle; margin-right: 2px; cursor: pointer;"
+                @click="openVersionDialog({ver: version.trim(), verJpn: version.trim(), description: versionGroup[currentLanguage] || versionGroup.jpn})"
+              />
+            </span>
+          </div>
+          <!-- 言語に応じた説明文を表示 -->
+          <div v-if="versionGroup[currentLanguage]">
+            <span v-html="versionGroup[currentLanguage]"></span>
+          </div>
+          <div v-else-if="versionGroup.jpn">
+            <span v-html="versionGroup.jpn"></span>
+          </div>
+          <div v-else>
+            {{ currentLanguage === 'eng' ? 'No description available' : '説明文がありません' }}
+          </div>
+        </v-card-text>
+        <v-divider v-if="Object.keys(globalDescriptionMap).length > 1 && versionGroupKey !== Object.keys(globalDescriptionMap).pop()"></v-divider>
+      </div>
+    </div>
+
+    <!-- 既存の地方図鑑表示ロジック -->
+    <div v-else>
+      <div
+        v-for="(versions, areaKey) in appConfig.regionPokedex"
+        :key="areaKey"
+        v-if="areaKey !== 'global' && areaKey && existsPokedex[areaKey]"
+        :style="(typeof existsPokedex[areaKey]?.result === 'number' && existsPokedex[areaKey]?.result > -1) ? 'background-color: white;' : 'background-color: #f2f2f2;'"
       >
         <v-card-title>
           <NuxtLink
-            v-if="typeof existsPokedex[area]?.result === 'number' && existsPokedex[area]?.result > -1"
-            :to="{ path: `/pokedex/${area}/${('0000' + existsPokedex[area]?.result).slice(-4)}` }"
+            v-if="typeof existsPokedex[areaKey]?.result === 'number' && existsPokedex[areaKey]?.result > -1"
+            :to="{ path: `/pokedex/${areaKey}/${('0000' + existsPokedex[areaKey]?.result).slice(-4)}` }"
             class="nuxtlink"
           >
-            {{ appConfig.regionPokedex[area]?.disp[currentLanguage] }}
+            {{ appConfig.regionPokedex[areaKey]?.disp[currentLanguage] }}
           </NuxtLink>
           <span v-else>
-            {{ appConfig.regionPokedex[area]?.disp[currentLanguage] }}
+            {{ appConfig.regionPokedex[areaKey]?.disp[currentLanguage] }}
           </span>
         </v-card-title>
         <v-card-text>
-          <div v-if="getDescriptionLines(area).length">
-            <div v-for="line in getDescriptionLines(area)" :key="line.ver">
+          <div v-if="getDescriptionLines(areaKey).length">
+            <div v-for="line in getDescriptionLines(areaKey)" :key="line.ver">
               <img
                 v-if="appConfig.verIcon[line.ver]"
                 :src="`${config.app.baseURL || '/'}img/version/${appConfig.verIcon[line.ver]}`"
@@ -40,17 +70,18 @@
           </div>
           <div v-else>
             <img
-              v-if="appConfig.regionPokedex[area]?.gameVersion && appConfig.regionPokedex[area].gameVersion.length > 0 && appConfig.verIcon[appConfig.regionPokedex[area].gameVersion[0]]"
-              :src="`${config.app.baseURL || '/'}img/version/${appConfig.verIcon[appConfig.regionPokedex[area].gameVersion[0]]}`"
-              :alt="appConfig.verDescription[appConfig.regionPokedex[area].gameVersion[0]]?.shortTitle || appConfig.regionPokedex[area].gameVersion[0]"
+              v-if="appConfig.regionPokedex[areaKey]?.gameVersion && appConfig.regionPokedex[areaKey].gameVersion.length > 0 && appConfig.verIcon[appConfig.regionPokedex[areaKey].gameVersion[0]]"
+              :src="`${config.app.baseURL || '/'}img/version/${appConfig.verIcon[appConfig.regionPokedex[areaKey].gameVersion[0]]}`"
+              :alt="appConfig.verDescription[appConfig.regionPokedex[areaKey].gameVersion[0]]?.shortTitle || appConfig.regionPokedex[areaKey].gameVersion[0]"
               style="height: 20px; width: 20px; vertical-align: middle; margin-right: 4px;"
             />
             {{ currentLanguage === 'eng' ? 'No Pokédex description available' : '図鑑説明文は存在しません' }}
           </div>
         </v-card-text>
-      </v-card>
-    </v-col>
-  </v-row>
+        <v-divider v-if="areaKey !== Object.keys(appConfig.regionPokedex).filter(a => a !== 'global').pop()"></v-divider>
+      </div>
+    </div>
+  </v-card>
 </template>
 <script setup lang="ts">
 const appConfig = useAppConfig()
@@ -63,18 +94,32 @@ const currentLanguage = computed(() => {
 })
 
 // propsの定義
-const props = defineProps({
-  existsPokedex: {
-    type: Object as () => { [key: string]: any },
-    required: true
-  },
-  getDescriptionLines: {
-    type: Function as (area: string) => Array<{ ver: string; version: string; pokedex: string; description: string; verJpn: string }>,
-    required: true
-  },
-  openVersionDialog: {
-    type: Function as (line: any) => void,
-    required: true
+const props = defineProps<{
+  existsPokedex: { [key: string]: any }
+  getDescriptionLines: (area: string) => Array<{ ver: string; version: string; pokedex: string; description: string; verJpn: string }>
+  openVersionDialog: (line: any) => void
+  globalDescriptionMap?: { [key: string]: any }
+  currentPokemonId?: string
+  area?: string
+}>()
+
+// 現在のポケモンの説明データを取得する関数
+const getCurrentPokemonDescriptions = () => {
+  if (!props.globalDescriptionMap || !props.currentPokemonId) {
+    return {}
+  }
+  
+  // currentPokemonIdに一致するデータを返す
+  return props.globalDescriptionMap[props.currentPokemonId] || {}
+}
+
+// デバッグ用
+watchEffect(() => {
+  if (props.area === 'global' && props.globalDescriptionMap) {
+    console.log('[PokedexVersionDescription] globalDescriptionMap:', props.globalDescriptionMap)
+    console.log('[PokedexVersionDescription] globalDescriptionMap keys:', Object.keys(props.globalDescriptionMap))
+    console.log('[PokedexVersionDescription] currentPokemonId:', props.currentPokemonId)
+    console.log('[PokedexVersionDescription] getCurrentPokemonDescriptions():', getCurrentPokemonDescriptions())
   }
 })
 </script>

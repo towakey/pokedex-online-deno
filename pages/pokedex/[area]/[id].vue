@@ -72,11 +72,77 @@
                   <h2 class="responsive-text-name">{{ item.name[currentLanguage] }}</h2>
                 </v-card-title>
                 <v-card-text width="auto">
-                  <div class="responsive-text">{{ appConfig.translation.classification[currentLanguage] }}　　　　{{ item.classification[currentLanguage] }}</div>
+                  <!-- フォーム名表示 -->
+                  <div v-if="pokedex.result.length > 1" class="responsive-text mb-2" style="font-weight: bold;">
+                    <span class="d-flex align-center">
+                      <!-- フォームアイコン表示 -->
+                      <!-- <img 
+                        v-if="pokedex.result[Number(model)]?.forms?.eng?.startsWith('Mega')"
+                        src="/img/icon/f01.png"
+                        alt="Mega Evolution"
+                        style="width: 16px; height: 16px; margin-right: 4px;"
+                      />
+                      <img 
+                        v-else-if="pokedex.result[Number(model)]?.forms?.eng === 'Gigantamax'"
+                        src="/img/icon/f02.png"
+                        alt="Gigantamax"
+                        style="width: 16px; height: 16px; margin-right: 4px;"
+                      />
+                      <img 
+                        v-else-if="pokedex.result[Number(model)]?.forms?.eng === 'Stellar Form'"
+                        src="/img/icon/f03.png"
+                        alt="Stellar/Terastal Form"
+                        style="width: 16px; height: 16px; margin-right: 4px;"
+                      /> -->
+                      
+                      {{ 
+                        (pokedex.result[Number(model)]?.gigantamax && pokedex.result[Number(model)]?.form) ? `${pokedex.result[Number(model)]?.gigantamax} ${pokedex.result[Number(model)]?.form}` : 
+                        (pokedex.result[Number(model)]?.region && pokedex.result[Number(model)]?.form) ? `${pokedex.result[Number(model)]?.region} ${pokedex.result[Number(model)]?.form}` : 
+                        (pokedex.result[Number(model)]?.mega_evolution) ? pokedex.result[Number(model)]?.mega_evolution : 
+                        (pokedex.result[Number(model)]?.gigantamax) ? pokedex.result[Number(model)]?.gigantamax : 
+                        (pokedex.result[Number(model)]?.region) ? pokedex.result[Number(model)]?.region : 
+                        (pokedex.result[Number(model)]?.form) ? pokedex.result[Number(model)]?.form : 
+                        (pokedex.result[Number(model)]?.forms?.[currentLanguage] || '')
+                      }}
+                    </span>
+                  </div>
+                  <!-- <div class="responsive-text">{{ appConfig.translation.classification[currentLanguage] }}　　　　{{ item.classification[currentLanguage] }}</div> -->
+                  <div class="responsive-text">{{ item.classification[currentLanguage] }}</div>
                   <!-- <div class="responsive-text">{{ appConfig.translation.no[currentLanguage] }}　　　No.{{ ('0000' + item.no).slice(-4) }}</div> -->
-                  <div class="responsive-text">{{ appConfig.translation.no[currentLanguage] }}　　No.{{ ('0000' + item.globalNo).slice(-4) }}</div>
+                  <!-- <div class="responsive-text">{{ appConfig.translation.no[currentLanguage] }}　　No.{{ ('0000' + item.globalNo).slice(-4) }}</div>
                   <div class="responsive-text">{{ appConfig.translation.height[currentLanguage] }}　　　　{{ item.height }} m</div>
-                  <div class="responsive-text">{{ appConfig.translation.weight[currentLanguage] }}　　　　{{ item.weight }} kg</div>
+                  <div class="responsive-text">{{ appConfig.translation.weight[currentLanguage] }}　　　　{{ item.weight }} kg</div> -->
+                  <div class="responsive-text">No.{{ ('0000' + item.globalNo).slice(-4) }}</div>
+                  <div class="responsive-text">{{ item.height }} m</div>
+                  <div class="responsive-text">{{ item.weight }} kg</div>
+                  <!-- ここにitem.type1とitem.type2を表示 -->
+                  <div class="d-flex mt-1">
+                    <TypeIcon
+                      v-if="item.type1"
+                      :type="item.type1"
+                      :mode="'icon'"
+                      class="me-1"
+                    />
+                    <TypeIcon
+                      v-if="item.type2"
+                      :type="item.type2"
+                      :mode="'icon'"
+                    />
+                  </div>
+                  <div class="responsive-text d-flex align-center">
+                    <!-- <span>{{ appConfig.translation.egg[currentLanguage] }}　　</span> -->
+                    <div class="d-flex align-center flex-wrap" style="gap: 4px;">
+                      <div v-for="(eggGroup, index) in item.egg" :key="index" class="d-flex align-center" style="margin-right: 8px;">
+                        <img 
+                          v-if="eggMapping[eggGroup]"
+                          :src="`/img/icon/e${eggMapping[eggGroup].padStart(2, '0')}.gif`"
+                          :alt="eggGroup"
+                          style="width: 32px; height: 32px; margin-right: 2px;"
+                        />
+                        <!-- <span>{{ eggGroup }}</span> -->
+                      </div>
+                    </div>
+                  </div>
                 </v-card-text>
               </v-card>
             </v-col>
@@ -119,32 +185,118 @@
           /> -->
         </v-carousel-item>
       </v-carousel>
+      <!-- フォーム切り替えアイコンボタン -->
       <v-card
       v-if="pokedex.result.length > 1"
       elevation="0"
       style="margin-top: 20px;background-color: white;"
       variant="outlined"
       >
-        <v-card-actions>
-          <v-btn @click="prevModel()">＜</v-btn>
-          <v-spacer />
-          <h2>{{ 
-            (pokedex.result[Number(model)]?.gigantamax && pokedex.result[Number(model)]?.form) ? `${pokedex.result[Number(model)]?.gigantamax} ${pokedex.result[Number(model)]?.form}` : 
-            (pokedex.result[Number(model)]?.region && pokedex.result[Number(model)]?.form) ? `${pokedex.result[Number(model)]?.region} ${pokedex.result[Number(model)]?.form}` : 
-            (pokedex.result[Number(model)]?.mega_evolution) ? pokedex.result[Number(model)]?.mega_evolution : 
-            (pokedex.result[Number(model)]?.gigantamax) ? pokedex.result[Number(model)]?.gigantamax : 
-            (pokedex.result[Number(model)]?.region) ? pokedex.result[Number(model)]?.region : 
-            (pokedex.result[Number(model)]?.form) ? pokedex.result[Number(model)]?.form : 
-            (pokedex.result[Number(model)]?.forms?.[currentLanguage] || '')
-          }}</h2>
-          <v-spacer />
-          <v-btn @click="nextModel()">＞</v-btn>
-        </v-card-actions>
+        <v-card-text class="d-flex align-center py-4" style="width: 100%; padding: 16px;">
+          <!-- 前へボタン -->
+          <v-btn
+            icon
+            size="large"
+            variant="outlined"
+            @click="prevModel()"
+            style="flex-shrink: 0;"
+          >
+            <v-icon>mdi-chevron-left</v-icon>
+          </v-btn>
+          
+          <!-- フォームインジケーター表示（カルーセル風） -->
+          <div class="flex-grow-1 text-center" style="position: relative; height: 60px; margin: 0 24px;">
+            <div class="d-flex align-center justify-center" style="position: relative; height: 100%; width: 100%;">
+              <!-- 表示するインジケーターを計算して配置 -->
+              <transition-group name="slide" tag="div" class="d-flex align-center justify-center" style="position: relative; width: 100%; height: 100%;">
+                <v-btn
+                  v-for="(item, index) in pokedex.result"
+                  v-show="getCircularDistance(index, model, pokedex.result.length) <= 3"
+                  :key="`indicator-${index}`"
+                  icon
+                  :size="index === model ? 'default' : 'small'"
+                  variant="plain"
+                  @click="model = index"
+                  :style="`
+                    position: absolute;
+                    transform: translateX(${getCircularOffset(index, model, pokedex.result.length)}px) scale(${index === model ? 1.3 : 0.8});
+                    opacity: ${index === model ? 1 : Math.max(0.3, 1 - getCircularDistance(index, model, pokedex.result.length) * 0.2)};
+                    z-index: ${index === model ? 10 : 5 - getCircularDistance(index, model, pokedex.result.length)};
+                    transition: all 0.3s ease;
+                  `"
+                >
+                  <!-- メガ進化アイコン -->
+                  <img 
+                    v-if="item?.forms?.eng?.startsWith('Mega')"
+                    src="/img/icon/f01.png"
+                    alt="Mega Evolution"
+                    :style="`width: ${index === model ? '56px' : '32px'}; height: ${index === model ? '56px' : '32px'};`"
+                  />
+                  <!-- ダイマックスアイコン -->
+                  <img 
+                    v-else-if="item?.forms?.eng === 'Gigantamax'"
+                    src="/img/icon/f02.png"
+                    alt="Gigantamax"
+                    :style="`width: ${index === model ? '56px' : '32px'}; height: ${index === model ? '56px' : '32px'};`"
+                  />
+                  <!-- ステラ/テラスタルアイコン -->
+                  <img 
+                    v-else-if="item?.forms?.eng === 'Stellar Form'"
+                    src="/img/icon/f03.png"
+                    alt="Stellar/Terastal Form"
+                    :style="`width: ${index === model ? '56px' : '32px'}; height: ${index === model ? '56px' : '32px'};`"
+                  />
+                  <!-- デバッグ: 全ての場合でアルファベット表示をテスト -->
+                  <span 
+                    v-else-if="item?.src && String(item.src).includes('0201')"
+                    :style="`
+                      font-size: ${index === model ? '24px' : '16px'};
+                      font-weight: bold;
+                      color: ${index === model ? '#1976d2' : '#666'};
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      width: ${index === model ? '40px' : '28px'};
+                      height: ${index === model ? '40px' : '28px'};
+                      border-radius: 50%;
+                      background-color: ${index === model ? '#e3f2fd' : 'transparent'};
+                      border: ${index === model ? '2px solid #1976d2' : '1px solid #ccc'};
+                    `"
+                  >
+                    {{ getAlphabetSymbol(item) }}
+                  </span>
+                  <!-- 通常のドット -->
+                  <v-icon 
+                    v-else
+                    :color="index === model ? 'primary' : 'grey'"
+                    :size="index === model ? 'large' : 'default'"
+                  >
+                    {{ index === model ? 'mdi-circle' : 'mdi-circle-outline' }}
+                  </v-icon>
+                </v-btn>
+              </transition-group>
+            </div>
+          </div>
+          
+          <!-- 次へボタン -->
+          <v-btn
+            icon
+            size="large"
+            variant="outlined"
+            @click="nextModel()"
+            style="flex-shrink: 0;"
+          >
+            <v-icon>mdi-chevron-right</v-icon>
+          </v-btn>
+        </v-card-text>
       </v-card>
       <PokedexVersionDescription
         :existsPokedex="(pokedex.result.length && existsPokedex[String(pokedex.result[Number(model)]?.id)]) ? existsPokedex[String(pokedex.result[Number(model)]?.id)] : {}"
         :getDescriptionLines="(area: string) => getDescriptionLines(area, String(pokedex.result[Number(model)]?.id))"
         :openVersionDialog="openVersionDialog"
+        :globalDescriptionMap="pokedex.result.length > 0 && pokedex.result[Number(model)]?.globalNo ? globalDescriptionMap[String(pokedex.result[Number(model)]?.globalNo)] || {} : {}"
+        :currentPokemonId="pokedex.result.length > 0 ? String(pokedex.result[Number(model)]?.id) : ''"
+        :area="String(route.params.area)"
       />
       <AdSenseCard 
       slot-type="banner"
@@ -247,6 +399,18 @@
                 >
                   <h2 class="responsive-text-name" @click="nameDialog = true"
                   >{{ item.name[currentLanguage] }}</h2>
+                  <!-- フォーム名表示 -->
+                  <div v-if="pokedex.result.length > 1" class="responsive-text mb-2" style="font-weight: bold;">
+                    {{ 
+                      pokedex.result[model].gigantamax && pokedex.result[model].form ? `${pokedex.result[model].gigantamax} ${pokedex.result[model].form}` : 
+                      pokedex.result[model].region && pokedex.result[model].form ? `${pokedex.result[model].region} ${pokedex.result[model].form}` : 
+                      pokedex.result[model].mega_evolution ? pokedex.result[model].mega_evolution : 
+                      pokedex.result[model].gigantamax ? pokedex.result[model].gigantamax : 
+                      pokedex.result[model].region ? pokedex.result[model].region : 
+                      pokedex.result[model].form ? pokedex.result[model].form : 
+                      pokedex.result[model].forms?.[currentLanguage] || ''
+                    }}
+                  </div>
                   <div class="responsive-text">{{ appConfig.translation.classification[currentLanguage] }}　　　　　{{ item.classification[currentLanguage] }}</div>
                   <div class="responsive-text">{{ appConfig.translation.no[currentLanguage] }}　　　No.{{ ('0000' + item.no).slice(-4) }}</div>
                   <NuxtLink class="nuxtlink" :to="{path: `/pokedex/global/${item.globalNo}`}">
@@ -287,15 +451,7 @@
           @click="prevModel()"
           >＜</v-btn>
           <v-spacer />
-          <h2>{{ 
-            pokedex.result[model].gigantamax && pokedex.result[model].form ? `${pokedex.result[model].gigantamax} ${pokedex.result[model].form}` : 
-            pokedex.result[model].region && pokedex.result[model].form ? `${pokedex.result[model].region} ${pokedex.result[model].form}` : 
-            pokedex.result[model].mega_evolution ? pokedex.result[model].mega_evolution : 
-            pokedex.result[model].gigantamax ? pokedex.result[model].gigantamax : 
-            pokedex.result[model].region ? pokedex.result[model].region : 
-            pokedex.result[model].form ? pokedex.result[model].form : 
-            pokedex.result[model].forms?.[currentLanguage] || ''
-          }}</h2>
+          <span style="font-size: 0.9em;">フォーム切り替え</span>
           <v-spacer />
           <v-btn
           @click="nextModel()"
@@ -426,6 +582,7 @@ interface PokemonStatus {
   };
   evolve: any;
   src?: string;
+  egg: string[];
 }
 
 interface PokedexResponse {
@@ -451,6 +608,21 @@ const appConfig = useAppConfig()
 const route = useRoute()
 const router = useRouter()
 route.meta.title = route.params.area
+
+const eggMapping: Record<string, string> = {
+  '植物': '0',
+  '虫': '1',
+  '飛行': '2',
+  '人型': '3',
+  '怪獣': '4',
+  '妖精': '5',
+  '鉱物': '7',
+  '陸上': '8',
+  '不定形': '9',
+  '水中１': '10',
+  '水中３': '12',
+  'タマゴ未発見': '14'
+}
 
 // 設定管理composableを使用
 const { settings } = useSettings()
@@ -483,6 +655,7 @@ const fetchPokedex = async (area: string, id: number | string) => {
       mega_evolution: '',
       gigantamax: '',
       name: { jpn: '不明', eng: 'Unknown' },
+      forms: { jpn: '', eng: '' },
       type1: '',
       type2: '',
       type_compatibility: {},
@@ -501,7 +674,8 @@ const fetchPokedex = async (area: string, id: number | string) => {
       description: '',
       waza: {},
       evolve: {},
-      src: '/img/pokedex/0000.png'
+      src: '/img/pokedex/0000.png',
+      egg: []
     }
     return { query: { id: String(id), area: String(area), mode: 'details' }, result: [placeholder] } as PokedexResponse
   }
@@ -531,6 +705,7 @@ const fetchPokedex = async (area: string, id: number | string) => {
         mega_evolution: '',
         gigantamax: '',
         name: { jpn: '不明', eng: 'Unknown' },
+        forms: { jpn: '', eng: '' },
         type1: '',
         type2: '',
         type_compatibility: {},
@@ -549,7 +724,8 @@ const fetchPokedex = async (area: string, id: number | string) => {
         description: '',
         waza: {},
         evolve: {},
-        src: '/img/pokedex/0000.png'
+        src: '/img/pokedex/0000.png',
+        egg: []
       }
       return { query: { id: String(id), area: String(area), mode: 'details' }, result: [placeholder] } as PokedexResponse
     }
@@ -571,6 +747,7 @@ const fetchPokedex = async (area: string, id: number | string) => {
         mega_evolution: '',
         gigantamax: '',
         name: { jpn: '不明', eng: 'Unknown' },
+        forms: { jpn: '', eng: '' },
         type1: '',
         type2: '',
         type_compatibility: {},
@@ -589,7 +766,8 @@ const fetchPokedex = async (area: string, id: number | string) => {
         description: '',
         waza: {},
         evolve: {},
-        src: '/img/pokedex/0000.png'
+        src: '/img/pokedex/0000.png',
+        egg: []
       }]
     }
     return { query: { id: String(id), area: String(area), mode: 'details' }, result: resultArray } as PokedexResponse
@@ -606,6 +784,7 @@ const fetchPokedex = async (area: string, id: number | string) => {
       mega_evolution: '',
       gigantamax: '',
       name: { jpn: '不明', eng: 'Unknown' },
+      forms: { jpn: '', eng: '' },
       type1: '',
       type2: '',
       type_compatibility: {},
@@ -624,7 +803,8 @@ const fetchPokedex = async (area: string, id: number | string) => {
       description: '',
       waza: {},
       evolve: {},
-      src: '/img/pokedex/0000.png'
+      src: '/img/pokedex/0000.png',
+      egg: []
     }
     return { query: { id: String(id), area: String(area), mode: 'details' }, result: [placeholder] } as PokedexResponse
   }
@@ -751,11 +931,133 @@ const fetchDescription = async (pokeId: number | string) => {
   }
 }
 
+// Global用の新しいdescription_map API取得関数
+const fetchGlobalDescriptionMap = async (pokeId: number | string) => {
+  // SSR時はスキップ
+  if (process.server) {
+    console.log(`[fetchGlobalDescriptionMap] SSR mode - skipping for ${pokeId}`)
+    return { result: {} }
+  }
+
+  try {
+    const baseUrl = process.server ? config.public.baseUrl || 'http://localhost:3001' : ''
+    // pokeIdから最初の4文字のポケモン番号を抽出
+    const noParam = String(pokeId).substring(0, 4)
+    const apiUrl = `${baseUrl}/api/pokedex/pokedex.php?region=global&no=${noParam}&mode=description_map`
+    console.log(`[fetchGlobalDescriptionMap] Fetching from: ${apiUrl}`)
+    
+    const data = await fetchWithRetry(
+      apiUrl,
+      { timeoutMs: 8000, retries: 2 }
+    )
+    
+    console.log(`[fetchGlobalDescriptionMap] API Response for pokeId ${pokeId}:`, JSON.stringify(data, null, 2))
+    
+    if (!data || !data.success || !data.data) {
+      console.warn(`[fetchGlobalDescriptionMap] Invalid data format for pokeId ${pokeId}`, data)
+      globalDescriptionMap[String(pokeId)] = {}
+      return { result: {} }
+    }
+    
+    // グローバル図鑑用のデータを保存
+    globalDescriptionMap[String(pokeId)] = data.data
+    console.log(`[fetchGlobalDescriptionMap] Stored data for pokeId ${pokeId}:`, globalDescriptionMap[String(pokeId)])
+    console.log(`[fetchGlobalDescriptionMap] Keys of stored data:`, Object.keys(globalDescriptionMap[String(pokeId)]))
+    
+    return data
+  } catch (error) {
+    console.error('[fetchGlobalDescriptionMap] error:', error)
+    globalDescriptionMap[String(pokeId)] = {}
+    return { result: {} }
+  }
+}
+
 definePageMeta({
   title: "Pokedex-Online"
 })
 let nameDialog = ref(false)
 let model = ref(0)
+
+// 循環を考慮した距離を計算する関数
+const getCircularDistance = (index1: number, index2: number, total: number): number => {
+  const directDistance = Math.abs(index1 - index2)
+  const circularDistance = total - directDistance
+  return Math.min(directDistance, circularDistance)
+}
+
+// 循環を考慮したX座標オフセットを計算する関数
+const getCircularOffset = (index: number, currentModel: number, total: number): number => {
+  if (total <= 1) return 0
+  
+  const directDistance = index - currentModel
+  const absDirectDistance = Math.abs(directDistance)
+  const circularDistance = total - absDirectDistance
+  
+  // より短い距離の方向を選択
+  if (absDirectDistance <= circularDistance) {
+    return directDistance * 50
+  } else {
+    // 循環の方が短い場合は、反対方向に配置
+    if (directDistance > 0) {
+      return -(circularDistance) * 50
+    } else {
+      return circularDistance * 50
+    }
+  }
+}
+
+// 0201ポケモンのフォーム番号からアルファベット/記号を取得する関数
+const getAlphabetSymbol = (item: any): string => {
+  if (!item?.src) {
+    console.log('[getAlphabetSymbol] No src found:', item)
+    return ''
+  }
+  
+  const srcPath = String(item.src)
+  console.log('[getAlphabetSymbol] Checking srcPath:', srcPath)
+  
+  // より柔軟なパターンマッチングを試行
+  let match = srcPath.match(/0201_[0-9a-f]{8}_\d+_(\d{3})_\d+/)
+  if (!match) {
+    // 別のパターンも試す
+    match = srcPath.match(/0201.*_(\d{3})_/)
+  }
+  if (!match) {
+    console.log('[getAlphabetSymbol] No pattern match found for:', srcPath)
+    return ''
+  }
+  
+  const formNumber = parseInt(match[1], 10)
+  console.log('[getAlphabetSymbol] Form number:', formNumber)
+  
+  // 0-25: A-Z, 26: ?, 27: !
+  if (formNumber >= 0 && formNumber <= 25) {
+    const result = String.fromCharCode(65 + formNumber) // A=65
+    console.log('[getAlphabetSymbol] Returning alphabet:', result)
+    return result
+  } else if (formNumber === 26) {
+    console.log('[getAlphabetSymbol] Returning ?')
+    return '?'
+  } else if (formNumber === 27) {
+    console.log('[getAlphabetSymbol] Returning !')
+    return '!'
+  }
+  
+  console.log('[getAlphabetSymbol] Form number out of range:', formNumber)
+  return ''
+}
+
+// IDが0201で始まるかチェックする関数
+const is0201Pokemon = (item: any): boolean => {
+  if (!item?.src) {
+    console.log('[is0201Pokemon] No src found:', item)
+    return false
+  }
+  const srcPath = String(item.src)
+  const result = srcPath.includes('0201')
+  console.log('[is0201Pokemon] srcPath:', srcPath, 'result:', result)
+  return result
+}
 
 // 初回マウント時に存在情報を取得
 onMounted(() => {
@@ -770,8 +1072,15 @@ onMounted(() => {
       if (pokemon?.id) {
         console.log(`[onMounted] Fetching exists for ${pokemon.id}`)
         fetchExists(pokemon.id)
-        console.log(`[onMounted] Fetching description for ${pokemon.id}`)
-        fetchDescription(pokemon.id)
+        
+        // area=globalの場合は新しいAPIを使用
+        if (route.params.area === 'global') {
+          console.log(`[onMounted] Fetching global description map for ${pokemon.id}`)
+          fetchGlobalDescriptionMap(pokemon.id)
+        } else {
+          console.log(`[onMounted] Fetching description for ${pokemon.id}`)
+          fetchDescription(pokemon.id)
+        }
         
         // DescriptionView の v-if 条件をデバッグ
         const idStr = String(pokemon.id)
@@ -782,6 +1091,9 @@ onMounted(() => {
     }
   }
 })
+
+// modelが変更されたときのアニメーション処理はCSSで自動的に行われる
+
 
 watch(() => [route.params.area, route.params.id], async () => {
   // ページ遷移時は図鑑存在情報と図鑑説明を再取得
@@ -801,8 +1113,15 @@ watch(() => [route.params.area, route.params.id], async () => {
         if (pokemon?.id) {
           console.log(`[Watch] Fetching exists for ${pokemon.id}`)
           fetchExists(pokemon.id)
-          console.log(`[Watch] Fetching description for ${pokemon.id}`)
-          fetchDescription(pokemon.id)
+          
+          // area=globalの場合は新しいAPIを使用
+          if (route.params.area === 'global') {
+            console.log(`[Watch] Fetching global description map for ${pokemon.id}`)
+            fetchGlobalDescriptionMap(pokemon.id)
+          } else {
+            console.log(`[Watch] Fetching description for ${pokemon.id}`)
+            fetchDescription(pokemon.id)
+          }
         }
       }
     }
@@ -1053,8 +1372,22 @@ watch(() => pokedexData.value, (newData) => {
       if (pokemon?.id) {
         console.log(`[Watch pokedexData] Fetching exists for ${pokemon.id}`)
         fetchExists(pokemon.id)
-        console.log(`[Watch pokedexData] Fetching description for ${pokemon.id}`)
-        fetchDescription(pokemon.id)
+        
+        // area=globalの場合は新しいdescription_map形式のAPIを呼び出し
+        console.log(`[Watch pokedexData] Area check: ${String(route.params.area)}, pokemon object:`, pokemon)
+        if (String(route.params.area) === 'global') {
+          console.log('[Watch pokedexData] Area is global, checking globalNo:', pokemon.globalNo)
+          if (pokemon.globalNo) {
+            console.log('[Watch pokedexData] Fetching global description map for', pokemon.globalNo)
+            fetchGlobalDescriptionMap(pokemon.globalNo)
+          } else {
+            console.log('[Watch pokedexData] pokemon.globalNo is missing, using pokemon.id:', pokemon.id)
+            fetchGlobalDescriptionMap(pokemon.id)
+          }
+        } else {
+          console.log(`[Watch pokedexData] Fetching description for ${pokemon.id}`)
+          fetchDescription(pokemon.id)
+        }
       }
     }
   }
@@ -1159,6 +1492,8 @@ const descriptionViewDebug = computed(() => {
 const descriptions = reactive<{ [key: string]: string }>({})
 // API で取得した行データを保持（ポケモンIDごと、ver 単位）
 const descriptionRows = reactive<{ [pokemonId: string]: Array<{ ver: string; version: string; pokedex: string; description: string }> }>({})
+// Global用の新しいdescription_map形式のデータを保持
+const globalDescriptionMap = reactive<{ [pokemonId: string]: any }>({})
 
 const metaImage = ref('');
 if (pokedex.result.length) {
