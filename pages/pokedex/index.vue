@@ -12,16 +12,24 @@
         class="nuxtlink"
         >
           <v-card
-          elevation-0
+          elevation="0"
           variant="outlined"
           style="background-color: white; width: 100%;"
           >
             <v-card-title>{{ getRegionDisp(item as RegionPokedexKey) }}</v-card-title>
-            <!-- <v-card-text style="min-height: 24px; display: block; width: 100%;">
-              <div style="min-width: 150px;">
-                {{ appConfig.regionPokedex[item].name.eng || '\u00A0\u00A0\u00A0\u00A0\u00A0' }}
+            <v-card-text style="min-height: 32px; padding-top: 0;">
+              <div class="d-flex flex-wrap gap-1">
+                <template v-for="version in getRegionVersions(item as RegionPokedexKey)" :key="version">
+                  <img
+                    v-if="getVersionIcon(version)"
+                    :src="`/img/version/${getVersionIcon(version)}`"
+                    :alt="version"
+                    :title="version"
+                    style="width: 24px; height: 24px; object-fit: contain;"
+                  >
+                </template>
               </div>
-            </v-card-text> -->
+            </v-card-text>
           </v-card>
         </NuxtLink>
       </v-col>
@@ -55,6 +63,18 @@ const getRegionDisp = (item: RegionPokedexKey) => {
   const lang = (settings.value.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng'
   const region = (appConfig.regionPokedex as Record<RegionPokedexKey, { disp: { jpn: string; eng: string } }>)[item]
   return region?.disp?.[lang] ?? ''
+}
+
+// 地域図鑑のゲームバージョン一覧を取得
+const getRegionVersions = (item: RegionPokedexKey) => {
+  const region = (appConfig.regionPokedex as Record<RegionPokedexKey, { gameVersion: string[] }>)[item]
+  return region?.gameVersion ?? []
+}
+
+// バージョン名からアイコンファイル名を取得
+const getVersionIcon = (version: string) => {
+  const verIcon = appConfig.verIcon as Record<string, string>
+  return verIcon[version] ?? ''
 }
 
 // レイアウトAppBarのタイトルを更新（多言語対応）
