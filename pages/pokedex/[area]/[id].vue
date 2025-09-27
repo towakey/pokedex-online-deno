@@ -294,8 +294,8 @@
         :existsPokedex="(pokedex.result.length && existsPokedex[String(pokedex.result[Number(model)]?.id)]) ? existsPokedex[String(pokedex.result[Number(model)]?.id)] : {}"
         :getDescriptionLines="(area: string) => getDescriptionLines(area, String(pokedex.result[Number(model)]?.id))"
         :openVersionDialog="openVersionDialog"
-        :globalDescriptionMap="pokedex.result.length > 0 && pokedex.result[Number(model)]?.globalNo ? globalDescriptionMap[String(pokedex.result[Number(model)]?.globalNo)] || {} : {}"
-        :currentPokemonId="pokedex.result.length > 0 ? String(pokedex.result[Number(model)]?.id) : ''"
+        :globalDescriptionMap="getGlobalDescriptionPayload(pokedex.result.length > 0 ? pokedex.result[Number(model)] : undefined)"
+        :currentPokemonId="pokedex.result.length > 0 ? String(pokedex.result[Number(model)]?.id ?? '') : ''"
         :area="String(route.params.area)"
       />
       <AdSenseCard 
@@ -932,8 +932,204 @@ const fetchDescription = async (pokeId: number | string) => {
 }
 
 // Global用の新しいdescription_map API取得関数
+interface GlobalDescriptionMapResponse {
+  success: boolean;
+  data?: Record<string, any>;
+  globalNo?: string;
+}
+
+const normalizeIdCandidate = (value: string | number | null | undefined): string => {
+  if (value === null || value === undefined) {
+    return ''
+  }
+  return String(value).trim()
+}
+
+const normalizeDigitsOnly = (value: string): string => {
+  return value.replace(/\D/g, '')
+}
+
+const stripLeadingZeros = (value: string): string => {
+  if (!value) {
+    return ''
+  }
+  const stripped = value.replace(/^0+/, '')
+  return stripped.length > 0 ? stripped : (value ? '0' : '')
+}
+
+const matchesGroupKey = (rawKey: string, target: string): boolean => {
+  if (!target) {
+    return false
+  }
+
+  const keyLower = rawKey.toLowerCase()
+  const targetLower = target.toLowerCase()
+  if (keyLower === targetLower) {
+    return true
+  }
+  if (targetLower.startsWith(keyLower) || keyLower.startsWith(targetLower)) {
+    return true
+  }
+
+  const keyDigits = normalizeDigitsOnly(rawKey)
+  const targetDigits = normalizeDigitsOnly(target)
+  if (keyDigits && targetDigits) {
+    if (keyDigits === targetDigits) {
+      return true
+    }
+    const keyTrimmed = stripLeadingZeros(keyDigits)
+    const targetTrimmed = stripLeadingZeros(targetDigits)
+    if (keyTrimmed && targetTrimmed && keyTrimmed === targetTrimmed) {
+      return true
+    }
+    if (targetTrimmed.startsWith(keyTrimmed) || keyTrimmed.startsWith(targetTrimmed)) {
+      return true
+    }
+  }
+
+  return false
+}
+
+const isGlobalGroupEntry = (value: unknown): value is Record<string, any> => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return false
+  }
+  const record = value as Record<string, any>
+  return 'common' in record || 'version_names' in record
+}
+
+const isGlobalGroupContainer = (node: unknown): node is Record<string, any> => {
+  if (!node || typeof node !== 'object' || Array.isArray(node)) {
+    return false
+  }
+  return Object.values(node as Record<string, any>).some(isGlobalGroupEntry)
+}
+
+const findGroupContainerForTarget = (node: unknown, target: string, depth = 0): Record<string, any> | null => {
+  if (depth > 8) {
+    return null
+  }
+
+  if (!node) {
+    return null
+  }
+
+  if (Array.isArray(node)) {
+    for (const item of node) {
+      const found = findGroupContainerForTarget(item, target, depth + 1)
+      if (found) {
+        return found
+      }
+    }
+    return null
+  }
+
+  if (typeof node !== 'object') {
+    return null
+  }
+
+  if (isGlobalGroupContainer(node)) {
+    return node as Record<string, any>
+  }
+
+  const entries = Object.entries(node as Record<string, any>)
+  const prioritized = target
+    ? entries.filter(([key]) => matchesGroupKey(key, target))
+    : entries
+
+  for (const [, value] of prioritized) {
+    const found = findGroupContainerForTarget(value, target, depth + 1)
+    if (found) {
+      return found
+    }
+  }
+
+  if (target) {
+    for (const [key, value] of entries) {
+      if (matchesGroupKey(key, target)) {
+        continue
+      }
+      const found = findGroupContainerForTarget(value, target, depth + 1)
+      if (found) {
+        return found
+      }
+    }
+  }
+
+  return null
+}
+
+const tryResolveGroupContainer = (root: unknown, targets: string[]): Record<string, any> | null => {
+  if (!root) {
+    return null
+  }
+
+  for (const target of targets) {
+    const found = findGroupContainerForTarget(root, target)
+    if (found) {
+      return found
+    }
+  }
+
+  return findGroupContainerForTarget(root, '')
+}
+
+const buildPokemonIdCandidates = (pokemon: PokemonStatus): string[] => {
+  const set = new Set<string>()
+
+  const addCandidate = (value: string | number | null | undefined) => {
+    const raw = normalizeIdCandidate(value)
+    if (!raw) {
+      return
+    }
+    if (!set.has(raw)) {
+      set.add(raw)
+    }
+
+    const digits = normalizeDigitsOnly(raw)
+    if (digits && !set.has(digits)) {
+      set.add(digits)
+    }
+
+    const trimmed = stripLeadingZeros(digits)
+    if (trimmed && !set.has(trimmed)) {
+      set.add(trimmed)
+    }
+
+    if (raw.includes('_')) {
+      const [head] = raw.split('_')
+      if (head && !set.has(head)) {
+        addCandidate(head)
+      }
+    }
+  }
+
+  addCandidate(pokemon.id)
+  addCandidate(pokemon.globalNo)
+  addCandidate(normalizeGlobalNo(pokemon.globalNo ?? pokemon.id ?? ''))
+
+  return Array.from(set).filter(Boolean)
+}
+
+const normalizeGlobalNo = (value: string | number | null | undefined): string => {
+  if (value === null || value === undefined) {
+    return ''
+  }
+  const raw = String(value).trim()
+  if (!raw) {
+    return ''
+  }
+  if (raw.includes('_')) {
+    const [head] = raw.split('_')
+    if (!head) {
+      return ''
+    }
+    return head.padStart(4, '0')
+  }
+  return raw.padStart(4, '0')
+}
+
 const fetchGlobalDescriptionMap = async (pokeId: number | string) => {
-  // SSR時はスキップ
   if (process.server) {
     console.log(`[fetchGlobalDescriptionMap] SSR mode - skipping for ${pokeId}`)
     return { result: {} }
@@ -941,34 +1137,174 @@ const fetchGlobalDescriptionMap = async (pokeId: number | string) => {
 
   try {
     const baseUrl = process.server ? config.public.baseUrl || 'http://localhost:3001' : ''
-    // pokeIdから最初の4文字のポケモン番号を抽出
-    const noParam = String(pokeId).substring(0, 4)
-    const apiUrl = `${baseUrl}/api/pokedex/pokedex.php?region=global&no=${noParam}&mode=description_map`
+    const normalizedGlobalNo = normalizeGlobalNo(pokeId)
+    if (!normalizedGlobalNo) {
+      console.warn(`[fetchGlobalDescriptionMap] Cannot determine globalNo for pokeId ${pokeId}`)
+      return { result: {} }
+    }
+    const apiUrl = `${baseUrl}/api/pokedex/pokedex.php?region=global&no=${normalizedGlobalNo}&mode=description_map`
     console.log(`[fetchGlobalDescriptionMap] Fetching from: ${apiUrl}`)
-    
-    const data = await fetchWithRetry(
+
+    const data = await fetchWithRetry<GlobalDescriptionMapResponse>(
       apiUrl,
       { timeoutMs: 8000, retries: 2 }
     )
-    
+
     console.log(`[fetchGlobalDescriptionMap] API Response for pokeId ${pokeId}:`, JSON.stringify(data, null, 2))
-    
+
     if (!data || !data.success || !data.data) {
       console.warn(`[fetchGlobalDescriptionMap] Invalid data format for pokeId ${pokeId}`, data)
-      globalDescriptionMap[String(pokeId)] = {}
+      globalDescriptionMap[normalizedGlobalNo] = {}
       return { result: {} }
     }
-    
-    // グローバル図鑑用のデータを保存
-    globalDescriptionMap[String(pokeId)] = data.data
-    console.log(`[fetchGlobalDescriptionMap] Stored data for pokeId ${pokeId}:`, globalDescriptionMap[String(pokeId)])
-    console.log(`[fetchGlobalDescriptionMap] Keys of stored data:`, Object.keys(globalDescriptionMap[String(pokeId)]))
-    
+
+    const storageKey = data.globalNo ? normalizeGlobalNo(data.globalNo) : normalizedGlobalNo
+    const payload = data.data ?? {}
+
+    globalDescriptionMap[storageKey] = payload
+    if (storageKey !== normalizedGlobalNo) {
+      globalDescriptionMap[normalizedGlobalNo] = payload
+    }
+    const originalKey = String(pokeId)
+    if (originalKey && !globalDescriptionMap[originalKey]) {
+      globalDescriptionMap[originalKey] = payload
+    }
+    console.log(`[fetchGlobalDescriptionMap] Stored data for globalNo ${storageKey}:`, Object.keys(payload))
+
     return data
   } catch (error) {
     console.error('[fetchGlobalDescriptionMap] error:', error)
-    globalDescriptionMap[String(pokeId)] = {}
+    const normalizedGlobalNo = normalizeGlobalNo(pokeId)
+    if (normalizedGlobalNo) {
+      globalDescriptionMap[normalizedGlobalNo] = {}
+    }
     return { result: {} }
+  }
+}
+
+// バージョンごとの図鑑説明を保持（グループ版）
+const descriptions = reactive<{ [key: string]: string }>({})
+// API で取得した行データを保持（ポケモンIDごと、ver 単位）
+const descriptionRows = reactive<{ [pokemonId: string]: Array<{ ver: string; version: string; pokedex: string; description: string }> }>({})
+// Global用の新しいdescription_map形式のデータを保持
+const globalDescriptionMap = reactive<{ [pokemonId: string]: any }>({})
+const resolvedGlobalDescriptionMap = reactive<{ [pokemonId: string]: Record<string, any> }>({})
+
+const getGlobalDescriptionPayload = (pokemon?: PokemonStatus | null): Record<string, any> => {
+  if (!pokemon) {
+    return {}
+  }
+
+  const idKey = normalizeIdCandidate(pokemon.id)
+  if (idKey && resolvedGlobalDescriptionMap[idKey]) {
+    return resolvedGlobalDescriptionMap[idKey]
+  }
+
+  const idCandidates = buildPokemonIdCandidates(pokemon)
+  if (!idCandidates.length) {
+    return {}
+  }
+
+  const datasetList: Record<string, any>[] = []
+  const seen = new Set<Record<string, any>>()
+
+  const pushDataset = (candidate: string) => {
+    if (!candidate) {
+      return
+    }
+
+    const direct = globalDescriptionMap[candidate]
+    if (direct && typeof direct === 'object' && !seen.has(direct)) {
+      datasetList.push(direct)
+      seen.add(direct)
+    }
+
+    const normalized = normalizeGlobalNo(candidate)
+    if (normalized) {
+      const normalizedDataset = globalDescriptionMap[normalized]
+      if (normalizedDataset && typeof normalizedDataset === 'object' && !seen.has(normalizedDataset)) {
+        datasetList.push(normalizedDataset)
+        seen.add(normalizedDataset)
+      }
+    }
+  }
+
+  for (const candidate of idCandidates) {
+    pushDataset(candidate)
+  }
+
+  if (!datasetList.length) {
+    for (const value of Object.values(globalDescriptionMap)) {
+      if (value && typeof value === 'object' && !seen.has(value as Record<string, any>)) {
+        datasetList.push(value as Record<string, any>)
+        seen.add(value as Record<string, any>)
+      }
+    }
+  }
+
+  for (const dataset of datasetList) {
+    const container = tryResolveGroupContainer(dataset, idCandidates)
+    if (container && Object.keys(container).length > 0) {
+      for (const candidate of idCandidates) {
+        const key = normalizeIdCandidate(candidate)
+        if (key && !resolvedGlobalDescriptionMap[key]) {
+          resolvedGlobalDescriptionMap[key] = container
+        }
+      }
+      if (idKey && !resolvedGlobalDescriptionMap[idKey]) {
+        resolvedGlobalDescriptionMap[idKey] = container
+      }
+      return container
+    }
+  }
+
+  for (const candidate of idCandidates) {
+    const key = normalizeIdCandidate(candidate)
+    if (key && globalDescriptionMap[key]) {
+      const fallback = globalDescriptionMap[key]
+      if (fallback && typeof fallback === 'object') {
+        resolvedGlobalDescriptionMap[key] = fallback
+        if (idKey && !resolvedGlobalDescriptionMap[idKey]) {
+          resolvedGlobalDescriptionMap[idKey] = fallback
+        }
+        return fallback
+      }
+    }
+  }
+
+  return {}
+}
+
+const hasGlobalDescriptionData = (candidate: string): boolean => {
+  if (!candidate) {
+    return false
+  }
+  if (globalDescriptionMap[candidate]) {
+    return true
+  }
+  const normalized = normalizeGlobalNo(candidate)
+  if (normalized && globalDescriptionMap[normalized]) {
+    return true
+  }
+  return false
+}
+
+const ensureGlobalDescriptionData = (pokemon?: PokemonStatus) => {
+  if (!pokemon) {
+    return
+  }
+  const candidates = buildPokemonIdCandidates(pokemon)
+  if (!candidates.length) {
+    return
+  }
+
+  if (candidates.some(hasGlobalDescriptionData)) {
+    return
+  }
+
+  const fetchTarget = candidates.find(Boolean)
+  if (fetchTarget) {
+    fetchGlobalDescriptionMap(fetchTarget)
   }
 }
 
@@ -977,6 +1313,17 @@ definePageMeta({
 })
 let nameDialog = ref(false)
 let model = ref(0)
+
+watch(model, (newIndex) => {
+  if (String(route.params.area) !== 'global') {
+    return
+  }
+  const indexNumber = typeof newIndex === 'number' ? newIndex : Number(newIndex)
+  const pokemon = pokedex.result?.[indexNumber]
+  if (pokemon) {
+    ensureGlobalDescriptionData(pokemon)
+  }
+})
 
 // 循環を考慮した距離を計算する関数
 const getCircularDistance = (index1: number, index2: number, total: number): number => {
@@ -1075,8 +1422,10 @@ onMounted(() => {
         
         // area=globalの場合は新しいAPIを使用
         if (route.params.area === 'global') {
-          console.log(`[onMounted] Fetching global description map for ${pokemon.id}`)
-          fetchGlobalDescriptionMap(pokemon.id)
+          const targetId = pokemon.globalNo ?? pokemon.id
+          console.log(`[onMounted] Fetching global description map for ${targetId}`)
+          fetchGlobalDescriptionMap(targetId)
+          ensureGlobalDescriptionData(pokemon)
         } else {
           console.log(`[onMounted] Fetching description for ${pokemon.id}`)
           fetchDescription(pokemon.id)
@@ -1116,8 +1465,10 @@ watch(() => [route.params.area, route.params.id], async () => {
           
           // area=globalの場合は新しいAPIを使用
           if (route.params.area === 'global') {
-            console.log(`[Watch] Fetching global description map for ${pokemon.id}`)
-            fetchGlobalDescriptionMap(pokemon.id)
+            const targetId = pokemon.globalNo ?? pokemon.id
+            console.log(`[Watch] Fetching global description map for ${targetId}`)
+            fetchGlobalDescriptionMap(targetId)
+            ensureGlobalDescriptionData(pokemon)
           } else {
             console.log(`[Watch] Fetching description for ${pokemon.id}`)
             fetchDescription(pokemon.id)
@@ -1377,13 +1728,9 @@ watch(() => pokedexData.value, (newData) => {
         console.log(`[Watch pokedexData] Area check: ${String(route.params.area)}, pokemon object:`, pokemon)
         if (String(route.params.area) === 'global') {
           console.log('[Watch pokedexData] Area is global, checking globalNo:', pokemon.globalNo)
-          if (pokemon.globalNo) {
-            console.log('[Watch pokedexData] Fetching global description map for', pokemon.globalNo)
-            fetchGlobalDescriptionMap(pokemon.globalNo)
-          } else {
-            console.log('[Watch pokedexData] pokemon.globalNo is missing, using pokemon.id:', pokemon.id)
-            fetchGlobalDescriptionMap(pokemon.id)
-          }
+          const targetId = pokemon.globalNo ?? pokemon.id
+          fetchGlobalDescriptionMap(targetId)
+          ensureGlobalDescriptionData(pokemon)
         } else {
           console.log(`[Watch pokedexData] Fetching description for ${pokemon.id}`)
           fetchDescription(pokemon.id)
@@ -1487,13 +1834,6 @@ const descriptionViewDebug = computed(() => {
   console.log(`[descriptionViewDebug] area: ${area}, total items: ${result.length}`)
   return result
 })
-
-// バージョンごとの図鑑説明を保持（グループ版）
-const descriptions = reactive<{ [key: string]: string }>({})
-// API で取得した行データを保持（ポケモンIDごと、ver 単位）
-const descriptionRows = reactive<{ [pokemonId: string]: Array<{ ver: string; version: string; pokedex: string; description: string }> }>({})
-// Global用の新しいdescription_map形式のデータを保持
-const globalDescriptionMap = reactive<{ [pokemonId: string]: any }>({})
 
 const metaImage = ref('');
 if (pokedex.result.length) {
