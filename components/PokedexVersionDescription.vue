@@ -199,8 +199,19 @@ const isRecord = (value: unknown): value is Record<string, any> => {
   return !!value && typeof value === 'object' && !Array.isArray(value)
 }
 
-const isPotentialGroupKey = (key: string): boolean => {
-  return /\d/.test(key)
+const isGlobalGroupRecord = (value: Record<string, any>): boolean => {
+  if (!value) {
+    return false
+  }
+
+  const record = value as Record<string, any>
+  return (
+    'common' in record ||
+    'versions' in record ||
+    'version_names' in record ||
+    'ver_ids' in record ||
+    'versionEntries' in record
+  )
 }
 
 const collectLanguageMap = (source: Record<string, any>): Record<string, string> => {
@@ -233,7 +244,7 @@ const extractVersionGroupContainer = (input: unknown, depth = 0): Record<string,
     return null
   }
 
-  const isGroupContainer = entries.every(([, value]) => isRecord(value)) && entries.some(([key]) => isPotentialGroupKey(key))
+  const isGroupContainer = entries.every(([, value]) => isRecord(value)) && entries.some(([, value]) => isRecord(value) && isGlobalGroupRecord(value as Record<string, any>))
 
   if (isGroupContainer) {
     return record
