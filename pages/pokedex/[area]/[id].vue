@@ -4,7 +4,6 @@
   v-if="route.params.area == 'global'">
     <ClientOnly>
       <v-dialog
-      v-model="nameDialog"
       >
         <v-container>
           <v-card>
@@ -296,6 +295,7 @@
         :openVersionDialog="openVersionDialog"
         :globalDescriptionMap="getGlobalDescriptionPayload(pokedex.result.length > 0 ? pokedex.result[Number(model)] : undefined)"
         :currentPokemonId="pokedex.result.length > 0 ? String(pokedex.result[Number(model)]?.id ?? '') : ''"
+        :globalRegionalNumbers="getGlobalExistsPayload(pokedex.result.length > 0 ? pokedex.result[Number(model)] : undefined)"
         :area="String(route.params.area)"
       />
       <AdSenseCard 
@@ -810,6 +810,78 @@ const fetchPokedex = async (area: string, id: number | string) => {
   }
 }
 
+const fetchGlobalExistsRegionalNumbers = async (pokemon: PokemonStatus) => {
+  if (process.server) {
+    return
+  }
+
+  try {
+    const baseUrl = process.server ? config.public.baseUrl || 'http://localhost:3001' : ''
+    const candidateKeys = buildPokemonIdCandidates(pokemon)
+    const normalizedGlobalNo = normalizeGlobalNo(pokemon.globalNo ?? pokemon.id ?? '')
+    const hasExistingData = candidateKeys.some((candidate) => {
+      const key = normalizeIdCandidate(candidate)
+      return key && globalExistsRegionalNumbers[key]
+    }) || (normalizedGlobalNo && globalExistsRegionalNumbers[normalizedGlobalNo])
+
+    if (hasExistingData) {
+      return
+    }
+
+    const globalNo = normalizedGlobalNo
+    if (!globalNo) {
+      console.warn(`[fetchGlobalExistsRegionalNumbers] Cannot determine globalNo for pokemon id=${pokemon.id}`)
+      return
+    }
+
+    const apiUrl = `${baseUrl}/api/pokedex/pokedex.php?region=global&no=${globalNo}&mode=exists`
+    console.log(`[fetchGlobalExistsRegionalNumbers] Fetching from: ${apiUrl}`)
+
+    const data = await fetchWithRetry<GlobalExistsResponse>(
+      apiUrl,
+      { timeoutMs: 8000, retries: 2 }
+    )
+
+    console.log(`[fetchGlobalExistsRegionalNumbers] API Response for globalNo ${globalNo}:`, JSON.stringify(data, null, 2))
+
+    if (!data || !data.success || !data.result || typeof data.result !== 'object') {
+      console.warn(`[fetchGlobalExistsRegionalNumbers] Invalid data for globalNo ${globalNo}`, data)
+      return
+    }
+
+    const storeRegionalMap = (key: string | null | undefined, map: Record<string, number>) => {
+      const normalizedKey = normalizeIdCandidate(key ?? '')
+      if (!normalizedKey) {
+        return
+      }
+      globalExistsRegionalNumbers[normalizedKey] = { ...map }
+    }
+
+    for (const [formId, regionalMap] of Object.entries(data.result)) {
+      if (regionalMap && typeof regionalMap === 'object') {
+        storeRegionalMap(formId, regionalMap)
+      }
+    }
+
+    for (const candidate of candidateKeys) {
+      const normalized = normalizeIdCandidate(candidate)
+      if (normalized && data.result[normalized]) {
+        storeRegionalMap(normalized, data.result[normalized])
+      }
+    }
+
+    if (!globalExistsRegionalNumbers[globalNo]) {
+      const fallbackKey = normalizeIdCandidate(pokemon.id)
+      const fallback = (fallbackKey && data.result[fallbackKey]) || Object.values(data.result)[0]
+      if (fallback && typeof fallback === 'object') {
+        storeRegionalMap(globalNo, fallback)
+      }
+    }
+  } catch (error) {
+    console.error('[fetchGlobalExistsRegionalNumbers] error:', error)
+  }
+}
+
 const fetchTypeCompatibility = async (type1: string, type2: string, region: string) => {
   try {
     const params = new URLSearchParams({ type1: type1, region: region })
@@ -936,6 +1008,11 @@ interface GlobalDescriptionMapResponse {
   success: boolean;
   data?: Record<string, any>;
   globalNo?: string;
+}
+
+interface GlobalExistsResponse {
+  success: boolean;
+  result?: Record<string, Record<string, number>>;
 }
 
 const normalizeIdCandidate = (value: string | number | null | undefined): string => {
@@ -1189,6 +1266,7 @@ const descriptionRows = reactive<{ [pokemonId: string]: Array<{ ver: string; ver
 // Global用の新しいdescription_map形式のデータを保持
 const globalDescriptionMap = reactive<{ [pokemonId: string]: any }>({})
 const resolvedGlobalDescriptionMap = reactive<{ [pokemonId: string]: Record<string, any> }>({})
+const globalExistsRegionalNumbers = reactive<{ [pokemonId: string]: Record<string, number> }>({})
 
 const getGlobalDescriptionPayload = (pokemon?: PokemonStatus | null): Record<string, any> => {
   if (!pokemon) {
@@ -1275,6 +1353,27 @@ const getGlobalDescriptionPayload = (pokemon?: PokemonStatus | null): Record<str
   return {}
 }
 
+const getGlobalExistsPayload = (pokemon?: PokemonStatus | null): Record<string, number> => {
+  if (!pokemon) {
+    return {}
+  }
+
+  const candidates = buildPokemonIdCandidates(pokemon)
+  for (const candidate of candidates) {
+    const key = normalizeIdCandidate(candidate)
+    if (key && globalExistsRegionalNumbers[key]) {
+      return globalExistsRegionalNumbers[key]
+    }
+  }
+
+  const normalizedGlobalNo = normalizeGlobalNo(pokemon.globalNo ?? pokemon.id ?? '')
+  if (normalizedGlobalNo && globalExistsRegionalNumbers[normalizedGlobalNo]) {
+    return globalExistsRegionalNumbers[normalizedGlobalNo]
+  }
+
+  return {}
+}
+
 const hasGlobalDescriptionData = (candidate: string): boolean => {
   if (!candidate) {
     return false
@@ -1322,6 +1421,7 @@ watch(model, (newIndex) => {
   const pokemon = pokedex.result?.[indexNumber]
   if (pokemon) {
     ensureGlobalDescriptionData(pokemon)
+    fetchGlobalExistsRegionalNumbers(pokemon)
   }
 })
 
@@ -1426,6 +1526,7 @@ onMounted(() => {
           console.log(`[onMounted] Fetching global description map for ${targetId}`)
           fetchGlobalDescriptionMap(targetId)
           ensureGlobalDescriptionData(pokemon)
+          fetchGlobalExistsRegionalNumbers(pokemon)
         } else {
           console.log(`[onMounted] Fetching description for ${pokemon.id}`)
           fetchDescription(pokemon.id)
@@ -1469,6 +1570,7 @@ watch(() => [route.params.area, route.params.id], async () => {
             console.log(`[Watch] Fetching global description map for ${targetId}`)
             fetchGlobalDescriptionMap(targetId)
             ensureGlobalDescriptionData(pokemon)
+            fetchGlobalExistsRegionalNumbers(pokemon)
           } else {
             console.log(`[Watch] Fetching description for ${pokemon.id}`)
             fetchDescription(pokemon.id)
@@ -1731,6 +1833,7 @@ watch(() => pokedexData.value, (newData) => {
           const targetId = pokemon.globalNo ?? pokemon.id
           fetchGlobalDescriptionMap(targetId)
           ensureGlobalDescriptionData(pokemon)
+          fetchGlobalExistsRegionalNumbers(pokemon)
         } else {
           console.log(`[Watch pokedexData] Fetching description for ${pokemon.id}`)
           fetchDescription(pokemon.id)

@@ -70,25 +70,40 @@
                   :key="entry.key"
                   class="version-entry mb-4"
                 >
-                  <div class="version-entry__icons mb-2">
-                    <span
-                      v-for="versionName in entry.names"
-                      :key="`${entry.key}-${versionName}`"
-                      class="version-icon-wrapper"
+                  <div class="version-entry__header mb-2">
+                    <div class="version-entry__icons">
+                      <span
+                        v-for="versionName in entry.names"
+                        :key="`${entry.key}-${versionName}`"
+                        class="version-icon-wrapper"
+                      >
+                        <img
+                          v-if="getVersionIconPath(versionName)"
+                          :src="getVersionIconPath(versionName)"
+                          :alt="getVersionLabel(versionName)"
+                          class="version-icon"
+                          @click.stop="openVersionDialog({
+                            ver: versionName,
+                            verJpn: getVersionLabel(versionName),
+                            description: entry.descriptions[currentLanguage] || entry.descriptions.jpn || entry.descriptions.eng || group.displayDescription
+                          })"
+                        />
+                        <span class="version-label">{{ getVersionLabel(versionName) }}</span>
+                      </span>
+                    </div>
+                    <div
+                      v-if="getRegionalNumberInfos(entry).length"
+                      class="version-entry__regional-numbers"
                     >
-                      <img
-                        v-if="getVersionIconPath(versionName)"
-                        :src="getVersionIconPath(versionName)"
-                        :alt="getVersionLabel(versionName)"
-                        class="version-icon"
-                        @click.stop="openVersionDialog({
-                          ver: versionName,
-                          verJpn: getVersionLabel(versionName),
-                          description: entry.descriptions[currentLanguage] || entry.descriptions.jpn || entry.descriptions.eng || group.displayDescription
-                        })"
-                      />
-                      <span class="version-label">{{ getVersionLabel(versionName) }}</span>
-                    </span>
+                      <span
+                        v-for="info in getRegionalNumberInfos(entry)"
+                        :key="`${entry.key}-${info.areaKey}`"
+                        class="regional-number-chip"
+                      >
+                        <span class="regional-number-chip__label">{{ info.label }}</span>
+                        <span class="regional-number-chip__value">{{ formatRegionalNumber(info.number) }}</span>
+                      </span>
+                    </div>
                   </div>
                   <div class="version-entry__description">
                     <div v-if="entry.descriptions[currentLanguage]" v-html="entry.descriptions[currentLanguage]"></div>
@@ -173,6 +188,7 @@ const props = defineProps<{
   globalDescriptionMap?: { [key: string]: any }
   currentPokemonId?: string
   area?: string
+  globalRegionalNumbers?: Record<string, number>
 }>()
 
 // 現在のポケモンの説明データを取得する関数
@@ -194,6 +210,81 @@ interface GlobalVersionGroupEntry {
 }
 
 const expandedPanels = ref<string[]>([])
+
+const globalRegionalNumbers = computed<Record<string, number>>(() => {
+  return props.globalRegionalNumbers ?? {}
+})
+
+const regionOrder = computed<string[]>(() => {
+  const order = appConfig.regionPokedexOrder as string[] | undefined
+  if (order && Array.isArray(order) && order.length > 0) {
+    return order.filter((key) => key && key !== 'global')
+  }
+  return Object.keys(appConfig.regionPokedex || {}).filter((key) => key && key !== 'global')
+})
+
+const regionVersionMap = computed<Record<string, string[]>>(() => {
+  const map: Record<string, string[]> = {}
+  const regionPokedex = appConfig.regionPokedex as Record<string, { gameVersion?: string[] }>
+  for (const [areaKey, data] of Object.entries(regionPokedex)) {
+    if (!areaKey || areaKey === 'global') continue
+    const versions = data?.gameVersion ?? []
+    for (const ver of versions) {
+      const normalized = normalizeVersionName(ver).toLowerCase()
+      if (!normalized) continue
+      if (!map[normalized]) {
+        map[normalized] = []
+      }
+      if (!map[normalized].includes(areaKey)) {
+        map[normalized].push(areaKey)
+      }
+    }
+  }
+  return map
+})
+
+interface RegionalNumberInfo {
+  areaKey: string
+  label: string
+  number: number | null
+}
+
+const getRegionalNumberInfos = (entry: GlobalVersionEntry): RegionalNumberInfo[] => {
+  const areaSet = new Set<string>()
+  for (const versionName of entry.names) {
+    const normalized = normalizeVersionName(versionName).toLowerCase()
+    const mappedAreas = regionVersionMap.value[normalized]
+    if (mappedAreas && mappedAreas.length) {
+      for (const areaKey of mappedAreas) {
+        areaSet.add(areaKey)
+      }
+    }
+  }
+
+  const orderedAreas = regionOrder.value.filter((areaKey) => areaSet.has(areaKey))
+  const result: RegionalNumberInfo[] = []
+  for (const areaKey of orderedAreas) {
+    const dispLabel = (appConfig.regionPokedex as Record<string, any>)[areaKey]?.disp?.[currentLanguage.value] ?? areaKey
+    const rawNumber = globalRegionalNumbers.value[areaKey]
+    const normalizedNumber = typeof rawNumber === 'number' && rawNumber > 0 ? rawNumber : null
+    if (normalizedNumber === null) {
+      continue
+    }
+    result.push({
+      areaKey,
+      label: dispLabel,
+      number: normalizedNumber
+    })
+  }
+  return result
+}
+
+const formatRegionalNumber = (value: number | null | undefined): string => {
+  if (typeof value === 'number' && value > 0) {
+    return `No.${String(value).padStart(4, '0')}`
+  }
+  return currentLanguage.value === 'eng' ? '—' : '―'
+}
 
 const isRecord = (value: unknown): value is Record<string, any> => {
   return !!value && typeof value === 'object' && !Array.isArray(value)
@@ -473,6 +564,10 @@ watchEffect(() => {
   gap: 4px;
   align-items: center;
 }
+.version-entry__icons {
+  flex: 0 0 auto;
+  margin-right: 6px;
+}
 .version-icon-wrapper {
   display: inline-flex;
   align-items: center;
@@ -488,6 +583,35 @@ watchEffect(() => {
 }
 .version-entry__description :deep(p) {
   margin-bottom: 0.25rem;
+}
+.version-entry__regional-numbers {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-left: 0;
+  margin-bottom: 0;
+}
+.version-entry__header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.regional-number-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background-color: rgba(0, 0, 0, 0.05);
+  font-size: 0.75rem;
+}
+.regional-number-chip__label {
+  font-weight: 600;
+}
+.regional-number-chip__value {
+  font-variant-numeric: tabular-nums;
 }
 .sr-only {
   position: absolute;
