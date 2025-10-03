@@ -57,11 +57,11 @@ export default defineAppConfig({
     },
     johto: {
       disp: {
-        jpn: 'ジョウト図鑑',
+        jpn: 'しんがたずかん',
         eng: 'Johto Pokédex'
       },
       name: {
-        jpn: 'ジョウト図鑑',
+        jpn: 'しんがたずかん',
         eng: 'johto'
       },
       gameVersion: ["gold", "silver", "crystal"],
@@ -230,6 +230,17 @@ export default defineAppConfig({
         eng: 'hisui'
       },
       gameVersion: ["legendsarceus"],
+    },
+    sinnoh_bdsp: {
+      disp: {
+        jpn: 'シンオウ図鑑',
+        eng: 'Sinnoh Pokédex'
+      },
+      name: {
+        jpn: 'シンオウ図鑑',
+        eng: 'sinnoh'
+      },
+      gameVersion: ["brilliantdiamond", "shiningpearl"],
     },
     paldea: {
       disp: {
