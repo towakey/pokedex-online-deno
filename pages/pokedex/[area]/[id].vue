@@ -116,17 +116,27 @@
                   <div class="responsive-text">{{ item.weight }} kg</div>
                   <!-- ここにitem.type1とitem.type2を表示 -->
                   <div class="d-flex mt-1">
-                    <TypeIcon
-                      v-if="item.type1"
-                      :type="item.type1"
-                      :mode="'icon'"
-                      class="me-1"
-                    />
-                    <TypeIcon
-                      v-if="item.type2"
-                      :type="item.type2"
-                      :mode="'icon'"
-                    />
+                    <div 
+                      v-if="item.type1" 
+                      @click="openTypeDialog(item.type1)"
+                      style="cursor: pointer;"
+                    >
+                      <TypeIcon
+                        :type="item.type1"
+                        :mode="'icon'"
+                        class="me-1"
+                      />
+                    </div>
+                    <div 
+                      v-if="item.type2" 
+                      @click="openTypeDialog(item.type2)"
+                      style="cursor: pointer;"
+                    >
+                      <TypeIcon
+                        :type="item.type2"
+                        :mode="'icon'"
+                      />
+                    </div>
                   </div>
                   <div class="responsive-text d-flex align-center">
                     <!-- <span>{{ appConfig.translation.egg[currentLanguage] }}　　</span> -->
@@ -136,7 +146,8 @@
                           v-if="eggMapping[eggGroup]"
                           :src="`/img/icon/e${eggMapping[eggGroup].padStart(2, '0')}.gif`"
                           :alt="eggGroup"
-                          style="width: 32px; height: 32px; margin-right: 2px;"
+                          style="width: 32px; height: 32px; margin-right: 2px; cursor: pointer;"
+                          @click="openEggGroupDialog(eggGroup)"
                         />
                         <!-- <span>{{ eggGroup }}</span> -->
                       </div>
@@ -418,6 +429,45 @@
                   </NuxtLink>
                   <div class="responsive-text">{{ appConfig.translation.height[currentLanguage] }}　　　　　{{ item.height }} m</div>
                   <div class="responsive-text">{{ appConfig.translation.weight[currentLanguage] }}　　　　　{{ item.weight }} kg</div>
+                  <!-- ここにitem.type1とitem.type2を表示 -->
+                  <div class="d-flex mt-1">
+                    <div 
+                      v-if="item.type1" 
+                      @click="openTypeDialog(item.type1)"
+                      style="cursor: pointer;"
+                    >
+                      <TypeIcon
+                        :type="item.type1"
+                        :mode="'icon'"
+                        class="me-1"
+                      />
+                    </div>
+                    <div 
+                      v-if="item.type2" 
+                      @click="openTypeDialog(item.type2)"
+                      style="cursor: pointer;"
+                    >
+                      <TypeIcon
+                        :type="item.type2"
+                        :mode="'icon'"
+                      />
+                    </div>
+                  </div>
+                  <div class="responsive-text d-flex align-center">
+                    <!-- <span>{{ appConfig.translation.egg[currentLanguage] }}　　</span> -->
+                    <div class="d-flex align-center flex-wrap" style="gap: 4px;">
+                      <div v-for="(eggGroup, index) in item.egg" :key="index" class="d-flex align-center" style="margin-right: 8px;">
+                        <img 
+                          v-if="eggMapping[eggGroup]"
+                          :src="`/img/icon/e${eggMapping[eggGroup].padStart(2, '0')}.gif`"
+                          :alt="eggGroup"
+                          style="width: 32px; height: 32px; margin-right: 2px; cursor: pointer;"
+                          @click="openEggGroupDialog(eggGroup)"
+                        />
+                        <!-- <span>{{ eggGroup }}</span> -->
+                      </div>
+                    </div>
+                  </div>
                 </v-card-title>
               </v-card>
             </v-col>
@@ -515,6 +565,38 @@
     </v-card-actions>
   </v-card>
 </v-dialog>
+<v-dialog v-model="isEggGroupDialogVisible" max-width="400">
+  <v-card v-if="selectedEggGroup">
+    <v-card-title class="text-h5">
+      {{ currentLanguage === 'jpn' ? 'タマゴグループ' : 'Egg Group' }}
+    </v-card-title>
+    <v-card-text>
+      <p style="font-size: 1.2em;">
+        {{ currentLanguage === 'jpn' ? selectedEggGroup.jpn : selectedEggGroup.eng }}
+      </p>
+    </v-card-text>
+    <v-card-actions>
+      <v-spacer></v-spacer>
+      <v-btn color="primary" @click="isEggGroupDialogVisible = false">{{ currentLanguage === 'jpn' ? '閉じる' : 'Close' }}</v-btn>
+    </v-card-actions>
+  </v-card>
+</v-dialog>
+<v-dialog v-model="isTypeDialogVisible" max-width="400">
+  <v-card v-if="selectedType">
+    <v-card-title class="text-h5">
+      {{ currentLanguage === 'jpn' ? 'タイプ' : 'Type' }}
+    </v-card-title>
+    <v-card-text>
+      <p style="font-size: 1.2em;">
+        {{ currentLanguage === 'jpn' ? selectedType.jpn : selectedType.eng }}
+      </p>
+    </v-card-text>
+    <v-card-actions>
+      <v-spacer></v-spacer>
+      <v-btn color="primary" @click="isTypeDialogVisible = false">{{ currentLanguage === 'jpn' ? '閉じる' : 'Close' }}</v-btn>
+    </v-card-actions>
+  </v-card>
+</v-dialog>
 </template>
 <script setup lang="ts">
 import { ref, reactive, onMounted, watch, computed, inject } from 'vue'
@@ -522,6 +604,10 @@ import type { RegionPokedexKey } from '~~/types/region'
 
 const isVersionDialogVisible = ref(false)
 const selectedVersionInfo = ref<any>(null)
+const isEggGroupDialogVisible = ref(false)
+const selectedEggGroup = ref<{ jpn: string; eng: string } | null>(null)
+const isTypeDialogVisible = ref(false)
+const selectedType = ref<{ jpn: string; eng: string } | null>(null)
 
 // バージョン情報ダイアログを開く（呼び出し元の型差異を吸収）
 const openVersionDialog = (input: any) => {
@@ -532,6 +618,21 @@ const openVersionDialog = (input: any) => {
   }
   selectedVersionInfo.value = info
   isVersionDialogVisible.value = true
+}
+
+// タマゴグループダイアログを開く
+const openEggGroupDialog = (eggGroup: string) => {
+  selectedEggGroup.value = eggGroupNames[eggGroup] || { jpn: eggGroup, eng: eggGroup }
+  isEggGroupDialogVisible.value = true
+}
+
+// タイプダイアログを開く
+const openTypeDialog = (type: string) => {
+  const typeInfo = appConfig.type[type as keyof typeof appConfig.type]
+  if (typeInfo) {
+    selectedType.value = { jpn: typeInfo.jpn, eng: typeInfo.eng }
+    isTypeDialogVisible.value = true
+  }
 }
 
 // ポケモン図鑑存在情報保持用（ポケモンID・リージョン別）
@@ -622,6 +723,21 @@ const eggMapping: Record<string, string> = {
   '水中１': '10',
   '水中３': '12',
   'タマゴ未発見': '14'
+}
+
+const eggGroupNames: Record<string, { jpn: string; eng: string }> = {
+  '植物': { jpn: '植物', eng: 'Grass' },
+  '虫': { jpn: '虫', eng: 'Bug' },
+  '飛行': { jpn: '飛行', eng: 'Flying' },
+  '人型': { jpn: '人型', eng: 'Human-Like' },
+  '怪獣': { jpn: '怪獣', eng: 'Monster' },
+  '妖精': { jpn: '妖精', eng: 'Fairy' },
+  '鉱物': { jpn: '鉱物', eng: 'Mineral' },
+  '陸上': { jpn: '陸上', eng: 'Field' },
+  '不定形': { jpn: '不定形', eng: 'Amorphous' },
+  '水中１': { jpn: '水中１', eng: 'Water 1' },
+  '水中３': { jpn: '水中３', eng: 'Water 3' },
+  'タマゴ未発見': { jpn: 'タマゴ未発見', eng: 'Undiscovered' }
 }
 
 // 設定管理composableを使用

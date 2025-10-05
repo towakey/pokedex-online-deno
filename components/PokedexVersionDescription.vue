@@ -95,14 +95,15 @@
                       v-if="getRegionalNumberInfos(entry).length"
                       class="version-entry__regional-numbers"
                     >
-                      <span
+                      <NuxtLink
                         v-for="info in getRegionalNumberInfos(entry)"
                         :key="`${entry.key}-${info.areaKey}`"
-                        class="regional-number-chip"
+                        :to="{ path: `/pokedex/${info.areaKey}/${String(info.number).padStart(4, '0')}` }"
+                        class="regional-number-chip regional-number-chip--link"
                       >
                         <span class="regional-number-chip__label">{{ info.label }}</span>
                         <span class="regional-number-chip__value">{{ formatRegionalNumber(info.number) }}</span>
-                      </span>
+                      </NuxtLink>
                     </div>
                   </div>
                   <div class="version-entry__description">
@@ -606,6 +607,19 @@ watchEffect(() => {
   border-radius: 999px;
   background-color: rgba(0, 0, 0, 0.05);
   font-size: 0.75rem;
+  text-decoration: none;
+  color: inherit;
+}
+.regional-number-chip--link {
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+}
+.regional-number-chip--link:hover {
+  background-color: rgba(25, 118, 210, 0.15);
+  transform: translateY(-1px);
+}
+.regional-number-chip--link:active {
+  transform: translateY(0);
 }
 .regional-number-chip__label {
   font-weight: 600;
