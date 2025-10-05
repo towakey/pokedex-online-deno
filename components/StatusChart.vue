@@ -25,7 +25,16 @@ interface StatusData {
   speed: number
 }
 
-const props = defineProps<{ statusData?: StatusData }>()
+interface StatusDataset {
+  label: string
+  color: string
+  data: StatusData
+}
+
+const props = defineProps<{ 
+  statusData?: StatusData
+  statusList?: StatusDataset[]
+}>()
 
 const { settings } = useSettings()
 const appConfig = useAppConfig()
@@ -47,6 +56,9 @@ const statusLabels = computed(() => {
     appConfig.translation.speed[lang],
   ]
 })
+
+// 複数データセット表示かどうか
+const isMultiDataset = computed(() => !!props.statusList && props.statusList.length > 0)
 
 const chartOptions = reactive({
   responsive: true,
@@ -76,10 +88,18 @@ const chartOptions = reactive({
   },
   plugins: {
     legend: {
-      display: false,
+      display: true,
+      position: 'top' as const,
+      labels: {
+        color: '#333',
+        font: {
+          size: 12,
+        },
+        usePointStyle: true,
+      },
     },
     datalabels: {
-      display: true,
+      display: false, // 複数データセット時は煩雑になるため無効化
       color: '#333',
       font: {
         weight: 'bold' as const,
@@ -98,9 +118,39 @@ const chartOptions = reactive({
   },
 } as any)
 
-const chartData = reactive({
-  labels: statusLabels.value,
-  datasets: [
+// データセット生成関数
+const generateDatasets = () => {
+  // 複数データセットモード
+  if (props.statusList && props.statusList.length > 0) {
+    return props.statusList.map((dataset) => {
+      const rgbaColor = dataset.color.startsWith('#') 
+        ? hexToRgba(dataset.color, 0.2) 
+        : `${dataset.color.replace(')', ', 0.2)')}`
+      
+      return {
+        label: dataset.label,
+        data: [
+          dataset.data.hp,
+          dataset.data.attack,
+          dataset.data.defense,
+          dataset.data.special_attack,
+          dataset.data.special_defense,
+          dataset.data.speed,
+        ],
+        backgroundColor: rgbaColor,
+        borderColor: dataset.color,
+        borderWidth: 2,
+        pointBackgroundColor: dataset.color,
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+        pointRadius: 5,
+        pointHoverRadius: 7,
+      }
+    })
+  }
+  
+  // 単体データモード（後方互換）
+  return [
     {
       label: 'ステータス',
       data: [
@@ -120,7 +170,20 @@ const chartData = reactive({
       pointRadius: 5,
       pointHoverRadius: 7,
     },
-  ],
+  ]
+}
+
+// Hex to RGBA変換
+function hexToRgba(hex: string, alpha: number): string {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`
+}
+
+const chartData = reactive({
+  labels: statusLabels.value,
+  datasets: generateDatasets(),
 })
 
 // 言語が変わったらラベルを更新
@@ -133,17 +196,9 @@ watch(
 
 // プロップスが変わったらデータセットを更新
 watch(
-  () => props.statusData,
-  (val) => {
-    if (!val) return
-    chartData.datasets[0].data = [
-      val.hp,
-      val.attack,
-      val.defense,
-      val.special_attack,
-      val.special_defense,
-      val.speed,
-    ]
+  () => [props.statusData, props.statusList],
+  () => {
+    chartData.datasets = generateDatasets()
   },
   { deep: true }
 )
