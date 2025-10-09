@@ -141,6 +141,33 @@
         </v-alert>
       </v-col>
     </v-row>
+    
+    <!-- スクロールボタン -->
+    <v-fab-transition>
+      <v-btn
+        v-show="showScrollButtons"
+        icon="mdi-chevron-up"
+        color="primary"
+        size="small"
+        class="scroll-to-top-btn"
+        @click="scrollToTop"
+        elevation="4"
+      >
+      </v-btn>
+    </v-fab-transition>
+    
+    <v-fab-transition>
+      <v-btn
+        v-show="showScrollButtons"
+        icon="mdi-chevron-down"
+        color="primary"
+        size="small"
+        class="scroll-to-bottom-btn"
+        @click="scrollToBottom"
+        elevation="4"
+      >
+      </v-btn>
+    </v-fab-transition>
   </v-container>
 </template>
 <script setup lang="ts">
@@ -315,8 +342,7 @@ const updatePageTitle = () => {
   }
 }
 
-// 初期化と設定変更時に同期
-onMounted(() => updatePageTitle())
+// 設定変更時に同期
 watch(() => settings.value.language, () => updatePageTitle())
 
 // 検索モーダル関連の状態
@@ -419,11 +445,62 @@ const breadcrumbs = computed(() => [
   { title: pageTitle.value, disabled: true, href: `/pokedex/${area}` },
 ]);
 
+// スクロールボタンの制御
+const showScrollButtons = ref(false);
+
+// スクロールイベントのハンドラ
+const handleScroll = () => {
+  // 100px以上スクロールしたらボタンを表示
+  showScrollButtons.value = window.scrollY > 100;
+};
+
+// ページトップにスクロール
+const scrollToTop = () => {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+};
+
+// ページボトムにスクロール
+const scrollToBottom = () => {
+  window.scrollTo({
+    top: document.documentElement.scrollHeight,
+    behavior: 'smooth'
+  });
+};
+
+// マウント時にスクロールイベントリスナーを追加
+onMounted(() => {
+  updatePageTitle();
+  window.addEventListener('scroll', handleScroll);
+});
+
+// アンマウント時にイベントリスナーを削除
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll);
+});
+
 </script>
 
 <style scoped>
 .nuxtlink {
   text-decoration: none;
   color: inherit;
+}
+
+/* スクロールボタンのスタイル */
+.scroll-to-top-btn {
+  position: fixed;
+  bottom: 80px;
+  right: 16px;
+  z-index: 1000;
+}
+
+.scroll-to-bottom-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 16px;
+  z-index: 1000;
 }
 </style>
