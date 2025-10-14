@@ -12,7 +12,7 @@ definePageMeta({
 })
 
 // 現在の言語設定を取得
-const currentLanguage = computed(() => settings.value.language)
+const currentLanguage = computed(() => settings.value?.language ?? 'jpn')
 
 // レイアウトのページタイトル制御
 const pageTitleState = inject('pageTitle', { title: appConfig.site.name })
@@ -20,7 +20,7 @@ const updatePageTitle = () => {
   pageTitleState.title = appConfig.translation.gallery[currentLanguage.value as keyof typeof appConfig.translation.gallery] || 'Gallery'
 }
 onMounted(() => updatePageTitle())
-watch(() => settings.value.language, () => updatePageTitle())
+watch(() => settings.value?.language, () => updatePageTitle())
 
 // ダイアログの状態管理
 const dialog = ref(false)

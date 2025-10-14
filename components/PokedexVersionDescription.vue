@@ -178,7 +178,7 @@ const { settings } = useSettings()
 
 // 統一された言語設定
 const currentLanguage = computed(() => {
-  return (settings.value.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng'
+  return (settings.value?.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng'
 })
 
 // propsの定義

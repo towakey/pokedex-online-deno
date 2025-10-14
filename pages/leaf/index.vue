@@ -188,7 +188,7 @@ const pageTitle = computed(() => pageTitleState.title)
 
 // リーフページのタイトル（言語依存）を app.config.menus.main から取得
 const leafTitle = computed(() => {
-  const lang = (settings.value.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng'
+  const lang = (settings.value?.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng'
   const menuItem = (appConfig.menus?.main as any[] | undefined)?.find((m: any) => m.path === '/leaf')
   const titleObj = menuItem?.title as { jpn: string; eng: string } | undefined
   return titleObj?.[lang] ?? (lang === 'eng' ? 'Leaf' : 'リーフ')
@@ -196,7 +196,7 @@ const leafTitle = computed(() => {
 
 // 多言語対応のテキスト
 const tr = computed(() => {
-  const lang = settings.value.language === 'eng' ? 'eng' : 'jpn'
+  const lang = settings.value?.language === 'eng' ? 'eng' : 'jpn'
   return {
     loading: lang === 'eng' ? 'Loading...' : '読み込み中...',
     gallery: lang === 'eng' ? 'Picture Gallery' : '画像ギャラリー',
@@ -303,7 +303,7 @@ onMounted(async () => {
   updatePageTitle()
   await loadContent()
 })
-watch(() => settings.value.language, () => updatePageTitle())
+watch(() => settings.value?.language, () => updatePageTitle())
 
 // SEO タイトルも同期
 useSeoMeta({
@@ -313,7 +313,7 @@ useSeoMeta({
 // パンくずリスト
 const breadcrumbs = computed(() => ([
   { 
-    title: appConfig.translation.top[settings.value.language === 'eng' ? 'eng' : 'jpn'], 
+    title: appConfig.translation.top[settings.value?.language === 'eng' ? 'eng' : 'jpn'], 
     disabled: false, 
     href: '/' 
   },

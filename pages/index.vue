@@ -34,7 +34,7 @@ import { useApiBase, useApiClient, useSettings } from '#imports'
 import appConfig from '~/app.config'
 
 const { settings } = useSettings()
-const currentLanguage = computed(() => settings.value.language)
+const currentLanguage = computed(() => settings.value?.language ?? 'jpn')
 
 // レイアウトのページタイトル制御（ホームは常にサイト名固定表示）
 const pageTitleState = inject('pageTitle', { title: appConfig.site.name })
@@ -43,7 +43,7 @@ const updatePageTitle = () => {
   pageTitleState.title = appConfig.site.name
 }
 onMounted(() => updatePageTitle())
-watch(() => settings.value.language, () => updatePageTitle())
+watch(() => settings.value?.language, () => updatePageTitle())
 
 // SEO タイトルも同期
 useSeoMeta({
@@ -97,7 +97,7 @@ const groupedMenu = computed(() => {
 // }
 const categoryTitles = computed(() => {
   const titles: Record<string, string> = {}
-  const lang = (settings.value.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng'
+  const lang = (settings.value?.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng'
   Object.keys(appConfig.menus.categories).forEach(key => {
     const cat = (appConfig.menus.categories as Record<string, { jpn: string; eng: string }>)[key]
     titles[key] = cat?.[lang] ?? key

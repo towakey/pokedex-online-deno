@@ -184,7 +184,7 @@ const typeMap = appConfig.type as Record<string, { jpn: string; eng: string; col
 // パンくず「ポケモン図鑑」多言語対応タイトル
 const { settings } = useSettings()
 const breadcrumbPokedexTitle = computed(() => {
-  const lang = settings.value.language
+  const lang = settings.value?.language ?? 'jpn'
   const dispKey = (lang === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng'
   const t = appConfig.translation as Record<string, { jpn: string; eng: string }>
   return t?.pokedex?.[dispKey] ?? 'ポケモン図鑑'
@@ -326,7 +326,7 @@ const { data: pokedex, pending, error } = await useAsyncData(
 // ページタイトル（多言語対応）を更新
 const updatePageTitle = () => {
   try {
-    const dispKey = (settings.value.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng'
+    const dispKey = (settings.value?.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng'
     const region = appConfig.regionPokedex?.[area as keyof typeof appConfig.regionPokedex] as
       | { disp?: { jpn: string; eng: string } }
       | undefined
@@ -337,13 +337,13 @@ const updatePageTitle = () => {
     }
   } catch (error) {
     console.error('AppConfig取得エラー:', error)
-    const dispKey = (settings.value.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng'
+    const dispKey = (settings.value?.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng'
     pageTitleState.title = dispKey === 'eng' ? `${area} Pokédex` : `${area} 図鑑`
   }
 }
 
 // 設定変更時に同期
-watch(() => settings.value.language, () => updatePageTitle())
+watch(() => settings.value?.language, () => updatePageTitle())
 
 // 検索モーダル関連の状態
 const searchModalOpen = ref(false);

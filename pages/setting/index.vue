@@ -132,7 +132,7 @@ const appConfig = useAppConfig()
 const { settings, updateSettings, saveSettings, resetSettings } = useSettings()
 
 // 現在の言語と翻訳テーブル
-const currentLanguage = computed(() => settings.value.language)
+const currentLanguage = computed(() => settings.value?.language ?? 'jpn')
 const translations = {
   jpn: {
     pageTitle: '設定',
@@ -187,7 +187,7 @@ const breadcrumbs = computed(() => [
 const pageTitleState = inject('pageTitle', { title: 'Pokédex-Online' })
 const pageTitle = computed(() => pageTitleState.title)
 const settingTitle = computed(() => {
-  const lang = (settings.value.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng'
+  const lang = (settings.value?.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng'
   const menuItem = (appConfig.menus?.main as any[] | undefined)?.find((m: any) => m.path === '/setting')
   const titleObj = menuItem?.title as { jpn: string; eng: string } | undefined
   return titleObj?.[lang] ?? (lang === 'eng' ? 'Setting' : '設定')
@@ -196,7 +196,7 @@ const updatePageTitle = () => {
   pageTitleState.title = settingTitle.value
 }
 onMounted(() => updatePageTitle())
-watch(() => settings.value.language, () => updatePageTitle())
+watch(() => settings.value?.language, () => updatePageTitle())
 
 // SEO タイトルも同期
 useSeoMeta({

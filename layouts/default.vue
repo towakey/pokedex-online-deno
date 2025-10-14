@@ -101,7 +101,7 @@ const pageTitle = computed(() => pageTitleState.title)
 
 // 設定（言語）
 const { settings } = useSettings()
-const currentLanguage = computed(() => (settings.value.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng')
+const currentLanguage = computed(() => (settings.value?.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng')
 
 // カテゴリごとのメニューアイテムを取得する関数
 const getMenuItemsByCategory = (category: string) => {

@@ -63,7 +63,7 @@ definePageMeta({
 })
 
 // 翻訳設定
-const currentLanguage = computed(() => settings.value.language)
+const currentLanguage = computed(() => settings.value?.language ?? 'jpn')
 const tr = computed(() => ({
   title: currentLanguage.value === 'eng' ? '3D Field Viewer' : 'シンプルフィールド 3Dビューアー',
   resetView: currentLanguage.value === 'eng' ? 'Reset View' : 'ビューリセット',

@@ -52,7 +52,7 @@ const regionPokedexOrder = computed<RegionPokedexKey[]>(() => appConfig.regionPo
 
 // 「ポケモン図鑑」タイトルの多言語化
 const breadcrumbPokedexTitle = computed(() => {
-  const lang = settings.value.language
+  const lang = settings.value?.language ?? 'jpn'
   const dispKey = (lang === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng'
   const t = appConfig.translation as Record<string, { jpn: string; eng: string }>
   return t?.pokedex?.[dispKey] ?? 'ポケモン図鑑'
@@ -60,7 +60,7 @@ const breadcrumbPokedexTitle = computed(() => {
 
 // 地域図鑑の表示名（多言語）取得（型安全に）
 const getRegionDisp = (item: RegionPokedexKey) => {
-  const lang = (settings.value.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng'
+  const lang = (settings.value?.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng'
   const region = (appConfig.regionPokedex as Record<RegionPokedexKey, { disp: { jpn: string; eng: string } }>)[item]
   return region?.disp?.[lang] ?? ''
 }
@@ -84,7 +84,7 @@ const updatePageTitle = () => {
   pageTitleState.title = breadcrumbPokedexTitle.value
 }
 onMounted(() => updatePageTitle())
-watch(() => settings.value.language, () => updatePageTitle())
+watch(() => settings.value?.language, () => updatePageTitle())
 
 // SEO タイトルも同期
 useSeoMeta({
@@ -93,7 +93,7 @@ useSeoMeta({
 
 // パンくず（多言語対応）
 const breadcrumbs = computed(() => [
-  { title: (settings.value.language === 'eng' ? 'Home' : 'Home'), disabled: false, to: '/' },
+  { title: (settings.value?.language === 'eng' ? 'Home' : 'Home'), disabled: false, to: '/' },
   { title: breadcrumbPokedexTitle.value, disabled: true, to: '/pokedex' },
 ])
 </script>

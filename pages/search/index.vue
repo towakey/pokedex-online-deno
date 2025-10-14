@@ -287,7 +287,7 @@ const pageTitle = computed(() => pageTitleState.title)
 
 // 現在の言語設定
 const currentLanguage = computed(() => {
-  return settings.value.language === 'eng' ? 'eng' : 'jpn'
+  return settings.value?.language === 'eng' ? 'eng' : 'jpn'
 })
 
 // 多言語翻訳
@@ -340,7 +340,7 @@ const updatePageTitle = () => {
 }
 
 // 設定変更時に同期
-watch(() => settings.value.language, () => updatePageTitle())
+watch(() => settings.value?.language, () => updatePageTitle())
 
 // リアクティブな状態管理
 const searchWord = ref('')

@@ -742,7 +742,7 @@ const eggGroupNames: Record<string, { jpn: string; eng: string }> = {
 
 // 設定管理composableを使用
 const { settings } = useSettings()
-const currentLanguage = computed(() => (settings.value.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng')
+const currentLanguage = computed(() => (settings.value?.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng')
 
 // 共通のフェッチラッパー（タイムアウト・リトライ）
 const { fetchWithRetry } = useApiClient()
@@ -1080,7 +1080,7 @@ const fetchExists = async (pokeId: number | string) => {
 const fetchDescription = async (pokeId: number | string) => {
   try {
     const baseUrl = process.server ? config.public.baseUrl || 'http://localhost:3001' : ''
-    const apiUrl = `${baseUrl}/api/pokedex/pokedex.php?mode=description&id=${pokeId}&language=${settings.value.language}`
+    const apiUrl = `${baseUrl}/api/pokedex/pokedex.php?mode=description&id=${pokeId}&language=${settings.value?.language ?? 'jpn'}`
     console.log(`[fetchDescription] Fetching from: ${apiUrl}`)
     const data = await fetchWithRetry(
       apiUrl,
@@ -2088,7 +2088,7 @@ const updateLayoutTitle = () => {
   pageTitleState.title = layoutRegionDexTitle.value
 }
 onMounted(() => updateLayoutTitle())
-watch(() => settings.value.language, () => updateLayoutTitle())
+watch(() => settings.value?.language, () => updateLayoutTitle())
 watch(() => route.params.area, () => updateLayoutTitle())
 
 // const updateMetadata = inject('updateMetadata') as (title: string) => void

@@ -79,7 +79,7 @@ const props = defineProps({
 
 const { settings } = useSettings()
 const appConfig = useAppConfig()
-const currentLanguage = computed(() => settings.value.language)
+const currentLanguage = computed(() => settings.value?.language ?? 'jpn')
 
 // 画像エラー状態を管理
 const imageError = ref(false)

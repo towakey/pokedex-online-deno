@@ -41,7 +41,7 @@ const appConfig = useAppConfig()
 
 // 統一された言語設定
 const currentLanguage = computed(() => {
-  return (settings.value.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng'
+  return (settings.value?.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng'
 })
 
 // 多言語対応ラベル

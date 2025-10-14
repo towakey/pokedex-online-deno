@@ -10,7 +10,7 @@ const appConfig = useAppConfig()
 
 // 統一された言語設定
 const currentLanguage = computed(() => {
-  return (settings.value.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng'
+  return (settings.value?.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng'
 })
 </script>
 <template>

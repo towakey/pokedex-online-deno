@@ -402,7 +402,7 @@ export default defineAppConfig({
   menus: {
     // メインカテゴリ
     categories: {
-      pokemon_data: {jpn: 'ポケモンデータ', eng: 'Pokemon Data'},
+      pokemon_data: {jpn: 'ポケモン図鑑', eng: 'Pokédex'},
       tools: {jpn: 'ツール', eng: 'Tools'},
       useful_information: {jpn: '情報', eng: 'Information'},
       gallery: {jpn: 'ギャラリー', eng: 'Gallery'},

@@ -396,7 +396,7 @@ interface PokemonListItem {
 }
 
 // 言語設定
-const currentLanguage = computed(() => (settings.value.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng')
+const currentLanguage = computed(() => (settings.value?.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng')
 
 // 翻訳
 const tr = computed(() => {

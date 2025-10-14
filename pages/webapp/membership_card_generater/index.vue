@@ -291,7 +291,7 @@ import { ref, computed, onMounted, onBeforeUnmount, inject, watch, nextTick } fr
 // 設定・アプリ設定
 const appConfig = useAppConfig()
 const { settings } = useSettings()
-const currentLanguage = computed(() => (settings.value.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng')
+const currentLanguage = computed(() => (settings.value?.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng')
 
 // 翻訳
 const translations = {
@@ -375,7 +375,7 @@ const pageTitleState = inject('pageTitle', { title: 'Pokédex-Online' }) as { ti
 const pageTitle = computed(() => pageTitleState.title)
 const updatePageTitle = () => { pageTitleState.title = tr.value.pageTitle }
 onMounted(() => updatePageTitle())
-watch(() => settings.value.language, () => updatePageTitle())
+watch(() => settings.value?.language, () => updatePageTitle())
 
 // SEO タイトル
 useSeoMeta({ title: pageTitle })
