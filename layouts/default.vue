@@ -77,6 +77,30 @@
         {{ pageTitle }}
         </NuxtLink>
       </v-toolbar-title>
+      
+      <v-menu>
+        <template v-slot:activator="{ props }">
+          <v-btn
+          variant="plain"
+          icon="mdi-share-variant"
+          size="small"
+          class="share-btn"
+          v-bind="props"
+          />
+        </template>
+        <v-list>
+          <v-list-item
+            v-for="(item, index) in shareOptions"
+            :key="index"
+            @click="shareOn(item.network)"
+          >
+            <v-list-item-title>
+              <v-icon :icon="item.icon" size="small" class="mr-2" />
+              {{ item.title }}
+            </v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
     </v-app-bar>
     <v-main
     style="height: 100%;background-color: #f2f2f2;"
@@ -87,10 +111,12 @@
 </template>
 <script setup lang="ts">
 import { ref, onMounted, provide, reactive, computed } from 'vue'
-import { useNuxtApp, useAppConfig } from 'nuxt/app'
+import { useNuxtApp, useAppConfig, useRuntimeConfig, useRoute, useSeoMeta } from 'nuxt/app'
 import { useSettings } from '#imports'
 const nuxtApp = useNuxtApp()
 const appConfig = useAppConfig()
+const runtimeConfig = useRuntimeConfig()
+const route = useRoute()
 const isLoading = ref(false)
 const drawer = ref(false)
 
@@ -102,6 +128,60 @@ const pageTitle = computed(() => pageTitleState.title)
 // 設定（言語）
 const { settings } = useSettings()
 const currentLanguage = computed(() => (settings.value?.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng')
+
+// 共有オプション（多言語対応）
+const shareOptions = computed(() => {
+  const lang = currentLanguage.value
+  return [
+    {
+      network: 'twitter',
+      title: lang === 'eng' ? 'Share on X (Twitter)' : 'Xで共有',
+      icon: 'mdi-twitter'
+    },
+    {
+      network: 'facebook',
+      title: lang === 'eng' ? 'Share on Facebook' : 'Facebookで共有',
+      icon: 'mdi-facebook'
+    },
+    {
+      network: 'line',
+      title: lang === 'eng' ? 'Share on LINE' : 'LINEで共有',
+      icon: 'mdi-chat'
+    },
+    {
+      network: 'copy',
+      title: lang === 'eng' ? 'Copy URL' : 'URLをコピー',
+      icon: 'mdi-content-copy'
+    }
+  ]
+})
+
+// 共有機能
+const shareOn = (network: string) => {
+  if (typeof window === 'undefined') return
+  
+  const url = encodeURIComponent(window.location.href)
+  const text = encodeURIComponent(pageTitle.value + ' - ' + appConfig.site.name)
+  
+  switch (network) {
+    case 'twitter':
+      window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank', 'width=550,height=420')
+      break
+    case 'facebook':
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank', 'width=550,height=420')
+      break
+    case 'line':
+      window.open(`https://social-plugins.line.me/lineit/share?url=${url}`, '_blank', 'width=550,height=420')
+      break
+    case 'copy':
+      navigator.clipboard.writeText(window.location.href).then(() => {
+        alert(currentLanguage.value === 'eng' ? 'URL copied to clipboard!' : 'URLをクリップボードにコピーしました！')
+      }).catch(err => {
+        console.error('Failed to copy URL:', err)
+      })
+      break
+  }
+}
 
 // カテゴリごとのメニューアイテムを取得する関数
 const getMenuItemsByCategory = (category: string) => {
@@ -132,5 +212,52 @@ onMounted(() => {
     console.log('Page finish')
     isLoading.value = false
   })
+})
+
+// SNS対応: OGPとTwitter Cardのメタタグを設定
+const baseUrl = computed(() => {
+  if (import.meta.client && typeof window !== 'undefined') {
+    return window.location.origin + runtimeConfig.public.appBaseURL
+  }
+  return runtimeConfig.public.appBaseURL
+})
+
+const currentUrl = computed(() => {
+  if (import.meta.client && typeof window !== 'undefined') {
+    return window.location.href
+  }
+  return baseUrl.value + route.path
+})
+
+const siteName = appConfig.site.name
+const siteDescription = computed(() => {
+  const lang = settings.value?.language === 'eng' ? 'eng' : 'jpn'
+  return lang === 'eng' 
+    ? 'An online Pokédex featuring comprehensive information about Pokémon across all regions and generations.'
+    : 'すべての地方と世代のポケモンの詳細情報を掲載したオンラインポケモン図鑑です。'
+})
+const ogImageUrl = computed(() => {
+  const base = baseUrl.value.endsWith('/') ? baseUrl.value : baseUrl.value + '/'
+  return base + 'icon.png'
+})
+
+// SEOメタデータとSNS対応タグを設定
+useSeoMeta({
+  title: pageTitle,
+  description: siteDescription,
+  
+  // Open Graph Protocol (OGP)
+  ogTitle: pageTitle,
+  ogDescription: siteDescription,
+  ogImage: ogImageUrl,
+  ogUrl: currentUrl,
+  ogType: 'website',
+  ogSiteName: siteName,
+  
+  // Twitter Card
+  twitterCard: 'summary_large_image',
+  twitterTitle: pageTitle,
+  twitterDescription: siteDescription,
+  twitterImage: ogImageUrl,
 })
 </script>

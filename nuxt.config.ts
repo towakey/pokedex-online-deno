@@ -10,10 +10,32 @@ export default defineNuxtConfig({
     baseURL: APP_BASE_URL,
     head: {
       meta: [
+        { charset: 'utf-8' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        { name: 'theme-color', content: '#1976d2' },
+        { name: 'format-detection', content: 'telephone=no' },
         // 軽度なキャッシュ制御（静的アセットは除外）
         { name: 'version', content: `${Date.now()}` }
       ],
       link: [
+        // Favicon and icons
+        {
+          rel: 'icon',
+          type: 'image/x-icon',
+          href: `${APP_BASE_URL}favicon.ico`,
+        },
+        {
+          rel: 'icon',
+          type: 'image/png',
+          sizes: '192x192',
+          href: `${APP_BASE_URL}icon.png`,
+        },
+        {
+          rel: 'apple-touch-icon',
+          sizes: '180x180',
+          href: `${APP_BASE_URL}icon.png`,
+        },
+        // Stylesheets
         {
           rel: 'stylesheet',
           href: 'https://cdn.jsdelivr.net/npm/@mdi/font@latest/css/materialdesignicons.min.css',
