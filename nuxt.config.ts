@@ -77,7 +77,9 @@ export default defineNuxtConfig({
   },
 
   devServer: {
-    port: 3001
+    port: 3001,
+    // vite-nodeのタイムアウトを延長（デフォルト10秒→60秒）
+    timeout: 60000
   },
 
   vite: {
@@ -104,9 +106,15 @@ export default defineNuxtConfig({
     // モジュール解決のタイムアウトを延長
     optimizeDeps: {
       // 依存関係の事前バンドル設定
-      include: [],
-      // 強制的な依存関係の再バンドル
-      force: true
+      include: ['vuetify', 'chart.js'],
+      // 開発時はforceを無効化してキャッシュを活用
+      force: false
+    },
+    // Vite-nodeのタイムアウト設定を延長
+    resolve: {
+      alias: {
+        // 必要に応じてエイリアス設定
+      }
     }
   },
 
