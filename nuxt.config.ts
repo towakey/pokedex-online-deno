@@ -110,6 +110,11 @@ export default defineNuxtConfig({
       // 開発時はforceを無効化してキャッシュを活用
       force: false
     },
+    // SSR（vite-node）のタイムアウトを延長
+    ssr: {
+      // モジュール読み込みのタイムアウトを60秒に延長
+      timeout: 60000
+    },
     // Vite-nodeのタイムアウト設定を延長
     resolve: {
       alias: {
