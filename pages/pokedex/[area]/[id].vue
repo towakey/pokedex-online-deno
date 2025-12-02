@@ -314,11 +314,13 @@
       />
       <AdSenseCard 
       slot-type="banner"
-      :width="728"
+      width="100%"
       :height="90"
       label-type="sponsored"
       variant="outlined"
       color="surface"
+      :elevation="0"
+      class="mt-5"
       />
     </v-container>
   </div>
@@ -543,11 +545,13 @@
       /> -->
       <AdSenseCard 
       slot-type="banner"
-      :width="728"
+      width="100%"
       :height="90"
       label-type="sponsored"
       variant="outlined"
       color="surface"
+      :elevation="0"
+      class="mt-5"
       />
     </v-container>
     </v-col>

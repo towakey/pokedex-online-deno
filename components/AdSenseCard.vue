@@ -1,6 +1,6 @@
 <template>
   <v-card
-    :class="cardClass"
+    :class="[cardClass, { 'adsense-outlined': variant === 'outlined' }]"
     :elevation="elevation"
     :variant="variant"
     :color="color"
@@ -160,6 +160,11 @@ export interface AdSenseCardInstance {
 </script>
 
 <style scoped>
+/* Outlined variant border fix */
+.adsense-outlined {
+  border: 1px solid #9e9e9e !important;
+}
+
 .adsense-container {
   overflow: hidden;
 }
