@@ -560,7 +560,7 @@
       {{ selectedVersionInfo.verJpn || selectedVersionInfo.ver }}
     </v-card-title>
     <v-card-text>
-      <p>{{ selectedVersionInfo.description }}</p>
+      <p v-html="selectedVersionInfo.description"></p>
     </v-card-text>
     <v-card-actions>
       <v-spacer></v-spacer>
