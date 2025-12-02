@@ -215,10 +215,10 @@
           </v-btn>
           
           <!-- フォームインジケーター表示（カルーセル風） -->
-          <div class="flex-grow-1 text-center" style="position: relative; height: 60px; margin: 0 24px;">
+          <div class="flex-grow-1 text-center" :style="`position: relative; height: 60px; margin: 0 ${indicatorSizes.containerMargin}px;`">
             <div class="d-flex align-center justify-center" style="position: relative; height: 100%; width: 100%;">
               <!-- 表示するインジケーターを計算して配置 -->
-              <transition-group name="slide" tag="div" class="d-flex align-center justify-center" style="position: relative; width: 100%; height: 100%;">
+              <div class="d-flex align-center justify-center" style="position: relative; width: 100%; height: 100%;">
                 <v-btn
                   v-for="(item, index) in pokedex.result"
                   v-show="getCircularDistance(index, model, pokedex.result.length) <= 3"
@@ -227,47 +227,50 @@
                   :size="index === model ? 'default' : 'small'"
                   variant="plain"
                   @click="model = index"
-                  :style="`
-                    position: absolute;
-                    transform: translateX(${getCircularOffset(index, model, pokedex.result.length)}px) scale(${index === model ? 1.3 : 0.8});
-                    opacity: ${index === model ? 1 : Math.max(0.3, 1 - getCircularDistance(index, model, pokedex.result.length) * 0.2)};
-                    z-index: ${index === model ? 10 : 5 - getCircularDistance(index, model, pokedex.result.length)};
-                    transition: all 0.3s ease;
-                  `"
+                  class="indicator-btn"
+                  :data-offset="indicatorOffsets[index]"
+                  :data-active="index === model"
+                  :style="{
+                    position: 'absolute',
+                    transform: `translateX(${indicatorOffsets[index]}px) scale(${index === model ? 1.3 : 0.8})`,
+                    opacity: index === model ? 1 : Math.max(0.3, 1 - getCircularDistance(index, model, pokedex.result.length) * 0.2),
+                    zIndex: index === model ? 10 : 5 - getCircularDistance(index, model, pokedex.result.length),
+                    transition: 'all 0.3s ease'
+                  }"
                 >
                   <!-- メガ進化アイコン -->
                   <img 
                     v-if="item?.forms?.eng?.startsWith('Mega')"
                     src="/img/icon/f01.png"
                     alt="Mega Evolution"
-                    :style="`width: ${index === model ? '56px' : '32px'}; height: ${index === model ? '56px' : '32px'};`"
+                    :style="`width: ${index === model ? indicatorSizes.activeIcon : indicatorSizes.inactiveIcon}px; height: ${index === model ? indicatorSizes.activeIcon : indicatorSizes.inactiveIcon}px;`"
                   />
                   <!-- ダイマックスアイコン -->
                   <img 
                     v-else-if="item?.forms?.eng === 'Gigantamax'"
                     src="/img/icon/f02.png"
                     alt="Gigantamax"
-                    :style="`width: ${index === model ? '56px' : '32px'}; height: ${index === model ? '56px' : '32px'};`"
+                    :style="`width: ${index === model ? indicatorSizes.activeIcon : indicatorSizes.inactiveIcon}px; height: ${index === model ? indicatorSizes.activeIcon : indicatorSizes.inactiveIcon}px;`"
                   />
                   <!-- ステラ/テラスタルアイコン -->
                   <img 
                     v-else-if="item?.forms?.eng === 'Stellar Form'"
                     src="/img/icon/f03.png"
                     alt="Stellar/Terastal Form"
-                    :style="`width: ${index === model ? '56px' : '32px'}; height: ${index === model ? '56px' : '32px'};`"
+                    :style="`width: ${index === model ? indicatorSizes.activeIcon : indicatorSizes.inactiveIcon}px; height: ${index === model ? indicatorSizes.activeIcon : indicatorSizes.inactiveIcon}px;`"
                   />
-                  <!-- デバッグ: 全ての場合でアルファベット表示をテスト -->
+                  <!-- アンノーン用アルファベット表示 -->
                   <span 
                     v-else-if="item?.src && String(item.src).includes('0201')"
                     :style="`
-                      font-size: ${index === model ? '24px' : '16px'};
+                      font-size: ${index === model ? indicatorSizes.activeFontSize : indicatorSizes.inactiveFontSize}px;
                       font-weight: bold;
                       color: ${index === model ? '#1976d2' : '#666'};
                       display: flex;
                       align-items: center;
                       justify-content: center;
-                      width: ${index === model ? '40px' : '28px'};
-                      height: ${index === model ? '40px' : '28px'};
+                      width: ${index === model ? indicatorSizes.activeAlphabet : indicatorSizes.inactiveAlphabet}px;
+                      height: ${index === model ? indicatorSizes.activeAlphabet : indicatorSizes.inactiveAlphabet}px;
                       border-radius: 50%;
                       background-color: ${index === model ? '#e3f2fd' : 'transparent'};
                       border: ${index === model ? '2px solid #1976d2' : '1px solid #ccc'};
@@ -284,7 +287,7 @@
                     {{ index === model ? 'mdi-circle' : 'mdi-circle-outline' }}
                   </v-icon>
                 </v-btn>
-              </transition-group>
+              </div>
             </div>
           </div>
           
@@ -600,6 +603,7 @@
 </template>
 <script setup lang="ts">
 import { ref, reactive, onMounted, watch, computed, inject } from 'vue'
+import { useDisplay } from 'vuetify'
 import type { RegionPokedexKey } from '~~/types/region'
 
 const isVersionDialogVisible = ref(false)
@@ -743,6 +747,46 @@ const eggGroupNames: Record<string, { jpn: string; eng: string }> = {
 // 設定管理composableを使用
 const { settings } = useSettings()
 const currentLanguage = computed(() => (settings.value?.language === 'eng' ? 'eng' : 'jpn') as 'jpn' | 'eng')
+
+// 画面サイズ検出（レスポンシブ対応）
+const { smAndDown, xs } = useDisplay()
+
+// インジケーターサイズのレスポンシブ設定
+const indicatorSizes = computed(() => ({
+  activeIcon: xs.value ? 40 : smAndDown.value ? 48 : 56,
+  inactiveIcon: xs.value ? 24 : smAndDown.value ? 28 : 32,
+  activeAlphabet: xs.value ? 32 : smAndDown.value ? 36 : 40,
+  inactiveAlphabet: xs.value ? 20 : smAndDown.value ? 24 : 28,
+  activeFontSize: xs.value ? 18 : smAndDown.value ? 21 : 24,
+  inactiveFontSize: xs.value ? 12 : smAndDown.value ? 14 : 16,
+  containerMargin: xs.value ? 8 : smAndDown.value ? 16 : 24,
+  baseOffset: xs.value ? 30 : smAndDown.value ? 40 : 50,
+}))
+
+// 各インジケーターのオフセット値を計算するcomputed（modelの変更を確実に追跡）
+const indicatorOffsets = computed(() => {
+  const baseOffset = indicatorSizes.value.baseOffset
+  const total = pokedex.result.length
+  const currentModel = model.value
+  
+  return pokedex.result.map((_, index) => {
+    if (total <= 1) return 0
+    
+    const directDistance = index - currentModel
+    const absDirectDistance = Math.abs(directDistance)
+    const circularDistance = total - absDirectDistance
+    
+    if (absDirectDistance <= circularDistance) {
+      return directDistance * baseOffset
+    } else {
+      if (directDistance > 0) {
+        return -(circularDistance) * baseOffset
+      } else {
+        return circularDistance * baseOffset
+      }
+    }
+  })
+})
 
 // 共通のフェッチラッパー（タイムアウト・リトライ）
 const { fetchWithRetry } = useApiClient()
@@ -1549,7 +1593,7 @@ const getCircularDistance = (index1: number, index2: number, total: number): num
 }
 
 // 循環を考慮したX座標オフセットを計算する関数
-const getCircularOffset = (index: number, currentModel: number, total: number): number => {
+const getCircularOffset = (index: number, currentModel: number, total: number, baseOffset: number): number => {
   if (total <= 1) return 0
   
   const directDistance = index - currentModel
@@ -1558,13 +1602,13 @@ const getCircularOffset = (index: number, currentModel: number, total: number): 
   
   // より短い距離の方向を選択
   if (absDirectDistance <= circularDistance) {
-    return directDistance * 50
+    return directDistance * baseOffset
   } else {
     // 循環の方が短い場合は、反対方向に配置
     if (directDistance > 0) {
-      return -(circularDistance) * 50
+      return -(circularDistance) * baseOffset
     } else {
-      return circularDistance * 50
+      return circularDistance * baseOffset
     }
   }
 }

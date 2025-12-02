@@ -8,17 +8,21 @@ const props = withDefaults(defineProps<{
 
 const appConfig = useAppConfig()
 const config = useRuntimeConfig()
-const typeConfig = appConfig.type[props.type as keyof typeof appConfig.type] ?? null
+
+// propsの変更に反応するようにcomputedを使用
+const typeConfig = computed(() => {
+  return appConfig.type[props.type as keyof typeof appConfig.type] ?? null
+})
 
 // アイコンファイルのパスを取得
 const iconPath = computed(() => {
-  if (!typeConfig) return ''
+  if (!typeConfig.value) return ''
   const baseURL = config.app.baseURL || '/'
-  return `${baseURL}img/type/typeicon_${typeConfig.eng.toLowerCase()}.png`
+  return `${baseURL}img/type/typeicon_${typeConfig.value.eng.toLowerCase()}.png`
 })
 const typeClass = computed(() => {
-  if (typeConfig) {
-    return `type_${typeConfig.eng} type_icon` + (props.mode === 'icon' ? ' mode-icon' : '')
+  if (typeConfig.value) {
+    return `type_${typeConfig.value.eng} type_icon` + (props.mode === 'icon' ? ' mode-icon' : '')
   }
   return 'type_icon'
 })
@@ -33,13 +37,13 @@ const onImgError = (e: Event) => {
     <img 
       v-if="mode === 'icon'"
       :src="iconPath" 
-      :alt="typeConfig.jpn" 
-      :title="typeConfig.jpn"
+      :alt="typeConfig?.jpn" 
+      :title="typeConfig?.jpn"
       class="type-icon-img"
       @error="onImgError"
     >
     <div v-else>
-      <{{ typeConfig.jpn }}>
+      <{{ typeConfig?.jpn }}>
     </div>
   </div>
   <div v-else class="type_icon" style="background-color: white; color: black;">

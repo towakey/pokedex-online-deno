@@ -207,6 +207,8 @@ async function fetchRandomPokemon() {
     if (res && res.success && res.data) {
       // res.dataは { "0001": [...] } の形式なので最初のキーの配列を取得
       const firstKey = Object.keys(res.data)[0]
+      if (!firstKey) return
+      
       const statusArray = res.data[firstKey]
       
       if (Array.isArray(statusArray) && statusArray.length > 0) {
