@@ -604,6 +604,164 @@
     </v-card-actions>
   </v-card>
 </v-dialog>
+
+<!-- FAB Speed Dial -->
+<ClientOnly>
+  <div class="fab-container">
+    <v-speed-dial
+      v-model="isFabOpen"
+      location="top center"
+      transition="slide-y-reverse-transition"
+    >
+      <template v-slot:activator="{ props: activatorProps }">
+        <v-btn
+          v-bind="activatorProps"
+          :icon="isFabOpen ? 'mdi-close' : 'mdi-menu'"
+          color="primary"
+          size="large"
+          elevation="8"
+          class="fab-button"
+        />
+      </template>
+
+    <!-- ページトップへ戻る -->
+    <v-btn
+      icon
+      color="blue-grey"
+      @click="scrollToTop"
+    >
+      <v-icon>mdi-arrow-up</v-icon>
+      <v-tooltip activator="parent" location="start">{{ currentLanguage === 'jpn' ? 'トップへ' : 'Go to Top' }}</v-tooltip>
+    </v-btn>
+
+    <!-- TOPページへ -->
+    <v-btn
+      icon
+      color="teal"
+      @click="router.push(`/pokedex/${route.params.area}`)"
+    >
+      <v-icon>mdi-home</v-icon>
+      <v-tooltip activator="parent" location="start">{{ currentLanguage === 'jpn' ? '一覧へ戻る' : 'Back to List' }}</v-tooltip>
+    </v-btn>
+
+    <!-- 前のポケモン -->
+    <v-btn
+      v-if="prev.result.length > 0 && prev.result[0].name.jpn !== '不明'"
+      icon
+      color="indigo"
+      @click="router.push(`/pokedex/${route.params.area}/${prev.result[0].no}`)"
+    >
+      <v-icon>mdi-chevron-left</v-icon>
+      <v-tooltip activator="parent" location="start">{{ prev.result[0].name[currentLanguage] }}</v-tooltip>
+    </v-btn>
+
+    <!-- 次のポケモン -->
+    <v-btn
+      v-if="next.result.length > 0 && next.result[0].name.jpn !== '不明'"
+      icon
+      color="indigo"
+      @click="router.push(`/pokedex/${route.params.area}/${next.result[0].no}`)"
+    >
+      <v-icon>mdi-chevron-right</v-icon>
+      <v-tooltip activator="parent" location="start">{{ next.result[0].name[currentLanguage] }}</v-tooltip>
+    </v-btn>
+
+    <!-- 共有 -->
+    <v-btn
+      icon
+      color="green"
+      @click="shareCurrentPage"
+    >
+      <v-icon>mdi-share-variant</v-icon>
+      <v-tooltip activator="parent" location="start">{{ currentLanguage === 'jpn' ? '共有' : 'Share' }}</v-tooltip>
+    </v-btn>
+
+    <!-- タグを提案 -->
+    <v-btn
+      icon
+      color="orange"
+      @click="openTagSuggestionDialog"
+    >
+      <v-icon>mdi-tag-plus</v-icon>
+      <v-tooltip activator="parent" location="start">{{ currentLanguage === 'jpn' ? 'タグを提案' : 'Suggest Tag' }}</v-tooltip>
+    </v-btn>
+    </v-speed-dial>
+  </div>
+</ClientOnly>
+
+<!-- タグ提案モーダル -->
+<v-dialog v-model="isTagDialogVisible" max-width="500" persistent>
+  <v-card>
+    <v-card-title class="text-h5 d-flex align-center">
+      <v-icon class="mr-2">mdi-tag-multiple</v-icon>
+      {{ currentLanguage === 'jpn' ? 'タグを提案' : 'Suggest Tag' }}
+    </v-card-title>
+    <v-card-subtitle class="mt-1">
+      {{ tagDialogSubtitle }}
+    </v-card-subtitle>
+    <v-card-text>
+      <!-- 既存タグ表示 -->
+      <div class="mb-4">
+        <div class="text-subtitle-2 mb-2">
+          {{ currentLanguage === 'jpn' ? '既存のタグ' : 'Existing Tags' }}
+        </div>
+        <div v-if="existingTags.length === 0" class="text-grey">
+          {{ currentLanguage === 'jpn' ? 'まだタグがありません' : 'No tags yet' }}
+        </div>
+        <v-chip-group v-else>
+          <v-chip
+            v-for="tagItem in existingTags"
+            :key="tagItem.tag"
+            size="small"
+            color="primary"
+            variant="outlined"
+          >
+            {{ tagItem.tag }}
+          </v-chip>
+        </v-chip-group>
+      </div>
+
+      <!-- タグ入力 -->
+      <v-text-field
+        v-model="newTagInput"
+        :label="currentLanguage === 'jpn' ? '新しいタグ' : 'New Tag'"
+        :placeholder="currentLanguage === 'jpn' ? 'タグを入力...' : 'Enter tag...'"
+        :error-messages="tagInputError"
+        counter="50"
+        maxlength="50"
+        variant="outlined"
+        density="compact"
+        @input="validateTagInput"
+      />
+    </v-card-text>
+    <v-card-actions>
+      <v-spacer></v-spacer>
+      <v-btn
+        variant="text"
+        @click="closeTagDialog"
+      >
+        {{ currentLanguage === 'jpn' ? 'キャンセル' : 'Cancel' }}
+      </v-btn>
+      <v-btn
+        color="primary"
+        :disabled="!canSubmitTag"
+        :loading="isSubmittingTag"
+        @click="submitTagSuggestion"
+      >
+        {{ currentLanguage === 'jpn' ? '提案' : 'Suggest' }}
+      </v-btn>
+    </v-card-actions>
+  </v-card>
+</v-dialog>
+
+<!-- タグ提案成功スナックバー -->
+<v-snackbar
+  v-model="tagSnackbar.show"
+  :color="tagSnackbar.color"
+  :timeout="3000"
+>
+  {{ tagSnackbar.message }}
+</v-snackbar>
 </template>
 <script setup lang="ts">
 import { ref, reactive, onMounted, watch, computed, inject } from 'vue'
@@ -616,6 +774,231 @@ const isEggGroupDialogVisible = ref(false)
 const selectedEggGroup = ref<{ jpn: string; eng: string } | null>(null)
 const isTypeDialogVisible = ref(false)
 const selectedType = ref<{ jpn: string; eng: string } | null>(null)
+
+// FAB Speed Dial
+const isFabOpen = ref(false)
+
+// ページトップへスクロール
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+  isFabOpen.value = false
+}
+
+// ページを共有
+const shareCurrentPage = async () => {
+  const pokemonName = pokedex.result.length > 0 
+    ? pokedex.result[Number(model.value)]?.name?.[currentLanguage.value] ?? '' 
+    : ''
+  const shareData = {
+    title: pokemonName,
+    text: `${pokemonName} - ポケモン図鑑`,
+    url: window.location.href
+  }
+  
+  try {
+    if (navigator.share) {
+      await navigator.share(shareData)
+    } else {
+      // フォールバック: クリップボードにコピー
+      await navigator.clipboard.writeText(window.location.href)
+      alert(currentLanguage.value === 'jpn' ? 'URLをコピーしました' : 'URL copied to clipboard')
+    }
+  } catch (err) {
+    console.error('Share failed:', err)
+  }
+  isFabOpen.value = false
+}
+
+// ========== タグ提案機能 ==========
+interface TagItem {
+  tag: string
+  area: string
+  pokedex_no: number
+}
+
+const isTagDialogVisible = ref(false)
+const existingTags = ref<TagItem[]>([])
+const newTagInput = ref('')
+const tagInputError = ref('')
+const isSubmittingTag = ref(false)
+const isLoadingTags = ref(false)
+const tagSnackbar = reactive({
+  show: false,
+  message: '',
+  color: 'success'
+})
+
+// タグAPIのベースURL
+const getTagApiUrl = () => {
+  // 開発環境と本番環境でURLを切り替え
+  if (typeof window !== 'undefined') {
+    const origin = window.location.origin
+    if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+      return '/api/common/tags.php'
+    }
+  }
+  return '/api/common/tags.php'
+}
+
+// モーダルのサブタイトル
+const tagDialogSubtitle = computed(() => {
+  const area = String(route.params.area)
+  const no = getCurrentPokedexNo()
+  const areaLabel = area === 'global' 
+    ? (currentLanguage.value === 'jpn' ? '全地域' : 'All Regions')
+    : area
+  return `${areaLabel} / No.${String(no).padStart(4, '0')}`
+})
+
+// 現在の図鑑番号を取得
+const getCurrentPokedexNo = (): number => {
+  if (pokedex.result.length > 0) {
+    const current = pokedex.result[Number(model.value)]
+    // globalの場合はglobalNo、それ以外はno
+    if (route.params.area === 'global') {
+      return current?.globalNo ?? current?.no ?? 0
+    }
+    return current?.no ?? 0
+  }
+  return 0
+}
+
+// タグ入力のバリデーション
+const validateTagInput = () => {
+  const trimmed = newTagInput.value.trim()
+  
+  if (!trimmed) {
+    tagInputError.value = ''
+    return
+  }
+  
+  // 既存タグとの重複チェック
+  const isDuplicate = existingTags.value.some(t => t.tag.toLowerCase() === trimmed.toLowerCase())
+  if (isDuplicate) {
+    tagInputError.value = currentLanguage.value === 'jpn' 
+      ? 'このタグは既に存在します' 
+      : 'This tag already exists'
+    return
+  }
+  
+  tagInputError.value = ''
+}
+
+// タグ提案ボタンが有効かどうか
+const canSubmitTag = computed(() => {
+  const trimmed = newTagInput.value.trim()
+  return trimmed.length > 0 && !tagInputError.value && !isSubmittingTag.value
+})
+
+// タグ一覧を取得
+const fetchExistingTags = async () => {
+  const area = String(route.params.area)
+  const no = getCurrentPokedexNo()
+  
+  if (!no) return
+  
+  isLoadingTags.value = true
+  
+  try {
+    const response = await fetch(`${getTagApiUrl()}?area=${area}&no=${no}`)
+    const data = await response.json()
+    
+    if (data.success) {
+      // 提案済みと承認済みをマージ
+      const allTags = [...(data.suggestions || []), ...(data.approved || [])]
+      // 重複を除去
+      const uniqueTags = allTags.filter((tag, index, self) => 
+        index === self.findIndex(t => t.tag === tag.tag)
+      )
+      existingTags.value = uniqueTags
+    } else {
+      console.error('Failed to fetch tags:', data.error)
+      existingTags.value = []
+    }
+  } catch (err) {
+    console.error('Failed to fetch tags:', err)
+    existingTags.value = []
+  } finally {
+    isLoadingTags.value = false
+  }
+}
+
+// タグ提案ダイアログを開く
+const openTagSuggestionDialog = async () => {
+  isFabOpen.value = false
+  newTagInput.value = ''
+  tagInputError.value = ''
+  isTagDialogVisible.value = true
+  await fetchExistingTags()
+}
+
+// タグ提案ダイアログを閉じる
+const closeTagDialog = () => {
+  isTagDialogVisible.value = false
+  newTagInput.value = ''
+  tagInputError.value = ''
+}
+
+// タグを提案
+const submitTagSuggestion = async () => {
+  const trimmed = newTagInput.value.trim()
+  if (!trimmed || tagInputError.value) return
+  
+  const area = String(route.params.area)
+  const no = getCurrentPokedexNo()
+  
+  if (!no) {
+    tagSnackbar.message = currentLanguage.value === 'jpn' 
+      ? '図鑑番号が取得できませんでした' 
+      : 'Could not get Pokedex number'
+    tagSnackbar.color = 'error'
+    tagSnackbar.show = true
+    return
+  }
+  
+  isSubmittingTag.value = true
+  
+  try {
+    const response = await fetch(getTagApiUrl(), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        area,
+        no,
+        tag: trimmed
+      })
+    })
+    
+    const data = await response.json()
+    
+    if (data.success) {
+      tagSnackbar.message = currentLanguage.value === 'jpn' 
+        ? `タグ「${trimmed}」を提案しました` 
+        : `Tag "${trimmed}" suggested successfully`
+      tagSnackbar.color = 'success'
+      tagSnackbar.show = true
+      
+      // タグ一覧を再取得
+      await fetchExistingTags()
+      newTagInput.value = ''
+    } else {
+      tagSnackbar.message = data.error || (currentLanguage.value === 'jpn' ? '提案に失敗しました' : 'Failed to suggest tag')
+      tagSnackbar.color = 'error'
+      tagSnackbar.show = true
+    }
+  } catch (err) {
+    console.error('Failed to submit tag:', err)
+    tagSnackbar.message = currentLanguage.value === 'jpn' 
+      ? '通信エラーが発生しました' 
+      : 'Network error occurred'
+    tagSnackbar.color = 'error'
+    tagSnackbar.show = true
+  } finally {
+    isSubmittingTag.value = false
+  }
+}
 
 // バージョン情報ダイアログを開く（呼び出し元の型差異を吸収）
 const openVersionDialog = (input: any) => {
@@ -2193,5 +2576,18 @@ const prevModel = () => {
 }
 .responsive-text {
   font-size: clamp(0.75rem, 2vw, 1.3rem);
+}
+
+/* FAB固定配置 */
+.fab-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1000;
+}
+.fab-button {
+  border-radius: 50%;
+  width: 56px;
+  height: 56px;
 }
 </style>

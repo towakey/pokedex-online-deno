@@ -100,6 +100,11 @@ export default defineNuxtConfig({
         '/analytics': {
           target: 'http://localhost/pokedex-online-deno',
           changeOrigin: true
+        },
+        // tags(PHP) も開発サーバからXAMPPへプロキシ
+        '/tags': {
+          target: 'http://localhost/pokedex-online-deno',
+          changeOrigin: true
         }
       }
     },
@@ -136,6 +141,12 @@ export default defineNuxtConfig({
       },
       // analytics(PHP) も開発サーバからXAMPPへプロキシ
       '/analytics': {
+        target: 'http://localhost/pokedex-online-deno',
+        prependPath: true,
+        changeOrigin: true
+      },
+      // tags(PHP) も開発サーバからXAMPPへプロキシ
+      '/tags': {
         target: 'http://localhost/pokedex-online-deno',
         prependPath: true,
         changeOrigin: true
@@ -244,6 +255,16 @@ export default defineNuxtConfig({
         console.log('analyticsディレクトリを静的生成出力にコピー中...')
         copyDirectoryRecursive(sourceAnalyticsDir, targetAnalyticsDir)
         console.log('analyticsディレクトリのコピーが完了しました')
+      }
+
+      // tagsディレクトリも.output/publicにコピー（PHPエンドポイント配置）
+      const sourceTagsDir = join(process.cwd(), 'tags')
+      const targetTagsDir = join(nitro.options.output.publicDir, 'tags')
+
+      if (existsSync(sourceTagsDir)) {
+        console.log('tagsディレクトリを静的生成出力にコピー中...')
+        copyDirectoryRecursive(sourceTagsDir, targetTagsDir)
+        console.log('tagsディレクトリのコピーが完了しました')
       }
 
       // ルートまたはpublic配下の .htaccess を .output/public にコピー
