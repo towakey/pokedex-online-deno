@@ -1,4 +1,5 @@
 import { ref, computed, readonly } from 'vue'
+import { useRuntimeConfig } from '#imports'
 
 // AdSense設定の型定義
 export interface AdSenseConfig {
@@ -35,7 +36,7 @@ const defaultConfig: AdSenseConfig = {
     mobile_banner: '3333333333'
   },
   settings: {
-    testMode: true,
+    testMode: false,
     fullWidthResponsive: 'true',
     adFormat: 'auto'
   },
@@ -52,8 +53,9 @@ const configLoaded = ref(false)
 const configError = ref<string | null>(null)
 
 // AdSense設定を読み込む関数
-async function loadAdSenseConfig(): Promise<AdSenseConfig> {
-  if (adSenseConfig.value && configLoaded.value) {
+async function loadAdSenseConfig(forceClientReload = false): Promise<AdSenseConfig> {
+  // クライアント側で強制リロードする場合を除き、既存キャッシュを優先
+  if (!forceClientReload && adSenseConfig.value && configLoaded.value) {
     return adSenseConfig.value
   }
 
@@ -87,9 +89,12 @@ async function loadAdSenseConfig(): Promise<AdSenseConfig> {
       }
     }
 
-    // クライアントサイドでは API経由で読み込み
+    // クライアントサイドでは public/adsense.config.json から直接読み込み（静的生成対応）
     try {
-      const response = await fetch('/api/adsense-config')
+      const { public: { appBaseURL } } = useRuntimeConfig()
+      const base = appBaseURL || '/'
+      const normalizedBase = base.endsWith('/') ? base : `${base}/`
+      const response = await fetch(`${normalizedBase}adsense.config.json`)
       if (response.ok) {
         const config = await response.json() as AdSenseConfig
         adSenseConfig.value = config
@@ -97,10 +102,10 @@ async function loadAdSenseConfig(): Promise<AdSenseConfig> {
         console.log('AdSense設定をクライアントサイドで読み込みました')
         return config
       } else {
-        throw new Error(`設定API呼び出し失敗: ${response.status}`)
+        throw new Error(`設定ファイル読み込み失敗: ${response.status}`)
       }
     } catch (apiError) {
-      console.warn('AdSense設定APIの呼び出しに失敗しました。デフォルト設定を使用します:', apiError)
+      console.warn('AdSense設定ファイルの読み込みに失敗しました。デフォルト設定を使用します:', apiError)
       adSenseConfig.value = defaultConfig
       configLoaded.value = true
       configError.value = `設定読み込みエラー: ${apiError}`
@@ -119,9 +124,12 @@ async function loadAdSenseConfig(): Promise<AdSenseConfig> {
 export function useAdSense() {
   // 設定の初期化
   const initializeConfig = async () => {
-    if (!configLoaded.value) {
-      await loadAdSenseConfig()
+    // クライアントでは必ず最新を取得してデフォルト設定を上書きする
+    if (process.client) {
+      await loadAdSenseConfig(true)
+      return
     }
+    if (!configLoaded.value) await loadAdSenseConfig()
   }
 
   // 計算プロパティ

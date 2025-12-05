@@ -25,4 +25,5 @@ logs
 
 # AdSense config files
 adsense.config.json
+public/adsense.config.json
 !adsense.config.example.json

@@ -133,9 +133,12 @@ const initializeAdSense = () => {
 }
 
 // コンポーネントマウント時
-onMounted(() => {
+onMounted(async () => {
   // クライアントサイドでのみ実行
   if (process.client) {
+    // 設定を先に読み込む（adsense.config.jsonを利用）
+    await initializeConfig()
+
     // AdSenseスクリプトの読み込みを待つ
     const checkAdSense = () => {
       if (typeof window !== 'undefined' && (window as any).adsbygoogle) {
