@@ -211,21 +211,24 @@ interface Pokemon {
 
 interface RawPokedexResponse {
   success: boolean;
-  data: Record<string, any[]>;
+  // global_list_light では配列、それ以外は Record<string, any[]>
+  data: any;
   region: string | null;
+  pagination?: { limit: number; offset: number; count: number };
 }
 
 // レイアウトから提供されたページタイトル状態を取得
 const pageTitleState = inject('pageTitle', { title: 'ポケモン図鑑' });
 const pageTitle = computed(() => pageTitleState.title);
 
+const isGlobal = area === 'global'
+
 // APIからデータを取得
 const { data: pokedex, pending, error } = await useAsyncData(
   `pokedex-index-${area}`,
   async () => {
     // タイムアウト設定をスコープ外に定義
-    const isGlobal = area === 'global'
-    const timeoutMs = isGlobal ? 120000 : 30000  // 2分 または 30秒
+    const timeoutMs = isGlobal ? 30000 : 30000  // 軽量化後は30秒で統一
     
     try {
       let res: RawPokedexResponse;
@@ -238,10 +241,12 @@ const { data: pokedex, pending, error } = await useAsyncData(
       
       // APIからデータを取得
       const { fetchWithRetry } = useApiClient()
-      // 一部リージョンはPHP側で重い処理（多数クエリ）が走るため、タイムアウトを十分長く設定
-      // グローバルは特に重いため120秒、その他は30秒、重い処理の二重実行を避けるため retries は 0
+      // 重い処理の二重実行を避けるため retries は 0
+      const query = isGlobal
+        ? { region: area, mode: 'global_list_light', limit: 2000 }
+        : { region: area }
       const fetchOptions = { 
-        query: { region: area }, 
+        query,
         timeoutMs, 
         retries: 0 
       }
@@ -259,38 +264,69 @@ const { data: pokedex, pending, error } = await useAsyncData(
       console.log(`[DEBUG] Data keys count:`, Object.keys(res.data).length);
 
       const pokedexArray: Pokemon[] = [];
-      Object.values(res.data).forEach((statusArray: any) => {
-        if (!Array.isArray(statusArray) || statusArray.length === 0) return;
-        statusArray.forEach((s: any) => {
+
+      if (isGlobal) {
+        // 軽量モードは配列で返る
+        const rows: any[] = Array.isArray(res.data) ? res.data : [];
+        rows.forEach((s: any) => {
           const statusObj = {
-            weight: s.weight,
-            height: s.height,
-            name: s.name ? { jpn: s.name.jpn, eng: s.name.eng } : undefined,
-            type1: s.type1,
-            type2: s.type2,
+            weight: s.weight ?? '',
+            height: s.height ?? '',
+            name: s.name ? { jpn: s.name.jpn, eng: (s.name as any).eng } : { jpn: s.name_jpn ?? '' },
+            type1: s.type1 ?? null,
+            type2: s.type2 ?? null,
             form: s.form,
             region: s.region,
             mega_evolution: s.mega_evolution,
             gigantamax: s.gigantamax
           };
-          const pokemonName = area === 'global' ? (s.name?.jpn ?? '') : s.name;
+          const pokemonName = typeof s.name === 'string'
+            ? s.name
+            : (s.name?.jpn ?? s.name_jpn ?? '');
           const pokemon = {
-            no: s.no,
+            no: s.no ?? s.globalNo ?? '',
             id: s.id,
             globalNo: s.globalNo,
             name: pokemonName,
             status: [statusObj]
           };
-          
           pokedexArray.push(pokemon);
         });
-      });
+      } else {
+        // これまでの地域別レスポンス形を踏襲
+        Object.values(res.data).forEach((statusArray: any) => {
+          if (!Array.isArray(statusArray) || statusArray.length === 0) return;
+          statusArray.forEach((s: any) => {
+            const statusObj = {
+              weight: s.weight,
+              height: s.height,
+              name: s.name ? { jpn: s.name.jpn, eng: s.name.eng } : undefined,
+              type1: s.type1,
+              type2: s.type2,
+              form: s.form,
+              region: s.region,
+              mega_evolution: s.mega_evolution,
+              gigantamax: s.gigantamax
+            };
+            const pokemonName = s.name;
+            const pokemon = {
+              no: s.no,
+              id: s.id,
+              globalNo: s.globalNo,
+              name: pokemonName,
+              status: [statusObj]
+            };
+            
+            pokedexArray.push(pokemon);
+          });
+        });
+      }
       
       // 図鑑番号順に並べ替え
       pokedexArray.sort((a, b) => Number(a.no) - Number(b.no));
 
       // 図鑑番号が空の場合は globalNo を代替として設定
-      if (area !== 'global') {
+      if (!isGlobal) {
         pokedexArray.forEach(pokemon => {
           if (!pokemon.no || pokemon.no === '') {
             pokemon.no = String(pokemon.globalNo ?? '');
