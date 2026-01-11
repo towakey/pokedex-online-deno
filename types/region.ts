@@ -3,7 +3,7 @@ export const regionPokedexKeys = [
   'global', 'kanto', 'johto', 'hoenn', 'kanto_frlg', 'sinnoh', 'johto_hgss',
   'unova_bw', 'unova_b2w2', 'central_kalos', 'coast_kalos', 'mountain_kalos',
   'alola_sm', 'alola_usum', 'galar', 'isle_of_armor', 'crown_tundra',
-  'hisui', 'sinnoh_bdsp', 'paldea', 'kitakami', 'blueberry', 'newpokemonsnap'
+  'hisui', 'sinnoh_bdsp', 'paldea', 'kitakami', 'blueberry', 'lumiose', 'newpokemonsnap'
 ] as const;
 
 // リージョン図鑑のキー型

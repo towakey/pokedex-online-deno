@@ -275,6 +275,17 @@ export default defineAppConfig({
       },
       gameVersion: ["scarlet", "violet"],
     },
+    lumiose: {
+      disp: {
+        jpn: 'ミアレ図鑑',
+        eng: 'Lumiose Pokédex'
+      },
+      name: {
+        jpn: 'ミアレ図鑑',
+        eng: 'lumiose'
+      },
+      gameVersion: ["legendsza"],
+    },
     newpokemonsnap: {
       disp: {
         jpn: 'New ポケモンスナップ図鑑',
@@ -310,7 +321,8 @@ export default defineAppConfig({
     'hisui',
     'paldea',
     'kitakami',
-    'blueberry'
+    'blueberry',
+    'lumiose'
     // 'newpokemonsnap'
   ] as const satisfies RegionPokedexKey[],
 
@@ -545,7 +557,8 @@ export default defineAppConfig({
     'hisui': 3,
     'paldea': 3,
     'kitakami': 3,
-    'blueberry': 3
+    'blueberry': 3,
+    'lumiose': 3,
   },
   verIcon: {
     "red": "v01_00.png",
@@ -590,7 +603,7 @@ export default defineAppConfig({
     "scarlet": "v09_00.png",
     "violet": "v09_01.png",
     "sleep": "v09_03.png",
-    "legendsza": "",
+    "legendsza": "v09_10.png",
     "books": "v99_00.png",
     "official_site": "v99_01.png",
     "videos": "v99_02.png"
