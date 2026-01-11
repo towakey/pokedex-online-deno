@@ -312,6 +312,72 @@
         :globalRegionalNumbers="getGlobalExistsPayload(pokedex.result.length > 0 ? pokedex.result[Number(model)] : undefined)"
         :area="String(route.params.area)"
       />
+      <v-card
+        elevation="0"
+        variant="outlined"
+        class="mt-4"
+        style="background-color: white;"
+      >
+        <v-card-title class="text-subtitle-1">
+          {{ currentLanguage === 'jpn' ? 'タグ' : 'Tags' }}
+        </v-card-title>
+        <v-card-text>
+          <div v-if="isLoadingTags" class="text-grey">
+            {{ currentLanguage === 'jpn' ? '読み込み中...' : 'Loading...' }}
+          </div>
+          <div v-else-if="tagsForDisplay.length === 0" class="text-grey">
+            {{ currentLanguage === 'jpn' ? 'タグがありません' : 'No tags yet' }}
+          </div>
+          <v-chip-group v-else column class="d-flex flex-wrap" :style="{ gap: '8px' }">
+            <v-chip
+              v-for="tagItem in tagsForDisplay"
+              :key="`${tagItem.area}-${tagItem.pokedex_no}-${tagItem.tag}`"
+              size="default"
+              color="primary"
+              variant="outlined"
+              class="tag-vote-chip"
+            >
+              <template #prepend>
+                <v-btn
+                  icon
+                  size="x-small"
+                  :color="tagItem.user_vote === 'good' ? 'success' : 'grey-lighten-1'"
+                  variant="text"
+                  density="compact"
+                  :loading="isVoting === tagItem.id"
+                  @click.stop="voteTag(tagItem.id, 'good')"
+                  class="mr-1"
+                >
+                  <v-icon size="14">mdi-thumb-up</v-icon>
+                </v-btn>
+                <span class="text-caption text-grey-darken-1" style="min-width: 16px;">{{ tagItem.good_count }}</span>
+              </template>
+              
+              <template v-if="route.params.area === 'global'">
+                <v-icon size="14" class="mr-1">mdi-earth</v-icon>
+                <span class="mr-1">{{ tagItem.area }}</span>
+              </template>
+              {{ tagItem.tag }}
+              
+              <template #append>
+                <span class="text-caption text-grey-darken-1" style="min-width: 16px;">{{ tagItem.bad_count }}</span>
+                <v-btn
+                  icon
+                  size="x-small"
+                  :color="tagItem.user_vote === 'bad' ? 'error' : 'grey-lighten-1'"
+                  variant="text"
+                  density="compact"
+                  :loading="isVoting === tagItem.id"
+                  @click.stop="voteTag(tagItem.id, 'bad')"
+                  class="ml-1"
+                >
+                  <v-icon size="14">mdi-thumb-down</v-icon>
+                </v-btn>
+              </template>
+            </v-chip>
+          </v-chip-group>
+        </v-card-text>
+      </v-card>
       <AdSenseCard 
       slot-type="banner"
       width="100%"
@@ -534,6 +600,68 @@
           }" />
           <AbilityView :pokedex="pokedex.result[index]" :area="String(route.params.area)" />
           <DescriptionView :description="pokedex.result[index].description" :title="metaTitle" :openVersionDialog="openVersionDialog" />
+          <v-card
+            elevation="0"
+            variant="outlined"
+            class="mt-4"
+            style="background-color: white;"
+          >
+            <v-card-title class="text-subtitle-1">
+              {{ currentLanguage === 'jpn' ? 'タグ' : 'Tags' }}
+            </v-card-title>
+            <v-card-text>
+              <div v-if="isLoadingTags" class="text-grey">
+                {{ currentLanguage === 'jpn' ? '読み込み中...' : 'Loading...' }}
+              </div>
+              <div v-else-if="tagsForDisplay.length === 0" class="text-grey">
+                {{ currentLanguage === 'jpn' ? 'タグがありません' : 'No tags yet' }}
+              </div>
+              <v-chip-group v-else column class="d-flex flex-wrap" :style="{ gap: '8px' }">
+                <v-chip
+                  v-for="tagItem in tagsForDisplay"
+                  :key="`${tagItem.area}-${tagItem.pokedex_no}-${tagItem.tag}`"
+                  size="default"
+                  color="primary"
+                  variant="outlined"
+                  class="tag-vote-chip"
+                >
+                  <template #prepend>
+                    <v-btn
+                      icon
+                      size="x-small"
+                      :color="tagItem.user_vote === 'good' ? 'success' : 'grey-lighten-1'"
+                      variant="text"
+                      density="compact"
+                      :loading="isVoting === tagItem.id"
+                      @click.stop="voteTag(tagItem.id, 'good')"
+                      class="mr-1"
+                    >
+                      <v-icon size="14">mdi-thumb-up</v-icon>
+                    </v-btn>
+                    <span class="text-caption text-grey-darken-1" style="min-width: 16px;">{{ tagItem.good_count }}</span>
+                  </template>
+                  
+                  {{ tagItem.tag }}
+                  
+                  <template #append>
+                    <span class="text-caption text-grey-darken-1" style="min-width: 16px;">{{ tagItem.bad_count }}</span>
+                    <v-btn
+                      icon
+                      size="x-small"
+                      :color="tagItem.user_vote === 'bad' ? 'error' : 'grey-lighten-1'"
+                      variant="text"
+                      density="compact"
+                      :loading="isVoting === tagItem.id"
+                      @click.stop="voteTag(tagItem.id, 'bad')"
+                      class="ml-1"
+                    >
+                      <v-icon size="14">mdi-thumb-down</v-icon>
+                    </v-btn>
+                  </template>
+                </v-chip>
+              </v-chip-group>
+            </v-card-text>
+          </v-card>
           <!-- <wazaView :wazaData="pokedex.result[index]" :area="route.params.area" /> -->
           <!-- <evolveView :evolveData="pokedex.result[index]" :area="route.params.area" /> -->
         </v-carousel-item>
@@ -768,6 +896,13 @@ import { ref, reactive, onMounted, watch, computed, inject } from 'vue'
 import { useDisplay } from 'vuetify'
 import type { RegionPokedexKey } from '~~/types/region'
 
+// ルート関連の初期化（他の処理より先に定義する必要がある）
+const config = useRuntimeConfig()
+const appConfig = useAppConfig()
+const route = useRoute()
+const router = useRouter()
+route.meta.title = route.params.area
+
 const isVersionDialogVisible = ref(false)
 const selectedVersionInfo = ref<any>(null)
 const isEggGroupDialogVisible = ref(false)
@@ -811,9 +946,13 @@ const shareCurrentPage = async () => {
 
 // ========== タグ提案機能 ==========
 interface TagItem {
+  id: number
   tag: string
   area: string
   pokedex_no: number
+  good_count: number
+  bad_count: number
+  user_vote: 'good' | 'bad' | null
 }
 
 const isTagDialogVisible = ref(false)
@@ -822,6 +961,8 @@ const newTagInput = ref('')
 const tagInputError = ref('')
 const isSubmittingTag = ref(false)
 const isLoadingTags = ref(false)
+const isVoting = ref<number | null>(null) // 現在投票中のタグID
+const badThreshold = ref(3) // Bad投票のしきい値（デフォルト3）
 const tagSnackbar = reactive({
   show: false,
   message: '',
@@ -834,10 +975,10 @@ const getTagApiUrl = () => {
   if (typeof window !== 'undefined') {
     const origin = window.location.origin
     if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
-      return '/api/common/tags.php'
+      return '/api/pokedex/tags/tags.php'
     }
   }
-  return '/api/common/tags.php'
+  return '/api/pokedex/tags/tags.php'
 }
 
 // モーダルのサブタイトル
@@ -893,9 +1034,10 @@ const canSubmitTag = computed(() => {
 // タグ一覧を取得
 const fetchExistingTags = async () => {
   const area = String(route.params.area)
-  const no = getCurrentPokedexNo()
+  // route.params.idを直接使用（pokedex.resultの初期化を待たない）
+  const no = parseInt(String(route.params.id), 10)
   
-  if (!no) return
+  if (!no || isNaN(no)) return
   
   isLoadingTags.value = true
   
@@ -904,13 +1046,24 @@ const fetchExistingTags = async () => {
     const data = await response.json()
     
     if (data.success) {
+      // デバッグ用：APIから返されるデータを確認
+      console.log('API Response:', data)
+      console.log('Suggestions:', data.suggestions)
+      console.log('Approved:', data.approved)
+      
       // 提案済みと承認済みをマージ
       const allTags = [...(data.suggestions || []), ...(data.approved || [])]
       // 重複を除去
       const uniqueTags = allTags.filter((tag, index, self) => 
         index === self.findIndex(t => t.tag === tag.tag)
       )
+      console.log('Unique Tags:', uniqueTags)
       existingTags.value = uniqueTags
+      
+      // 設定値を取得
+      if (data.settings?.bad_threshold !== undefined) {
+        badThreshold.value = data.settings.bad_threshold
+      }
     } else {
       console.error('Failed to fetch tags:', data.error)
       existingTags.value = []
@@ -922,6 +1075,94 @@ const fetchExistingTags = async () => {
     isLoadingTags.value = false
   }
 }
+
+// 表示用タグ（現在のエリア・図鑑番号に一致、Bad投票がしきい値未満、却下以外）
+const tagsForDisplay = computed(() => {
+  // route.params.idを直接使用
+  const no = parseInt(String(route.params.id), 10)
+  if (!no || isNaN(no)) return []
+  return existingTags.value
+    .filter(t => t.pokedex_no === no)
+    .filter(t => t.status !== 'rejected') // 却下タグは非表示
+    .filter(t => t.bad_count < badThreshold.value) // Bad投票がしきい値未満のみ表示
+    .slice()
+    .sort((a, b) => a.tag.localeCompare(b.tag, 'ja'))
+})
+
+// タグに投票する
+const voteTag = async (tagId: number, voteType: 'good' | 'bad') => {
+  if (isVoting.value !== null) return // 投票中は処理しない
+  
+  isVoting.value = tagId
+  
+  try {
+    const response = await fetch(getTagApiUrl(), {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        tag_id: tagId,
+        vote_type: voteType
+      })
+    })
+    
+    const data = await response.json()
+    
+    if (data.success) {
+      // ローカルの状態を更新
+      const tagIndex = existingTags.value.findIndex((t: TagItem) => t.id === tagId)
+      if (tagIndex !== -1) {
+        const tag = existingTags.value[tagIndex]
+        
+        if (data.action === 'removed') {
+          // 投票を取り消し
+          if (tag.user_vote === 'good') tag.good_count--
+          else if (tag.user_vote === 'bad') tag.bad_count--
+          tag.user_vote = null
+        } else if (data.action === 'updated') {
+          // 投票を変更
+          if (tag.user_vote === 'good') {
+            tag.good_count--
+            tag.bad_count++
+          } else if (tag.user_vote === 'bad') {
+            tag.bad_count--
+            tag.good_count++
+          }
+          tag.user_vote = voteType
+        } else if (data.action === 'created') {
+          // 新規投票
+          if (voteType === 'good') tag.good_count++
+          else tag.bad_count++
+          tag.user_vote = voteType
+        }
+      }
+    } else {
+      tagSnackbar.message = data.error || (currentLanguage.value === 'jpn' ? '投票に失敗しました' : 'Failed to vote')
+      tagSnackbar.color = 'error'
+      tagSnackbar.show = true
+    }
+  } catch (err) {
+    console.error('Failed to vote:', err)
+    tagSnackbar.message = currentLanguage.value === 'jpn' 
+      ? '通信エラーが発生しました' 
+      : 'Network error occurred'
+    tagSnackbar.color = 'error'
+    tagSnackbar.show = true
+  } finally {
+    isVoting.value = null
+  }
+}
+
+// 初期表示 & ルート変更時に取得
+onMounted(() => {
+  fetchExistingTags()
+  // watchはonMounted内で設定することで、pokedexが初期化された後に実行される
+  watch(
+    () => [route.params.area, route.params.id],
+    () => fetchExistingTags()
+  )
+})
 
 // タグ提案ダイアログを開く
 const openTagSuggestionDialog = async () => {
@@ -1094,12 +1335,6 @@ interface ExistsResponse {
   };
   result: number;
 }
-
-const config = useRuntimeConfig()
-const appConfig = useAppConfig()
-const route = useRoute()
-const router = useRouter()
-route.meta.title = route.params.area
 
 const eggMapping: Record<string, string> = {
   '植物': '0',

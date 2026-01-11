@@ -68,7 +68,7 @@ export default defineNuxtConfig({
   },
   
   // デバッグとエラー詳細表示設定
-  ssr: true,
+  ssr: false,
   debug: true,
   
   // エラー詳細表示
@@ -102,7 +102,7 @@ export default defineNuxtConfig({
           changeOrigin: true
         },
         // tags(PHP) も開発サーバからXAMPPへプロキシ
-        '/tags': {
+        '/api/pokedex/tags': {
           target: 'http://localhost/pokedex-online-deno',
           changeOrigin: true
         }
@@ -230,6 +230,7 @@ export default defineNuxtConfig({
     '/pokedex/hoenn': { prerender: true, ssr: false },
     '/pokedex/sinnoh': { prerender: true, ssr: false },
     '/pokedex/unova': { prerender: true, ssr: false },
+    '/pokedex/lumiose': { prerender: true, ssr: false },
     // 個別ポケモンページはSPA化（数が多すぎるため）
     '/pokedex/**': { prerender: false, ssr: false }
   },
@@ -258,8 +259,8 @@ export default defineNuxtConfig({
       }
 
       // tagsディレクトリも.output/publicにコピー（PHPエンドポイント配置）
-      const sourceTagsDir = join(process.cwd(), 'tags')
-      const targetTagsDir = join(nitro.options.output.publicDir, 'tags')
+      const sourceTagsDir = join(process.cwd(), 'api/pokedex/tags')
+      const targetTagsDir = join(nitro.options.output.publicDir, 'api/pokedex/tags')
 
       if (existsSync(sourceTagsDir)) {
         console.log('tagsディレクトリを静的生成出力にコピー中...')
